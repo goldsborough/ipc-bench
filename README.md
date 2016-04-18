@@ -11,4 +11,6 @@ techniques. Currently included are:
 * Shared Memory
 * Memory-Mapped Files
 
+Most projects have a server and client target. First run the server, then the target.
+
 A similar project can be found [here](https://github.com/rigtorp/ipc-bench).
