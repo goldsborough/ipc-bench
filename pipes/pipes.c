@@ -2,6 +2,7 @@
 
 void read_data(char *buffer, int bytes, int file_descriptors[2]) {
   FILE *stream;
+	int start;
 
   // Don't need the write end for the child
   close(file_descriptors[1]);
@@ -9,11 +10,16 @@ void read_data(char *buffer, int bytes, int file_descriptors[2]) {
   // Open a new FILE stream in read mode from the file descriptor
   stream = fdopen(file_descriptors[0], "r");
 
+	start = now();
+
   // Read the data (expect 1 object read)
   if (fread(buffer, bytes, 1, stream) < 1) {
 		printf("Error reading data!\n");
 		exit(EXIT_FAILURE);
 	}
+
+	benchmark(start);
+	printf("(client)\n");
 
   // Now close the write end too
   close(file_descriptors[1]);
@@ -21,12 +27,15 @@ void read_data(char *buffer, int bytes, int file_descriptors[2]) {
 
 void write_data(char *buffer, int bytes, int file_descriptors[2]) {
   FILE *stream;
+	int start;
 
   // Don't need the read end for the parent
   close(file_descriptors[0]);
 
   // Open a new FILE stream in write mode from the file descriptor
   stream = fdopen(file_descriptors[1], "w");
+
+	start = now();
 
   // Write data
   if (fwrite(buffer, bytes, 1, stream) < 1) {
@@ -36,6 +45,9 @@ void write_data(char *buffer, int bytes, int file_descriptors[2]) {
 
 	// Send immediately
   fflush(stream);
+
+	benchmark(start);
+	printf("(server)\n");
 
   // Now close the write end too
   close(file_descriptors[1]);
@@ -51,9 +63,6 @@ int main(int argc, const char *argv[]) {
   int bytes;
   // The buffer of data we allocate to send
   char *buffer;
-
-	// For benchmarking
-	double start;
 
   if (argc > 2) {
     printf("Usage: pipes [number of bytes to send]\n");
@@ -92,16 +101,14 @@ int main(int argc, const char *argv[]) {
     throw("Error forking process!\n");
   }
 
-	start = now();
-
   // fork() returns 0 for the child process
   if (pid == (pid_t)0) {
     read_data(buffer, bytes, file_descriptors);
-		printf("%f us\n", now() - start);
   }
 
   else {
     write_data(buffer, bytes, file_descriptors);
+
   }
 
   free(buffer);

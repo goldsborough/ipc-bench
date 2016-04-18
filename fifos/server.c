@@ -3,7 +3,9 @@
 #include "../common.h"
 
 void write_data(char* buffer, int bytes, FILE* stream) {
+	int start = now();
 	fwrite(buffer, bytes, 1, stream);
+	benchmark(start);
 }
 
 void cleanup(char* buffer, FILE* stream) {

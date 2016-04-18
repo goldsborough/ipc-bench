@@ -3,8 +3,15 @@
 #include "../common.h"
 
 void write_data(char* shared_memory, int bytes) {
+	// For benchmarking
+	int start;
+
 	while (*shared_memory != '1') usleep(1);
+
+	start = now();
 	memset(shared_memory, '*', bytes);
+	benchmark(start);
+
 	*shared_memory = '2';
 }
 

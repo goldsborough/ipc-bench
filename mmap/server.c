@@ -25,10 +25,13 @@ int get_file_descriptor(int bytes) {
 }
 
 void write_data(char* file_memory, int bytes) {
+	int start;
+
 	while (*((char*)file_memory) != '1') usleep(1);
 
-  // Write data
+	start = now();
   memset(file_memory, '*', bytes);
+	benchmark(start);
 
 	*((char*)file_memory) = '2';
 }
