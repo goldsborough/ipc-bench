@@ -1,4 +1,4 @@
-#include "../common.h"
+#include "common.h"
 
 void read_data(char *buffer, int bytes, int file_descriptors[2]) {
   FILE *stream;

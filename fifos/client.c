@@ -1,6 +1,6 @@
 #include <sys/stat.h>
 
-#include "../common.h"
+#include "common.h"
 
 void read_data(char *buffer, int bytes, FILE *stream) {
 	if (fread(buffer, bytes, 1, stream) < 1) {

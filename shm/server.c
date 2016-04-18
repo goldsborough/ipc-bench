@@ -1,6 +1,6 @@
 #include <sys/shm.h>
 
-#include "../common.h"
+#include "common.h"
 
 void write_data(char* shared_memory, int bytes) {
 	// For benchmarking

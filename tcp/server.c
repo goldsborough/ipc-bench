@@ -2,7 +2,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#include "../common.h"
+#include "common.h"
 
 #define PORT "6969"
 #define HOST "localhost"

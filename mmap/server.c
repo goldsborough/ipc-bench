@@ -1,7 +1,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 
-#include "../common.h"
+#include "common.h"
 
 void make_space(int file_descriptor, int bytes) {
   lseek(file_descriptor, bytes + 1, SEEK_SET);
