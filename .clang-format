@@ -1,4 +1,5 @@
-Language: C
+Language: Cpp
+Standard: Cpp11
 BasedOnStyle: Google
 
 AllowAllParametersOfDeclarationOnNextLine: true

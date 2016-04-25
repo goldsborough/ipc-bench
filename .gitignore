@@ -45,6 +45,9 @@ flycheck_*.el
 # projectiles files
 .projectile
 
+# Local variables
+.dir-locals.el
+
 ### C ###
 # Object files
 *.o
