@@ -20,7 +20,7 @@ int get_file_descriptor() {
 	return file_descriptor;
 }
 
-void read_data(char* file_memory, struct Arguments* args) {
+void communicate(char* file_memory, struct Arguments* args) {
 	struct sigaction signal_action;
 	// Buffer into which to read data
 	void* buffer = malloc(args->size);
@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
 		throw("Error closing file!");
 	}
 
-	read_data(file_memory, &args);
+	communicate(file_memory, &args);
 
 	// Unmap the file from the process memory
 	// Actually unncessary because the OS will do

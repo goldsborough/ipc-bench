@@ -7,9 +7,9 @@
 
 #include "common/common.h"
 
-void write_data(char* shared_memory,
-								struct sigaction* signal_action,
-								struct Arguments* args) {
+void communicate(char* shared_memory,
+								 struct sigaction* signal_action,
+								 struct Arguments* args) {
 	struct Benchmarks bench;
 	int message;
 	void* buffer = malloc(args->size);
@@ -107,7 +107,7 @@ int main(int argc, char* argv[]) {
 		throw("Error attaching segment");
 	}
 
-	write_data(shared_memory, &signal_action, &args);
+	communicate(shared_memory, &signal_action, &args);
 
 	// Detach the shared memory from this process' address space.
 	// If this is the last process using this shared memory, it is removed.

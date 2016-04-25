@@ -62,7 +62,7 @@ void cleanup(int descriptor, void *buffer) {
 	free(buffer);
 }
 
-void read_data(int descriptor, struct Arguments *args) {
+void communicate(int descriptor, struct Arguments *args) {
 	// Buffer into which to read our data
 	void *buffer;
 
@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
 	// Don't need this anymore
 	freeaddrinfo(server_info);
 
-	read_data(socket_descriptor, &args);
+	communicate(socket_descriptor, &args);
 
 	return EXIT_SUCCESS;
 }

@@ -7,9 +7,9 @@
 
 #include "common/common.h"
 
-void read_data(char* shared_memory,
-							 struct sigaction* signal_action,
-							 struct Arguments* args) {
+void communicate(char* shared_memory,
+								 struct sigaction* signal_action,
+								 struct Arguments* args) {
 	// Buffer into which to read data
 	void* buffer = malloc(args->size);
 
@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
 		throw("Could not attach segment");
 	}
 
-	read_data(shared_memory, &signal_action, &args);
+	communicate(shared_memory, &signal_action, &args);
 
 	// Detach the shared memory from this process' address space.
 	// If this is the last process using this shared memory, it is removed.

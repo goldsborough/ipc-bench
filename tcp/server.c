@@ -116,7 +116,7 @@ int accept_communication(int socket_descriptor) {
 	return communication_descriptor;
 }
 
-void write_data(int descriptor, struct Arguments *args) {
+void communicate(int descriptor, struct Arguments *args) {
 	struct Benchmarks bench;
 	void *buffer;
 	int message;
@@ -238,7 +238,7 @@ int main(int argc, char *argv[]) {
 	// for this benchmark.
 	close(socket_descriptor);
 
-	write_data(communication_descriptor, &args);
+	communicate(communication_descriptor, &args);
 
 	return EXIT_SUCCESS;
 }

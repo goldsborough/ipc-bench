@@ -21,7 +21,7 @@ FILE *open_stream(int file_descriptor[2], int to_open) {
 	return stream;
 }
 
-void client_talk(int file_descriptors[2], struct Arguments *args) {
+void client_communicate(int file_descriptors[2], struct Arguments *args) {
 	struct sigaction signal_action;
 	FILE *stream;
 	void *buffer;
@@ -48,7 +48,7 @@ void client_talk(int file_descriptors[2], struct Arguments *args) {
 	free(buffer);
 }
 
-void server_talk(int file_descriptors[2], struct Arguments *args) {
+void server_communicate(int file_descriptors[2], struct Arguments *args) {
 	struct sigaction signal_action;
 	struct Benchmarks bench;
 	FILE *stream;
@@ -111,11 +111,11 @@ int main(int argc, char *argv[]) {
 
 	// fork() returns 0 for the child process
 	if (pid == (pid_t)0) {
-		client_talk(file_descriptors, &args);
+		client_communicate(file_descriptors, &args);
 	}
 
 	else {
-		server_talk(file_descriptors, &args);
+		server_communicate(file_descriptors, &args);
 	}
 
 	return EXIT_SUCCESS;

@@ -29,7 +29,7 @@ int get_file_descriptor(int bytes) {
 	return file_descriptor;
 }
 
-void write_data(char *file_memory, struct Arguments *args) {
+void communicate(char *file_memory, struct Arguments *args) {
 	struct sigaction signal_action;
 	struct Benchmarks bench;
 	int message;
@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
 		throw("Error closing file!");
 	}
 
-	write_data(file_memory, &args);
+	communicate(file_memory, &args);
 
 	// Unmap the file from the process memory
 	// Actually unncessary because the OS will do
