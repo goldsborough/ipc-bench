@@ -1,6 +1,7 @@
-#include "../common.h"
+#include "common/process.h"
+#include "common/signals.h"
 
 int main(int argc, char* argv[]) {
-	start_server(argc, argv);
-	start_client(argc, argv);
+	setup_parent_signals();
+	start_children("mmap", argc, argv);
 }
