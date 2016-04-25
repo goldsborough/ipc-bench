@@ -14,5 +14,5 @@ set(IPC_BENCH_COMMON_SOURCES
 add_subdirectory(tcp)
 add_subdirectory(shm)
 add_subdirectory(mmap)
-#add_subdirectory(fifos)
-#add_subdirectory(pipes)
+add_subdirectory(fifo)
+add_subdirectory(pipes)
