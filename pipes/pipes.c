@@ -1,117 +1,122 @@
-#include "common.h"
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
-void read_data(char *buffer, int bytes, int file_descriptors[2]) {
-  FILE *stream;
-	int start;
+#include "common/common.h"
 
-  // Don't need the write end for the child
-  close(file_descriptors[1]);
+FILE *open_stream(int file_descriptor[2], int to_open) {
+	FILE *stream;
+	char mode[1];
+	mode[0] = to_open ? 'w' : 'r';
 
-  // Open a new FILE stream in read mode from the file descriptor
-  stream = fdopen(file_descriptors[0], "r");
+	// Don't need this end anymore
+	close(file_descriptor[1 - to_open]);
 
-	start = now();
-
-  // Read the data (expect 1 object read)
-  if (fread(buffer, bytes, 1, stream) < 1) {
-		printf("Error reading data!\n");
-		exit(EXIT_FAILURE);
+	// Open a stream to the other end
+	if ((stream = fdopen(file_descriptor[to_open], mode)) == NULL) {
+		throw("Could not open stream for reading");
 	}
 
-	benchmark(start);
-	printf("(client)\n");
-
-  // Now close the write end too
-  close(file_descriptors[1]);
+	return stream;
 }
 
-void write_data(char *buffer, int bytes, int file_descriptors[2]) {
-  FILE *stream;
-	int start;
+void client_talk(int file_descriptors[2], struct Arguments *args) {
+	struct sigaction signal_action;
+	FILE *stream;
+	void *buffer;
 
-  // Don't need the read end for the parent
-  close(file_descriptors[0]);
+	stream = open_stream(file_descriptors, 0);
+	setup_client_signals(&signal_action);
+	buffer = malloc(args->size);
 
-  // Open a new FILE stream in write mode from the file descriptor
-  stream = fdopen(file_descriptors[1], "w");
+	// Set things in motion
+	client_signal();
 
-	start = now();
+	for (; args->count > 0; --args->count) {
+		wait_for_signal(&signal_action);
 
-  // Write data
-  if (fwrite(buffer, bytes, 1, stream) < 1) {
-		printf("Erorr writing data!\n");
-		exit(EXIT_FAILURE);
+		if (fread(buffer, args->size, 1, stream) == -1) {
+			throw("Error reading from pipe");
+		}
+
+		client_signal();
 	}
 
-	// Send immediately
-  fflush(stream);
-
-	benchmark(start);
-	printf("(server)\n");
-
-  // Now close the write end too
-  close(file_descriptors[1]);
+	// Now close the write end too
+	close(file_descriptors[1]);
+	free(buffer);
 }
 
-int main(int argc, const char *argv[]) {
-  // The call to pipe will return two file descriptors
-  // for the read and write end of the pipe, respectively
-  int file_descriptors[2];
-  // For the process ID of the spawned child process
-  pid_t pid;
-  // The number of bytes to send
-  int bytes;
-  // The buffer of data we allocate to send
-  char *buffer;
+void server_talk(int file_descriptors[2], struct Arguments *args) {
+	struct sigaction signal_action;
+	struct Benchmarks bench;
+	FILE *stream;
+	void *buffer;
+	int message;
 
-  if (argc > 2) {
-    printf("Usage: pipes [number of bytes to send]\n");
-    exit(1);
-  }
+	stream = open_stream(file_descriptors, 1);
+	setup_server_signals(&signal_action);
+	buffer = malloc(args->size);
+	setup_benchmarks(&bench);
 
-	else if (argc == 2) {
-		bytes = atoi(argv[1]);
+	wait_for_signal(&signal_action);
+
+	for (message = 0; message < args->count; ++message) {
+		bench.single_start = now();
+
+		if (fwrite(buffer, args->size, 1, stream) == -1) {
+			throw("Error writing to pipe");
+		}
+		// Send immediately
+		fflush(stream);
+
+		server_signal();
+		wait_for_signal(&signal_action);
+		benchmark(&bench);
+	}
+
+	evaluate(&bench, args);
+
+	// Now close the write end too
+	close(file_descriptors[1]);
+	free(buffer);
+}
+
+int main(int argc, char *argv[]) {
+	// The call to pipe will return two file descriptors
+	// for the read and write end of the pipe, respectively
+	int file_descriptors[2];
+	// For the process ID of the spawned child process
+	pid_t pid;
+
+	struct Arguments args;
+	parse_arguments(&args, argc, argv);
+
+	// The call that creates a new pipe object and places two
+	// valid file descriptors in the array we pass it. The first
+	// entry at [0] is the read end (from which you read) and
+	// second entry at [1] is the write end (to which you write)
+	// Note that these file descriptors will only be visible to
+	// the current process and any children it spawns. This is
+	// mainly what distinguishes pipes from FIFOs (named pipes)
+	if (pipe(file_descriptors) < 0) {
+		throw("Error opening pipe!\n");
+	}
+
+	// Fork a child process
+	if ((pid = fork()) == -1) {
+		throw("Error forking process!\n");
+	}
+
+	// fork() returns 0 for the child process
+	if (pid == (pid_t)0) {
+		client_talk(file_descriptors, &args);
 	}
 
 	else {
-		bytes = getpagesize();
+		server_talk(file_descriptors, &args);
 	}
 
-  buffer = (char *)malloc(bytes);
-
-	if (buffer == NULL) {
-		throw("Error allocating memory!\n");
-	}
-
-  // The call that creates a new pipe object and places two
-  // valid file descriptors in the array we pass it. The first
-  // entry at [0] is the read end (from which you read) and
-  // second entry at [1] is the write end (to which you write)
-  // Note that these file descriptors will only be visible to
-  // the current process and any children it spawns. This is
-  // mainly what distinguishes pipes from FIFOs (named pipes)
-  if (pipe(file_descriptors) < 0) {
-		free(buffer);
-    throw("Error opening pipe!\n");
-  }
-
-  // Fork a child process
-  if ((pid = fork()) < 0) {
-		free(buffer);
-    throw("Error forking process!\n");
-  }
-
-  // fork() returns 0 for the child process
-  if (pid == (pid_t)0) {
-    read_data(buffer, bytes, file_descriptors);
-  }
-
-  else {
-    write_data(buffer, bytes, file_descriptors);
-
-  }
-
-  free(buffer);
-
-  return 0;
+	return EXIT_SUCCESS;
 }
