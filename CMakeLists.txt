@@ -11,10 +11,8 @@ set(IPC_BENCH_COMMON_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/common/process.c
 )
 
-#add_subdirectory(common)
-message(STATUS ${IPC_BENCH_COMMON_SOURCES})
-#add_subdirectory(tcp)
-#add_subdirectory(shm)
+add_subdirectory(tcp)
+add_subdirectory(shm)
 add_subdirectory(mmap)
 #add_subdirectory(fifos)
 #add_subdirectory(pipes)

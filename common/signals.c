@@ -5,9 +5,47 @@
 #include "common/signals.h"
 #include "common/utility.h"
 
-void signal_handler(int _) {
+void signal_handler(int signal_number) {
 }
 
+
+void setup_ignored_signals(struct sigaction *signal_action, int flags) {
+	// Now ignore the other signals
+	signal_action->sa_handler = signal_handler;
+
+	// Ignore SIGUSR1 ?
+	if (!(flags & BLOCK_USR1)) {
+		// Set signal handler
+		if (sigaction(SIGUSR1, signal_action, NULL)) {
+			throw("Error registering SIGUSR1 signal handler for server");
+		}
+	}
+
+	// Ignore SIGUSR2 ?
+	if (!(flags & BLOCK_USR2)) {
+		// Set signal handler
+		if (sigaction(SIGUSR2, signal_action, NULL)) {
+			throw("Error registering SIGUSR2 signal handler for server");
+		}
+	}
+}
+
+void setup_blocked_signals(struct sigaction *signal_action, int flags) {
+	signal_action->sa_handler = SIG_DFL;
+
+	// Block SIGUSR1 ?
+	if (flags & BLOCK_USR1) {
+		sigaddset(&signal_action->sa_mask, SIGUSR1);
+	}
+
+	// Block SIGUSR2 ?
+	if (flags & BLOCK_USR2) {
+		sigaddset(&signal_action->sa_mask, SIGUSR2);
+	}
+
+	// Change signal mask
+	sigprocmask(SIG_BLOCK, &signal_action->sa_mask, NULL);
+}
 
 void setup_signals(struct sigaction *signal_action, int flags) {
 	// Let system calls restart when it
@@ -17,36 +55,12 @@ void setup_signals(struct sigaction *signal_action, int flags) {
 	// Clear all flags
 	sigemptyset(&signal_action->sa_mask);
 
-	if (flags & BLOCK_USR1) {
-		sigaddset(&signal_action->sa_mask, SIGUSR1);
-	}
+	setup_ignored_signals(signal_action, flags);
 
-	if (flags & BLOCK_USR2) {
-		sigaddset(&signal_action->sa_mask, SIGUSR2);
-	}
-
-	// Change signal mask
-	sigprocmask(SIG_BLOCK, &signal_action->sa_mask, NULL);
-
-	// Clear all flags again
+	// Clear all flags
 	sigemptyset(&signal_action->sa_mask);
 
-	// Now ignore the other signals
-	signal_action->sa_handler = SIG_IGN;
-
-	if (!(flags & BLOCK_USR1)) {
-		// Set signal handler
-		if (sigaction(SIGUSR1, signal_action, NULL)) {
-			throw("Error registering SIGUSR1 signal handler for server");
-		}
-	}
-
-	if (!(flags & BLOCK_USR2)) {
-		// Set signal handler
-		if (sigaction(SIGUSR2, signal_action, NULL)) {
-			throw("Error registering SIGUSR2 signal handler for server");
-		}
-	}
+	setup_blocked_signals(signal_action, flags);
 }
 
 void setup_parent_signals() {
@@ -74,5 +88,5 @@ void server_signal() {
 
 void wait_for_signal(struct sigaction *signal_action) {
 	int signal_number;
-	sigwait(&signal_action->sa_mask, &signal_number);
+	sigwait(&(signal_action->sa_mask), &signal_number);
 }

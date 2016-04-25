@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <time.h>
 
+#include "common/arguments.h"
 #include "common/benchmarks.h"
 
 double now() {
@@ -30,18 +31,21 @@ void benchmark(struct Benchmarks *bench) {
 	bench->squared_sum += (time * time);
 }
 
-void evaluate(struct Benchmarks *bench, int size, double count) {
-	const int total_time = now() - bench->total_start;
-	const double average = bench->sum / count;
-	const double sigma = sqrt((bench->squared_sum / count) - (average * average));
+void evaluate(struct Benchmarks *bench, struct Arguments *args) {
+	const double total_time = now() - bench->total_start;
+	const double average = bench->sum / args->count;
 
-	printf("\n============ RESULTS =============\n");
-	printf("Message size:       %d\n", size);
-	printf("Message count:      %d\n", (int)count);
-	printf("Total duration:     %d\tms\n", total_time / 1000);
+	double sigma = bench->squared_sum / args->count;
+	sigma = sqrt(sigma - (average * average));
+
+
+	printf("============ RESULTS =============\n");
+	printf("Message size:       %d\n", args->size);
+	printf("Message count:      %d\n", (int)args->count);
+	printf("Total duration:     %.3f\tms\n", total_time / 1000);
 	printf("Average duration:   %.3f\tus\n", average);
-	printf("Minimum duration:   %d\t\tus\n", bench->minimum);
-	printf("Maximum duration:   %d\t\tus\n", bench->maximum);
+	printf("Minimum duration:   %.3f\tus\n", bench->minimum);
+	printf("Maximum duration:   %.3f\tus\n", bench->maximum);
 	printf("Standard deviation: %.3f\tus\n", sigma);
 	printf("==================================\n");
 }

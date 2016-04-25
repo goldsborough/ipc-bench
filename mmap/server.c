@@ -29,25 +29,37 @@ int get_file_descriptor(int bytes) {
 	return file_descriptor;
 }
 
-void write_data(char *file_memory, int size, int count) {
-	int message;
+void write_data(char *file_memory, struct Arguments *args) {
 	struct sigaction signal_action;
 	struct Benchmarks bench;
+	int message;
+	void *buffer = malloc(args->size);
 
 	setup_server_signals(&signal_action);
 	setup_benchmarks(&bench);
 
-	for (message = 0; message < count; ++message) {
-		bench.single_start = now();
-		wait_for_signal(&signal_action);
+	// Dummy data
+	memset(file_memory, '*', args->size);
 
-		memset(file_memory, '*', size);
+	wait_for_signal(&signal_action);
+
+	for (message = 0; message < args->count; ++message) {
+		bench.single_start = now();
+
+		// Dummy operation
+		memset(file_memory, '*', args->size);
 
 		server_signal();
+		wait_for_signal(&signal_action);
+
+		// Read
+		memmove(buffer, file_memory, args->size);
+
 		benchmark(&bench);
 	}
 
-	evaluate(&bench, size, count);
+	evaluate(&bench, args);
+	free(buffer);
 }
 
 int main(int argc, char *argv[]) {
@@ -56,18 +68,11 @@ int main(int argc, char *argv[]) {
 	// The file descriptor of the file we will
 	// map into our process's memory
 	int file_descriptor;
-	// The size of the message to send
-	int size;
-	// The number of messages to send
-	int count;
 
 	// Fetch command-line arguments
-	struct Arguments arguments;
-
-	parse_arguments(&arguments, argc, argv);
-	size = arguments.size;
-	count = arguments.count;
-	file_descriptor = get_file_descriptor(size);
+	struct Arguments args;
+	parse_arguments(&args, argc, argv);
+	file_descriptor = get_file_descriptor(args.size);
 
 	/*
 		Arguments:
@@ -90,7 +95,7 @@ int main(int argc, char *argv[]) {
 	// clang-format off
   file_memory = mmap(
 		NULL,
-		size,
+		args.size,
 		PROT_READ | PROT_WRITE,
 		MAP_SHARED,
 		file_descriptor,
@@ -122,14 +127,16 @@ int main(int argc, char *argv[]) {
 		throw("Error closing file!");
 	}
 
-	write_data(file_memory, size, count);
+	write_data(file_memory, &args);
 
 	// Unmap the file from the process memory
 	// Actually unncessary because the OS will do
 	// this automatically when the process terminates
-	if (munmap(file_memory, size) < 0) {
+	if (munmap(file_memory, args.size) < 0) {
 		throw("Error unmapping file!");
 	}
+
+	close(file_descriptor);
 
 	return EXIT_SUCCESS;
 }

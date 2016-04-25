@@ -5,15 +5,10 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
+
 #include "common/common.h"
 
-void make_space(int file_descriptor, int bytes) {
-	lseek(file_descriptor, bytes + 1, SEEK_SET);
-	write(file_descriptor, "", 1);
-	lseek(file_descriptor, 0, SEEK_SET);
-}
-
-int get_file_descriptor(int bytes) {
+int get_file_descriptor() {
 	// Open a new file descriptor, creating the file if it does not exist
 	// 0666 = read + write access for user, group and world
 	int file_descriptor = open("/tmp/mmap", O_RDWR | O_CREAT, 0666);
@@ -22,27 +17,27 @@ int get_file_descriptor(int bytes) {
 		throw("Error opening file!\n");
 	}
 
-	// Ensure that the file will hold enough space
-	make_space(file_descriptor, bytes);
-
 	return file_descriptor;
 }
 
-void read_data(char* file_memory, int size, int count) {
+void read_data(char* file_memory, struct Arguments* args) {
 	struct sigaction signal_action;
 	// Buffer into which to read data
-	void* buffer = malloc(size);
+	void* buffer = malloc(args->size);
 
 	setup_client_signals(&signal_action);
 
 	// First signal to set things going
 	client_signal();
 
-	for (; count > 0; --count) {
+	for (; args->count > 0; --args->count) {
 		wait_for_signal(&signal_action);
 
-		memmove(buffer, file_memory, size);
-		memset(file_memory, '*', size);
+		// Read data
+		memmove(buffer, file_memory, args->size);
+
+		// Write back
+		memset(file_memory, '*', args->size);
 
 		client_signal();
 	}
@@ -57,18 +52,11 @@ int main(int argc, char* argv[]) {
 	// The file descriptor of the file we will
 	// map into our process's memory
 	int file_descriptor;
-	// The size of the message to send
-	int size;
-	// The number of messages to send
-	int count;
-
 	// Fetch command-line arguments
-	struct Arguments arguments;
+	struct Arguments args;
 
-	parse_arguments(&arguments, argc, argv);
-	size = arguments.size;
-	count = arguments.count;
-	file_descriptor = get_file_descriptor(size);
+	parse_arguments(&args, argc, argv);
+	file_descriptor = get_file_descriptor();
 
 	/*
 		Arguments:
@@ -91,7 +79,7 @@ int main(int argc, char* argv[]) {
 	// clang-format off
   file_memory = mmap(
 		NULL,
-		size,
+		args.size,
 		PROT_READ | PROT_WRITE,
 		MAP_SHARED,
 		file_descriptor,
@@ -123,16 +111,17 @@ int main(int argc, char* argv[]) {
 		throw("Error closing file!");
 	}
 
-	read_data(file_memory, size, count);
+	read_data(file_memory, &args);
 
 	// Unmap the file from the process memory
 	// Actually unncessary because the OS will do
 	// this automatically when the process terminates
-	if (munmap(file_memory, size) < 0) {
+	if (munmap(file_memory, args.size) < 0) {
 		throw("Error unmapping file!");
 	}
 
 	remove("/tmp/mmap");
+	close(file_descriptor);
 
 	return EXIT_SUCCESS;
 }
