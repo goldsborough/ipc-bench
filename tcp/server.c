@@ -1,4 +1,16 @@
-#include "tcp/tcp-common.h"
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "common/common.h"
+#include "common/sockets.h"
+
+#define PORT "6969"
+#define HOST "localhost"
 
 void handle_blocking(int socket_descriptor) {
 	// Will be necessary when calling setsockopt to free busy sockets
@@ -82,7 +94,7 @@ void cleanup(int descriptor, void *buffer) {
 	free(buffer);
 }
 
-int accept_communication(int socket_descriptor) {
+int accept_communication(int socket_descriptor, struct Arguments *args) {
 	// Data type big enough to hold both an sockaddr_in and sockaddr_in6 structure
 	// The ai_addr structure contained in the addrinfo struct can point to either
 	// an IPv4 sockaddr_in or an IPv6 sockaddr_in6 struct. Sometimes, we don't
@@ -102,18 +114,21 @@ int accept_communication(int socket_descriptor) {
 	// could then just fork off a child to handle the client
 	// and start accepting new clients on the socket_descriptor
 	// clang-format off
-	int communication_descriptor = accept(
+	int connection = accept(
 		socket_descriptor,
 		(struct sockaddr *)&their_addr,
 		&sin_size
 	);
 	// clang-format on
 
-	if (communication_descriptor == -1) {
+	if (connection == -1) {
 		throw("Error accepting!");
 	}
 
-	return communication_descriptor;
+	// Make sure the buffer size is big enough for our messages
+	adjust_socket_buffer_size(connection, args->size);
+
+	return connection;
 }
 
 void communicate(int descriptor, struct Arguments *args) {
@@ -129,12 +144,12 @@ void communicate(int descriptor, struct Arguments *args) {
 
 		// Send to the client
 		if (send(descriptor, buffer, args->size, 0) == -1) {
-			throw("Error sending on server-side");
+			throw("Error sending from server");
 		}
 
 		// Read from client
 		if (recv(descriptor, buffer, args->size, 0) == -1) {
-			throw("Error receving on server-side");
+			throw("Error receving from server");
 		}
 
 		benchmark(&bench);
@@ -144,13 +159,13 @@ void communicate(int descriptor, struct Arguments *args) {
 	cleanup(descriptor, buffer);
 }
 
-int main(int argc, char *argv[]) {
+int create_socket() {
 	// Sockets are returned by the OS as standard file descriptors.
 	// The first socket will be for the server's main connection port.
 	// For every client that connects to that port (at that socket), we
 	// get a new file descriptor just for communicating with precisely
 	// that client.
-	int socket_descriptor, communication_descriptor;
+	int socket_descriptor;
 
 	// Address info structs are basic (relatively large) structures
 	// containing various pieces of information about a host's address,
@@ -181,10 +196,6 @@ int main(int argc, char *argv[]) {
 
 	// For system call return values
 	int return_code;
-
-	// Command line arguments
-	struct Arguments args;
-	parse_arguments(&args, argc, argv);
 
 	// Fill the hints with zeros first
 	memset(&hints, 0, sizeof hints);
@@ -231,14 +242,30 @@ int main(int argc, char *argv[]) {
 		throw("Error listening on given socket!");
 	}
 
-	communication_descriptor = accept_communication(socket_descriptor);
+	return socket_descriptor;
+}
+
+int main(int argc, char *argv[]) {
+	// File-descriptor to the server socket
+	int socket_descriptor;
+
+	// File-descriptor for the socket over which
+	// client-communication will take place
+	int connection;
+
+	// Command line arguments
+	struct Arguments args;
+	parse_arguments(&args, argc, argv);
+
+	socket_descriptor = create_socket();
+	connection = accept_communication(socket_descriptor, &args);
 
 	// Don't need the main server descriptor anymore at this
 	// point because we'll only communicate to the one client
 	// for this benchmark.
 	close(socket_descriptor);
 
-	communicate(communication_descriptor, &args);
+	communicate(connection, &args);
 
 	return EXIT_SUCCESS;
 }

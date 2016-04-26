@@ -1,4 +1,16 @@
-#include "tcp/tcp-common.h"
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "common/common.h"
+#include "common/sockets.h"
+
+#define PORT "6969"
+#define HOST "localhost"
 
 int get_address(struct addrinfo *server_info) {
 	struct addrinfo *iterator;
@@ -86,7 +98,7 @@ void communicate(int descriptor, struct Arguments *args) {
 	cleanup(descriptor, buffer);
 }
 
-int main(int argc, char *argv[]) {
+int create_socket(struct Arguments *args) {
 	// Address info structs are basic (relatively large) structures
 	// containing various pieces of information about a host's address,
 	// such as:
@@ -117,13 +129,8 @@ int main(int argc, char *argv[]) {
 	// For system call return values
 	int return_code;
 
-	// Sockets are returned by the OS as standard file descriptors.
-	// It will be used for all communication with the server.
+	// The file-descriptor of the socket we will open
 	int socket_descriptor;
-
-	// Command-line arguments
-	struct Arguments args;
-	parse_arguments(&args, argc, argv);
 
 	// Fill the hints with zeros first
 	memset(&hints, 0, sizeof hints);
@@ -151,9 +158,24 @@ int main(int argc, char *argv[]) {
 
 	socket_descriptor = get_address(server_info);
 
+	adjust_socket_buffer_size(socket_descriptor, args->size);
+
 	// Don't need this anymore
 	freeaddrinfo(server_info);
 
+	return socket_descriptor;
+}
+
+int main(int argc, char *argv[]) {
+	// Sockets are returned by the OS as standard file descriptors.
+	// It will be used for all communication with the server.
+	int socket_descriptor;
+
+	// Command-line arguments
+	struct Arguments args;
+	parse_arguments(&args, argc, argv);
+
+	socket_descriptor = create_socket(&args);
 	communicate(socket_descriptor, &args);
 
 	return EXIT_SUCCESS;
