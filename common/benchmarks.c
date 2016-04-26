@@ -43,7 +43,7 @@ void evaluate(struct Benchmarks *bench, struct Arguments *args) {
 	sigma = sqrt(sigma - (average * average));
 
 
-	printf("============ RESULTS =============\n");
+	printf("\n============ RESULTS =============\n");
 	printf("Message size:       %d\n", args->size);
 	printf("Message count:      %d\n", (int)args->count);
 	printf("Total duration:     %.3f\tms\n", total_time / 1000);
