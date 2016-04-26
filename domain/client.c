@@ -15,23 +15,15 @@ void cleanup(int connection, void* buffer) {
 }
 
 void communicate(int connection, struct Arguments* args) {
-	struct sigaction signal_action;
 	void* buffer = malloc(args->size);
 
-	setup_client_signals(&signal_action);
-
-	client_signal();
-
 	for (; args->count > 0; --args->count) {
-		wait_for_signal(&signal_action);
 		if (recv(connection, buffer, args->size, 0) == -1) {
 			throw("Error receiving on client-side");
 		}
 
 		// Dummy operation
 		memset(buffer, '*', args->size);
-
-		client_signal();
 
 		if (send(connection, buffer, args->size, 0) == -1) {
 			throw("Error sending on client-side");
