@@ -26,7 +26,7 @@ void communicate(char* shared_memory,
 		// Write
 		memset(shared_memory, '*', args->size);
 
-		server_signal();
+		notify_client();
 		wait_for_signal(signal_action);
 
 		// Read
@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
 	struct Arguments args;
 
 	parse_arguments(&args, argc, argv);
-	setup_server_signals(&signal_action);
+	setup_notify_clients(&signal_action);
 
 	segment_key = generate_key("shm");
 
@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Client can now fetch the segment
-	server_signal();
+	notify_client();
 
 	/*
 		Once the shared memory segment has been created, it must be

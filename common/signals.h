@@ -15,11 +15,11 @@ void signal_handler(int _);
 
 void setup_signals(struct sigaction *signal_action, int flags);
 void setup_parent_signals();
-void setup_server_signals(struct sigaction *signal_action);
-void setup_client_signals(struct sigaction *signal_action);
+void setup_notify_clients(struct sigaction *signal_action);
+void setup_notify_servers(struct sigaction *signal_action);
 
-void client_signal();
-void server_signal();
+void notify_server();
+void notify_client();
 
 void wait_for_signal(struct sigaction *signal_action);
 

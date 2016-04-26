@@ -35,7 +35,7 @@ void communicate(char *file_memory, struct Arguments *args) {
 	int message;
 	void *buffer = malloc(args->size);
 
-	setup_server_signals(&signal_action);
+	setup_notify_clients(&signal_action);
 	setup_benchmarks(&bench);
 
 	// Dummy data
@@ -49,7 +49,7 @@ void communicate(char *file_memory, struct Arguments *args) {
 		// Dummy operation
 		memset(file_memory, '*', args->size);
 
-		server_signal();
+		notify_client();
 		wait_for_signal(&signal_action);
 
 		// Read

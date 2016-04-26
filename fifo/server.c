@@ -38,7 +38,7 @@ void communicate(FILE* stream,
 		// Send off immediately (for small buffers)
 		fflush(stream);
 
-		server_signal();
+		notify_client();
 		wait_for_signal(signal_action);
 
 		benchmark(&bench);
@@ -66,7 +66,7 @@ FILE* open_fifo() {
 
 	// Tell the client the fifo now exists and
 	// can be opened from the read end
-	server_signal();
+	notify_client();
 
 	// Because a fifo is really just a file, we can
 	// open a normal FILE* stream to it (in write mode)
@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
 	struct Arguments args;
 	parse_arguments(&args, argc, argv);
 
-	setup_server_signals(&signal_action);
+	setup_notify_clients(&signal_action);
 	stream = open_fifo();
 
 	communicate(stream, &args, &signal_action);

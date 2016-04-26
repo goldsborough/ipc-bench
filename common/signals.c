@@ -68,21 +68,21 @@ void setup_parent_signals() {
 	setup_signals(&signal_action, IGNORE_USR1 | IGNORE_USR2);
 }
 
-void setup_server_signals(struct sigaction *signal_action) {
+void setup_notify_clients(struct sigaction *signal_action) {
 	setup_signals(signal_action, BLOCK_USR1 | IGNORE_USR2);
 	usleep(1000);
 }
 
-void setup_client_signals(struct sigaction *signal_action) {
+void setup_notify_servers(struct sigaction *signal_action) {
 	setup_signals(signal_action, IGNORE_USR1 | BLOCK_USR2);
 	usleep(1000);
 }
 
-void client_signal() {
+void notify_server() {
 	kill(0, SIGUSR1);
 }
 
-void server_signal() {
+void notify_client() {
 	kill(0, SIGUSR2);
 }
 
@@ -93,20 +93,20 @@ void wait_for_signal(struct sigaction *signal_action) {
 
 void client_once(int operation) {
 	struct sigaction signal_action;
-	setup_client_signals(&signal_action);
+	setup_notify_servers(&signal_action);
 	if (operation == WAIT) {
 		wait_for_signal(&signal_action);
 	} else {
-		client_signal();
+		notify_server();
 	}
 }
 
 void server_once(int operation) {
 	struct sigaction signal_action;
-	setup_server_signals(&signal_action);
+	setup_notify_clients(&signal_action);
 	if (operation == WAIT) {
 		wait_for_signal(&signal_action);
 	} else {
-		server_signal();
+		notify_client();
 	}
 }

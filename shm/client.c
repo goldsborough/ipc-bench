@@ -14,7 +14,7 @@ void communicate(char* shared_memory,
 	void* buffer = malloc(args->size);
 
 	// First signal to set things going
-	client_signal();
+	notify_server();
 
 	for (; args->count > 0; --args->count) {
 		wait_for_signal(signal_action);
@@ -25,7 +25,7 @@ void communicate(char* shared_memory,
 		// Write back
 		memset(shared_memory, '*', args->size);
 
-		client_signal();
+		notify_server();
 	}
 
 	free(buffer);
@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
 	struct Arguments args;
 
 	parse_arguments(&args, argc, argv);
-	setup_client_signals(&signal_action);
+	setup_notify_servers(&signal_action);
 
 	segment_key = generate_key("shm");
 

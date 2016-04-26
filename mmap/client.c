@@ -25,10 +25,10 @@ void communicate(char* file_memory, struct Arguments* args) {
 	// Buffer into which to read data
 	void* buffer = malloc(args->size);
 
-	setup_client_signals(&signal_action);
+	setup_notify_servers(&signal_action);
 
 	// First signal to set things going
-	client_signal();
+	notify_server();
 
 	for (; args->count > 0; --args->count) {
 		wait_for_signal(&signal_action);
@@ -39,7 +39,7 @@ void communicate(char* file_memory, struct Arguments* args) {
 		// Write back
 		memset(file_memory, '*', args->size);
 
-		client_signal();
+		notify_server();
 	}
 
 	free(buffer);

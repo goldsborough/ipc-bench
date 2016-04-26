@@ -19,7 +19,7 @@ void communicate(FILE *stream,
 	void *buffer = malloc(args->size);
 
 	// Server can go
-	client_signal();
+	notify_server();
 
 	for (; args->count > 0; --args->count) {
 		wait_for_signal(signal_action);
@@ -28,7 +28,7 @@ void communicate(FILE *stream,
 			throw("Error reading buffer");
 		}
 
-		client_signal();
+		notify_server();
 	}
 
 	cleanup(stream, buffer);
@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
 	struct Arguments args;
 	parse_arguments(&args, argc, argv);
 
-	setup_client_signals(&signal_action);
+	setup_notify_servers(&signal_action);
 	stream = open_fifo(&signal_action);
 
 	communicate(stream, &args, &signal_action);

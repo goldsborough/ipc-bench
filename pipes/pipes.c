@@ -27,11 +27,11 @@ void client_communicate(int file_descriptors[2], struct Arguments *args) {
 	void *buffer;
 
 	stream = open_stream(file_descriptors, 0);
-	setup_client_signals(&signal_action);
+	setup_notify_servers(&signal_action);
 	buffer = malloc(args->size);
 
 	// Set things in motion
-	client_signal();
+	notify_server();
 
 	for (; args->count > 0; --args->count) {
 		wait_for_signal(&signal_action);
@@ -40,7 +40,7 @@ void client_communicate(int file_descriptors[2], struct Arguments *args) {
 			throw("Error reading from pipe");
 		}
 
-		client_signal();
+		notify_server();
 	}
 
 	// Now close the write end too
@@ -56,7 +56,7 @@ void server_communicate(int file_descriptors[2], struct Arguments *args) {
 	int message;
 
 	stream = open_stream(file_descriptors, 1);
-	setup_server_signals(&signal_action);
+	setup_notify_clients(&signal_action);
 	buffer = malloc(args->size);
 	setup_benchmarks(&bench);
 
@@ -71,7 +71,7 @@ void server_communicate(int file_descriptors[2], struct Arguments *args) {
 		// Send immediately
 		fflush(stream);
 
-		server_signal();
+		notify_client();
 		wait_for_signal(&signal_action);
 		benchmark(&bench);
 	}
