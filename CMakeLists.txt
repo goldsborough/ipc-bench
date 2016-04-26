@@ -18,6 +18,7 @@ set(IPC_BENCH_COMMON_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/common/arguments.c
 	${CMAKE_CURRENT_SOURCE_DIR}/common/process.c
 	${CMAKE_CURRENT_SOURCE_DIR}/common/sockets.c
+	${CMAKE_CURRENT_SOURCE_DIR}/common/parent.c
 )
 
 ###########################################################

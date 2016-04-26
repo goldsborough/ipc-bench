@@ -83,13 +83,31 @@ void server_communicate(int file_descriptors[2], struct Arguments *args) {
 	free(buffer);
 }
 
+void communicate(int file_descriptors[2], struct Arguments *args) {
+	// For the process ID of the spawned child process
+	pid_t pid;
+
+	// Fork a child process
+	if ((pid = fork()) == -1) {
+		throw("Error forking process!\n");
+	}
+
+	// fork() returns 0 for the child process
+	if (pid == (pid_t)0) {
+		client_communicate(file_descriptors, args);
+	}
+
+	else {
+		server_communicate(file_descriptors, args);
+	}
+}
+
 int main(int argc, char *argv[]) {
 	// The call to pipe will return two file descriptors
 	// for the read and write end of the pipe, respectively
 	int file_descriptors[2];
-	// For the process ID of the spawned child process
-	pid_t pid;
 
+	check_flag("help", argc, argv);
 	struct Arguments args;
 	parse_arguments(&args, argc, argv);
 
@@ -104,19 +122,7 @@ int main(int argc, char *argv[]) {
 		throw("Error opening pipe!\n");
 	}
 
-	// Fork a child process
-	if ((pid = fork()) == -1) {
-		throw("Error forking process!\n");
-	}
-
-	// fork() returns 0 for the child process
-	if (pid == (pid_t)0) {
-		client_communicate(file_descriptors, &args);
-	}
-
-	else {
-		server_communicate(file_descriptors, &args);
-	}
+	communicate(file_descriptors, &args);
 
 	return EXIT_SUCCESS;
 }

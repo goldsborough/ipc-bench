@@ -1,7 +1,5 @@
-#include "common/process.h"
-#include "common/signals.h"
+#include "common/parent.h"
 
 int main(int argc, char* argv[]) {
-	setup_parent_signals();
-	start_children("shm", argc, argv);
+	setup_parent("shm", argc, argv);
 }

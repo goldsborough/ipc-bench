@@ -42,9 +42,10 @@ void cleanup(void* context, void* socket) {
 	zmq_ctx_destroy(context);
 }
 
-void* create_socket(void* context) {
+void* create_socket(void* context, int use_tcp) {
 	// The socket we will create.
 	void* socket;
+	const char* address;
 
 	// Create a new zmq socket. Note that this is not necessarily
 	// a socket in the traditional sense, i.e. that performs
@@ -62,11 +63,13 @@ void* create_socket(void* context) {
 		throw("Error creating socket");
 	}
 
+	address = use_tcp ? "tcp://*:6969" : "ipc:///tmp/zmq_ipc";
+
 	// This is the call that actually binds the "universal"
 	// socket to a transport medium and associated address.
 	// In this case, we bind it to TCP port 6969. We could
 	// also bind it to a UNIX-domain socket, for example.
-	if (zmq_bind(socket, "tcp://*:6969") == -1) {
+	if (zmq_bind(socket, address) == -1) {
 		throw("Error binding socket to address");
 	}
 
@@ -88,13 +91,16 @@ void* create_context() {
 int main(int argc, char* argv[]) {
 	void* context;
 	void* socket;
+	int use_tcp;
 
 	// For parsing command-line arguments
 	struct Arguments args;
+
+	use_tcp = check_flag("tcp", argc, argv);
 	parse_arguments(&args, argc, argv);
 
 	context = create_context();
-	socket = create_socket(context);
+	socket = create_socket(context, use_tcp);
 
 	communicate(socket, &args);
 
