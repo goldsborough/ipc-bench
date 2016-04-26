@@ -18,7 +18,6 @@ void communicate(char* shared_memory,
 
 	// Dummy data
 	memset(shared_memory, '*', args->size);
-
 	wait_for_signal(signal_action);
 
 	for (message = 0; message < args->count; ++message) {
@@ -52,11 +51,16 @@ int main(int argc, char* argv[]) {
 	// any other plain old memory
 	char* shared_memory;
 
+	// Key for the memory segment
+	key_t segment_key;
+
 	// Fetch command-line arguments
 	struct Arguments args;
 
 	parse_arguments(&args, argc, argv);
 	setup_server_signals(&signal_action);
+
+	segment_key = generate_key("shm");
 
 	/*
 		The call that actually allocates the shared memory segment.
@@ -75,7 +79,7 @@ int main(int argc, char* argv[]) {
 			- Use `ipcs -m` to show shared memory segments and their IDs
 			- Use `ipcrm -m <segment_id>` to remove/deallocate a shared memory segment
 	*/
-	segment_id = shmget(6969, args.size, IPC_CREAT | IPC_EXCL | 0666);
+	segment_id = shmget(segment_key, args.size, IPC_CREAT | IPC_EXCL | 0666);
 
 	if (segment_id < 0) {
 		throw("Error allocating segment");

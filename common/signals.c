@@ -90,3 +90,23 @@ void wait_for_signal(struct sigaction *signal_action) {
 	int signal_number;
 	sigwait(&(signal_action->sa_mask), &signal_number);
 }
+
+void client_once(int operation) {
+	struct sigaction signal_action;
+	setup_client_signals(&signal_action);
+	if (operation == WAIT) {
+		wait_for_signal(&signal_action);
+	} else {
+		client_signal();
+	}
+}
+
+void server_once(int operation) {
+	struct sigaction signal_action;
+	setup_server_signals(&signal_action);
+	if (operation == WAIT) {
+		wait_for_signal(&signal_action);
+	} else {
+		server_signal();
+	}
+}

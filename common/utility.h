@@ -4,6 +4,8 @@
 #define true 1
 #define false 0
 
-void throw(const char *message);
+void throw(const char* message);
+
+int generate_key(const char* path);
 
 #endif /* IPC_BENCH_UTILITY_H */

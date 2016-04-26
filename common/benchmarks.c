@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -23,7 +24,9 @@ void benchmark(struct Benchmarks *bench) {
 
 	if (time < bench->minimum) {
 		bench->minimum = time;
-	} else if (time > bench->maximum) {
+	}
+
+	if (time > bench->maximum) {
 		bench->maximum = time;
 	}
 
@@ -32,6 +35,7 @@ void benchmark(struct Benchmarks *bench) {
 }
 
 void evaluate(struct Benchmarks *bench, struct Arguments *args) {
+	assert(args->count > 0);
 	const double total_time = now() - bench->total_start;
 	const double average = bench->sum / args->count;
 

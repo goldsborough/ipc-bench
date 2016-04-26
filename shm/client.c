@@ -43,11 +43,16 @@ int main(int argc, char* argv[]) {
 	// any other plain old memory
 	char* shared_memory;
 
+	// Key for the memory segment
+	key_t segment_key;
+
 	// Fetch command-line arguments
 	struct Arguments args;
 
 	parse_arguments(&args, argc, argv);
 	setup_client_signals(&signal_action);
+
+	segment_key = generate_key("shm");
 
 	// Wait until we can fetch the memory
 	wait_for_signal(&signal_action);
@@ -65,7 +70,7 @@ int main(int argc, char* argv[]) {
 		The call will return the segment ID if the key was valid,
 		else the call fails.
 	*/
-	segment_id = shmget(6969, args.size, 0666);
+	segment_id = shmget(segment_key, args.size, 0666);
 
 	if (segment_id < 0) {
 		throw("Could not get segment");
