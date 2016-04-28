@@ -27,7 +27,7 @@ void client_communicate(int file_descriptors[2], struct Arguments *args) {
 	void *buffer;
 
 	stream = open_stream(file_descriptors, 0);
-	setup_notify_servers(&signal_action);
+	setup_client_signals(&signal_action);
 	buffer = malloc(args->size);
 
 	// Set things in motion
@@ -56,7 +56,7 @@ void server_communicate(int file_descriptors[2], struct Arguments *args) {
 	int message;
 
 	stream = open_stream(file_descriptors, 1);
-	setup_notify_clients(&signal_action);
+	setup_server_signals(&signal_action);
 	buffer = malloc(args->size);
 	setup_benchmarks(&bench);
 

@@ -13,3 +13,8 @@ http://www.thegeekstuff.com/2012/03/catch-signals-sample-c-code/
 http://www.tutorialspoint.com/unix/unix-signals-traps.htm
 http://www.thegeekstuff.com/2012/03/linux-signals-fundamentals/
 http://stackoverflow.com/questions/6326290/about-the-ambiguous-description-of-sigwait
+
+Message queues:
+https://en.wikipedia.org/wiki/Message_queue#Implementation_in_UNIX
+http://unix.stackexchange.com/questions/6930/how-is-a-message-queue-implemented-in-the-linux-kernel
+http://stackoverflow.com/questions/13149796/sending-buffer-through-message-queue

@@ -1,3 +1,15 @@
-add_executable(tcp-client client.c ${IPC_BENCH_COMMON_SOURCES})
-add_executable(tcp-server server.c ${IPC_BENCH_COMMON_SOURCES})
-add_executable(tcp tcp.c ${IPC_BENCH_COMMON_SOURCES})
+###########################################################
+## TARGETS
+###########################################################
+
+add_executable(tcp-client client.c)
+add_executable(tcp-server server.c)
+add_executable(tcp tcp.c)
+
+###########################################################
+## COMMON
+###########################################################
+
+target_link_libraries(tcp-client ipc-bench-common)
+target_link_libraries(tcp-server ipc-bench-common)
+target_link_libraries(tcp ipc-bench-common)

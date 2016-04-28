@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
 	struct Arguments args;
 	parse_arguments(&args, argc, argv);
 
-	setup_notify_clients(&signal_action);
+	setup_server_signals(&signal_action);
 	stream = open_fifo();
 
 	communicate(stream, &args, &signal_action);

@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
 	struct Arguments args;
 	parse_arguments(&args, argc, argv);
 
-	setup_notify_servers(&signal_action);
+	setup_client_signals(&signal_action);
 	stream = open_fifo(&signal_action);
 
 	communicate(stream, &args, &signal_action);

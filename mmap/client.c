@@ -25,7 +25,7 @@ void communicate(char* file_memory, struct Arguments* args) {
 	// Buffer into which to read data
 	void* buffer = malloc(args->size);
 
-	setup_notify_servers(&signal_action);
+	setup_client_signals(&signal_action);
 
 	// First signal to set things going
 	notify_server();

@@ -13,10 +13,14 @@ include_directories(${ZMQ_INCLUDE_DIRS})
 ## TARGETS
 ###########################################################
 
-add_executable(zmq-server server.c ${IPC_BENCH_COMMON_SOURCES})
-add_executable(zmq-client client.c ${IPC_BENCH_COMMON_SOURCES})
-add_executable(zeromq zmq.c ${IPC_BENCH_COMMON_SOURCES})
+add_executable(zmq-client client.c)
+add_executable(zmq-server server.c)
+add_executable(zeromq zmq.c)
 
-target_link_libraries(zmq-server ${ZMQ_LIBRARIES})
-target_link_libraries(zmq-client zmq ${ZMQ_LIBRARIES})
-target_link_libraries(zeromq zmq ${ZMQ_LIBRARIES})
+###########################################################
+## COMMON
+###########################################################
+
+target_link_libraries(zmq-server ipc-bench-common ${ZMQ_LIBRARIES})
+target_link_libraries(zmq-client ipc-bench-common ${ZMQ_LIBRARIES})
+target_link_libraries(zeromq ipc-bench-common ${ZMQ_LIBRARIES})
