@@ -2,10 +2,10 @@
 ## TARGETS
 ###########################################################
 
-add_executable(pipes pipes.c)
+add_executable(pipe pipe.c)
 
 ###########################################################
 ## COMMON
 ###########################################################
 
-target_link_libraries(pipes ipc-bench-common)
+target_link_libraries(pipe ipc-bench-common)
