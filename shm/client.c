@@ -7,25 +7,37 @@
 
 #include "common/common.h"
 
-void communicate(char* shared_memory,
-								 struct sigaction* signal_action,
-								 struct Arguments* args) {
+void cleanup(char* shared_memory) {
+	// Detach the shared memory from this process' address space.
+	// If this is the last process using this shared memory, it is removed.
+	shmdt(shared_memory);
+}
+
+void shm_wait(char* shared_memory) {
+	while (*shared_memory != 'c')
+		;
+}
+
+void shm_notify(char* shared_memory) {
+	*shared_memory = 's';
+}
+
+void communicate(char* shared_memory, struct Arguments* args) {
 	// Buffer into which to read data
 	void* buffer = malloc(args->size);
 
 	// First signal to set things going
-	notify_server();
+	shm_notify(shared_memory);
 
 	for (; args->count > 0; --args->count) {
-		wait_for_signal(signal_action);
-
+		shm_wait(shared_memory);
 		// Read
-		memmove(buffer, shared_memory, args->size);
+		memcpy(buffer, shared_memory + 1, args->size);
 
 		// Write back
-		memset(shared_memory, '*', args->size);
+		memset(shared_memory + 1, '*', args->size);
 
-		notify_server();
+		shm_notify(shared_memory);
 	}
 
 	free(buffer);
@@ -34,9 +46,6 @@ void communicate(char* shared_memory,
 int main(int argc, char* argv[]) {
 	// The identifier for the shared memory segment
 	int segment_id;
-
-	// For sending signals
-	struct sigaction signal_action;
 
 	// The *actual* shared memory, that this and other
 	// processes can read and write to as if it were
@@ -50,12 +59,8 @@ int main(int argc, char* argv[]) {
 	struct Arguments args;
 
 	parse_arguments(&args, argc, argv);
-	setup_client_signals(&signal_action);
 
 	segment_key = generate_key("shm");
-
-	// Wait until we can fetch the memory
-	wait_for_signal(&signal_action);
 
 	/*
 		The call that actually allocates the shared memory segment.
@@ -63,14 +68,14 @@ int main(int argc, char* argv[]) {
 			1. The shared memory key. This must be unique across the OS.
 			2. The number of bytes to allocate. This will be rounded up to the OS'
 				 pages size for alignment purposes.
-			3. The creation flags and permission bits, because we assume the
-				 segment already exists and need no longer be created, we don't need
-				 any creation flags such as IPC_CREAT here. The permission flags will
-				 do. 0666 means read + write permission for the user, group and world.
+			3. The creation flags and permission bits, we pass IPC_CREAT to ensure
+				 that the segment will be created if it does not yet exist. Using
+				 0666 for permission flags means read + write permission for the user,
+				 group and world.
 		The call will return the segment ID if the key was valid,
 		else the call fails.
 	*/
-	segment_id = shmget(segment_key, args.size, 0666);
+	segment_id = shmget(segment_key, 1 + args.size, IPC_CREAT | 0666);
 
 	if (segment_id < 0) {
 		throw("Could not get segment");
@@ -99,11 +104,9 @@ int main(int argc, char* argv[]) {
 		throw("Could not attach segment");
 	}
 
-	communicate(shared_memory, &signal_action, &args);
+	communicate(shared_memory, &args);
 
-	// Detach the shared memory from this process' address space.
-	// If this is the last process using this shared memory, it is removed.
-	shmdt(shared_memory);
+	cleanup(shared_memory);
 
 	return EXIT_SUCCESS;
 }

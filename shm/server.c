@@ -7,30 +7,53 @@
 
 #include "common/common.h"
 
-void communicate(char* shared_memory,
-								 struct sigaction* signal_action,
-								 struct Arguments* args) {
+void cleanup(int segment_id, char* shared_memory) {
+	// Detach the shared memory from this process' address space.
+	// If this is the last process using this shared memory, it is removed.
+	shmdt(shared_memory);
+
+	/*
+		Deallocate manually for security. We pass:
+			1. The shared memory ID returned by shmget.
+			2. The IPC_RMID flag to schedule removal/deallocation
+				 of the shared memory.
+			3. NULL to the last struct parameter, as it is not relevant
+				 for deletion (it is populated with certain fields for other
+				 calls, notably IPC_STAT, where you would pass a struct shmid_ds*).
+	*/
+	shmctl(segment_id, IPC_RMID, NULL);
+}
+
+void shm_wait(char* shared_memory) {
+	while (*shared_memory != 's')
+		;
+}
+
+void shm_notify(char* shared_memory) {
+	*shared_memory = 'c';
+}
+
+
+void communicate(char* shared_memory, struct Arguments* args) {
 	struct Benchmarks bench;
 	int message;
 	void* buffer = malloc(args->size);
 
+	// Wait for signal from client
+	shm_wait(shared_memory);
 	setup_benchmarks(&bench);
-
-	// Dummy data
-	memset(shared_memory, '*', args->size);
-	wait_for_signal(signal_action);
 
 	for (message = 0; message < args->count; ++message) {
 		bench.single_start = now();
 
 		// Write
-		memset(shared_memory, '*', args->size);
+		memset(shared_memory + 1, '*', args->size);
 
-		notify_client();
-		wait_for_signal(signal_action);
+		shm_notify(shared_memory);
+		shm_wait(shared_memory);
 
 		// Read
-		memmove(buffer, shared_memory, args->size);
+		memcpy(buffer, shared_memory + 1, args->size);
 
 		benchmark(&bench);
 	}
@@ -43,9 +66,6 @@ int main(int argc, char* argv[]) {
 	// The identifier for the shared memory segment
 	int segment_id;
 
-	// For sending signals
-	struct sigaction signal_action;
-
 	// The *actual* shared memory, that this and other
 	// processes can read and write to as if it were
 	// any other plain old memory
@@ -56,9 +76,7 @@ int main(int argc, char* argv[]) {
 
 	// Fetch command-line arguments
 	struct Arguments args;
-
 	parse_arguments(&args, argc, argv);
-	setup_server_signals(&signal_action);
 
 	segment_key = generate_key("shm");
 
@@ -71,7 +89,7 @@ int main(int argc, char* argv[]) {
 			3. The creation flags and permission bits, where:
 				 - IPC_CREAT means that a new segment is to be created
 				 - IPC_EXCL means that the call will fail if
-					 the segment-key is already taken
+					 the segment-key is already taken (removed)
 				 - 0666 means read + write permission for user, group and world.
 		When the shared memory key already exists, this call will fail. To see
 		which keys are currently in use, and to remove a certain segment, you
@@ -79,14 +97,11 @@ int main(int argc, char* argv[]) {
 			- Use `ipcs -m` to show shared memory segments and their IDs
 			- Use `ipcrm -m <segment_id>` to remove/deallocate a shared memory segment
 	*/
-	segment_id = shmget(segment_key, args.size, IPC_CREAT | IPC_EXCL | 0666);
+	segment_id = shmget(segment_key, 1 + args.size, IPC_CREAT | 0666);
 
 	if (segment_id < 0) {
 		throw("Error allocating segment");
 	}
-
-	// Client can now fetch the segment
-	notify_client();
 
 	/*
 		Once the shared memory segment has been created, it must be
@@ -107,26 +122,13 @@ int main(int argc, char* argv[]) {
 	*/
 	shared_memory = (char*)shmat(segment_id, NULL, 0);
 
-	if (shared_memory < (char*)0) {
+	if (shared_memory == (char*)-1) {
 		throw("Error attaching segment");
 	}
 
-	communicate(shared_memory, &signal_action, &args);
+	communicate(shared_memory, &args);
 
-	// Detach the shared memory from this process' address space.
-	// If this is the last process using this shared memory, it is removed.
-	shmdt(shared_memory);
-
-	/*
-		Deallocate manually for security. We pass:
-			1. The shared memory ID returned by shmget.
-			2. The IPC_RMID flag to schedule removal/deallocation
-				 of the shared memory.
-			3. NULL to the last struct parameter, as it is not relevant
-				 for deletion (it is populated with certain fields for other
-				 calls, notably IPC_STAT, where you would pass a struct shmid_ds*).
-	*/
-	shmctl(segment_id, IPC_RMID, NULL);
+	cleanup(segment_id, shared_memory);
 
 	return EXIT_SUCCESS;
 }
