@@ -25,7 +25,7 @@ void parse_arguments(struct Arguments *arguments, int argc, char *argv[]) {
 
 	// Reset the option index to 1 if it
 	// was modified before (e.g. in check_flag)
-	optind = 1;
+	optind = 0;
 
 	// Default values
 	arguments->size = getpagesize();
@@ -41,7 +41,7 @@ void parse_arguments(struct Arguments *arguments, int argc, char *argv[]) {
 	// clang-format on
 
 	while (true) {
-		option = getopt_long(argc, argv, ":s:c:", long_options, &long_index);
+		option = getopt_long(argc, argv, "+:s:c:", long_options, &long_index);
 
 		switch (option) {
 			case -1: return;
@@ -57,10 +57,15 @@ int check_flag(const char *flag, int argc, char *argv[]) {
 	int index = 0;
 	// The char returned by getopt()
 	int option;
-	// Setting the first character to be a colon
+	// Setting the first character to be a plus
+	// prevents getopt() from reordering the vector,
+	// setting the second character to be a colon
 	// prevents getopt() from printing an error
 	// message when it encounters invalid options
-	char short_flag[2] = {':', flag[0]};
+	char short_flag[3] = {'+', ':', flag[0]};
+
+	// Reset getopt index
+	optind = 0;
 
 	// clang-format off
 	struct option long_options [2] = {

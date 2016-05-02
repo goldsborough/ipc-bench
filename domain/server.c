@@ -17,11 +17,15 @@ void cleanup(int connection, void* buffer) {
 
 void communicate(int connection, struct Arguments* args) {
 	struct Benchmarks bench;
+	struct sigaction signal_action;
 	int message;
 	void* buffer;
 
 	buffer = malloc(args->count);
+	setup_server_signals(&signal_action);
 	setup_benchmarks(&bench);
+
+	wait_for_signal(&signal_action);
 
 	for (message = 0; message < args->count; ++message) {
 		bench.single_start = now();
@@ -29,6 +33,9 @@ void communicate(int connection, struct Arguments* args) {
 		if (send(connection, buffer, args->size, 0) < args->size) {
 			throw("Error sending on server-side");
 		}
+
+		notify_client();
+		wait_for_signal(&signal_action);
 
 		if (recv(connection, buffer, args->size, 0) < args->size) {
 			throw("Error receiving on server-side");

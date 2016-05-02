@@ -107,8 +107,9 @@ int main(int argc, char *argv[]) {
 	// for the read and write end of the pipe, respectively
 	int file_descriptors[2];
 
-	check_flag("help", argc, argv);
 	struct Arguments args;
+
+	// check_flag("help", argc, argv);
 	parse_arguments(&args, argc, argv);
 
 	// The call that creates a new pipe object and places two
