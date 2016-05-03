@@ -12,7 +12,9 @@
 void cleanup(int connection, void* buffer) {
 	close(connection);
 	free(buffer);
-	remove(SOCKET_PATH);
+	if (remove(SOCKET_PATH) == -1) {
+		throw("Error removing domain socket");
+	}
 }
 
 void communicate(int connection, struct Arguments* args) {

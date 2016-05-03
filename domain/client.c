@@ -23,7 +23,7 @@ void communicate(int connection, struct Arguments* args) {
 		}
 
 		// Dummy operation
-		memset(buffer, '*', args->size);
+		// memset(buffer, '*', args->size);
 
 		if (send(connection, buffer, args->size, 0) == -1) {
 			throw("Error sending on client-side");
