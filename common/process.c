@@ -1,8 +1,37 @@
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
 #include "common/utility.h"
+
+char *find_build_path() {
+	char *path = (char *)malloc(strlen(__FILE__) + strlen("/build"));
+	char *right;
+	char *left;
+
+	strcpy(path, __FILE__);
+	right = path + strlen(__FILE__);
+	left = right - strlen("ipc-bench");
+
+	// Make the string-comparison expected O(N)
+	// by only doing a string-comparison when
+	// the first and last character match
+	for (--right; left >= path; --left, --right) {
+		if (*left == 'i' && *right == 'h') {
+			if (strncmp("ipc-bench", left, 9) == 0) {
+				break;
+			}
+		}
+	}
+
+	// ++ because right is on the 'h'
+	strcpy(++right, "/build\0");
+
+	return path;
+}
+
 
 void start_process(char *argv[]) {
 	// Will need to set the group id
@@ -37,28 +66,40 @@ void copy_arguments(char *arguments[], int argc, char *argv[]) {
 	arguments[argc] = NULL;
 }
 
-void start_server(char *name, int argc, char *argv[]) {
-	char *arguments[8] = {name};
-	copy_arguments(arguments, argc, argv);
-	start_process(arguments);
-}
-
-void start_client(char *name, int argc, char *argv[]) {
+void start_child(char *name, int argc, char *argv[]) {
 	char *arguments[8] = {name};
 	copy_arguments(arguments, argc, argv);
 	start_process(arguments);
 }
 
 void start_children(char *prefix, int argc, char *argv[]) {
-	char server_name[32] = "./";
-	char client_name[32] = "./";
+	char server_name[100];
+	char client_name[100];
 
-	strcat(server_name, prefix);
-	strcat(client_name, prefix);
+	char *build_path = find_build_path();
 
-	strcat(server_name, "-server");
-	strcat(client_name, "-client");
+	// clang-format off
+	sprintf(
+		server_name,
+		"%s/%s/%s-%s",
+		build_path,
+		prefix,
+		prefix,
+		"server"
+	);
 
-	start_server(server_name, argc, argv);
-	start_client(client_name, argc, argv);
+	sprintf(
+		client_name,
+		"%s/%s/%s-%s",
+		build_path,
+		prefix,
+		prefix,
+		"client"
+	);
+	// clang-format on
+
+	start_child(server_name, argc, argv);
+	start_child(client_name, argc, argv);
+
+	free(build_path);
 }
