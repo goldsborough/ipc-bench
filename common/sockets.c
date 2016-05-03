@@ -4,6 +4,12 @@
 void adjust_socket_buffer_size(int socket_descriptor, int message_size) {
 	int return_code;
 
+	// The minimum allowed value is 1024
+	// http://man7.org/linux/man-pages/man7/socket.7.html
+	if (message_size < 1024) {
+		message_size = 1024;
+	}
+
 	// set/getsockopt is the one-stop-shop for all socket options.
 	// With it, you can get/set a variety of options for a given socket.
 	// Arguments:
