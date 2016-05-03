@@ -1,6 +1,8 @@
 #ifndef IPC_BENCH_SIGNALS_H
 #define IPC_BENCH_SIGNALS_H
 
+#include <signal.h>
+
 #define IGNORE_USR1 0x0
 #define IGNORE_USR2 0x0
 #define BLOCK_USR1 0x1
