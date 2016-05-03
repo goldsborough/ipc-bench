@@ -15,7 +15,7 @@ find_package(PkgConfig REQUIRED)
 
 ## ZMQ
 
-pkg_check_modules(ZMQ libzmq)
+pkg_check_modules(ZMQ libzeromq)
 
 ###########################################################
 ## SUBDIRECTORIES
@@ -32,5 +32,5 @@ add_subdirectory(mq)
 add_subdirectory(signal)
 
 if (ZMQ_FOUND)
-	add_subdirectory(zmq)
+	add_subdirectory(zeromq)
 endif()

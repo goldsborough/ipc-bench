@@ -45,6 +45,8 @@ void communicate(int mq, struct Arguments* args) {
 			throw("Error receiving on client-side");
 		}
 	}
+
+	notify_server();
 }
 
 int create_mq() {

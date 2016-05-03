@@ -16,14 +16,8 @@ void cleanup(int connection, void* buffer) {
 
 void communicate(int connection, struct Arguments* args) {
 	void* buffer = malloc(args->size);
-	struct sigaction signal_action;
-
-	setup_client_signals(&signal_action);
-
-	notify_server();
 
 	for (; args->count > 0; --args->count) {
-		wait_for_signal(&signal_action);
 		if (recv(connection, buffer, args->size, 0) == -1) {
 			throw("Error receiving on client-side");
 		}
@@ -34,7 +28,6 @@ void communicate(int connection, struct Arguments* args) {
 		if (send(connection, buffer, args->size, 0) == -1) {
 			throw("Error sending on client-side");
 		}
-		notify_server();
 	}
 
 	cleanup(connection, buffer);

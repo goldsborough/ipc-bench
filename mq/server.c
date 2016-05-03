@@ -69,9 +69,15 @@ void communicate(int mq, struct Arguments* args) {
 			throw("Error sending on server-side");
 		}
 
-		notify_client();
 		benchmark(&bench);
+		notify_client();
 	}
+
+	// Wait for the client to finish, else
+	// the server will go on to delete the MQ
+	// and the client will get an error on its
+	// last call to msg
+	wait_for_signal(&signal_action);
 
 	// Since the buffer size must be fixed
 	args->size = MESSAGE_SIZE;
