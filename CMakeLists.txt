@@ -19,6 +19,11 @@ find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(ZMQ libzeromq)
 
+# Hack for ubuntu: ZMQ lib has a different name, also try to detect this
+if (NOT ZMQ_FOUND)
+	pkg_check_modules(ZMQ libzmq)
+endif()
+
 ###########################################################
 ## SUBDIRECTORIES
 ###########################################################
