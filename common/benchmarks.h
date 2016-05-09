@@ -5,25 +5,25 @@ struct Arguments;
 
 struct Benchmarks {
 	// Start of the total benchmarking
-	double total_start;
+	long total_start;
 
 	// Start of single benchmark
-	double single_start;
+	long single_start;
 
 	// Minimum time
-	double minimum;
+	long minimum;
 
 	// Maximum time
-	double maximum;
+	long maximum;
 
 	// Sum (for averaging)
-	double sum;
+	long sum;
 
 	// Squared sum (for standard deviation)
-	double squared_sum;
+	long squared_sum;
 };
 
-double now();
+long now();
 
 void setup_benchmarks(struct Benchmarks *bench);
 

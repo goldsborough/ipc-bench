@@ -7,8 +7,10 @@
 #include "common/arguments.h"
 #include "common/benchmarks.h"
 
-double now() {
-	return ((double)clock()) / CLOCKS_PER_SEC * 1e6;
+long now() {
+    struct timespec ts;
+    timespec_get(&ts, TIME_UTC);
+    return (long)ts.tv_sec * 1000000000L + ts.tv_nsec;
 }
 
 void setup_benchmarks(struct Benchmarks *bench) {
@@ -20,7 +22,7 @@ void setup_benchmarks(struct Benchmarks *bench) {
 }
 
 void benchmark(struct Benchmarks *bench) {
-	const int time = now() - bench->single_start;
+	const long time = now() - bench->single_start;
 
 	if (time < bench->minimum) {
 		bench->minimum = time;
@@ -36,8 +38,8 @@ void benchmark(struct Benchmarks *bench) {
 
 void evaluate(struct Benchmarks *bench, struct Arguments *args) {
 	assert(args->count > 0);
-	const double total_time = now() - bench->total_start;
-	const double average = bench->sum / args->count;
+	const long total_time = now() - bench->total_start;
+	const double average = ((double)bench->sum) / args->count;
 
 	double sigma = bench->squared_sum / args->count;
 	sigma = sqrt(sigma - (average * average));
@@ -46,10 +48,11 @@ void evaluate(struct Benchmarks *bench, struct Arguments *args) {
 	printf("\n============ RESULTS =============\n");
 	printf("Message size:       %d\n", args->size);
 	printf("Message count:      %d\n", (int)args->count);
-	printf("Total duration:     %.3f\tms\n", total_time / 1000);
-	printf("Average duration:   %.3f\tus\n", average);
-	printf("Minimum duration:   %.3f\tus\n", bench->minimum);
-	printf("Maximum duration:   %.3f\tus\n", bench->maximum);
+	printf("Total duration:     %.3f\tms\n", total_time / 1000 / 1000.0);
+	printf("Average duration:   %.3f\tus\n", average / 1000.0);
+	printf("Minimum duration:   %.3f\tus\n", bench->minimum / 1000.0);
+	printf("Maximum duration:   %.3f\tus\n", bench->maximum / 1000.0);
 	printf("Standard deviation: %.3f\tus\n", sigma);
+	printf("EasyToPlot min %.3f\n us", bench->minimum / 1000.0);
 	printf("==================================\n");
 }
