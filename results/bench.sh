@@ -21,6 +21,10 @@ technologies=(
 		zeromq
 )
 
+if [ $(uname) = Linux ]; then
+		technologies+=( eventfd-uni )
+fi
+
 for tech in $technologies; do
 		echo "Running $tech ..."
 		cd $tech
