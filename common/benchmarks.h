@@ -3,27 +3,30 @@
 
 struct Arguments;
 
+typedef unsigned long bench_t;
+
 struct Benchmarks {
+
 	// Start of the total benchmarking
-	long total_start;
+	bench_t total_start;
 
 	// Start of single benchmark
-	long single_start;
+	bench_t single_start;
 
 	// Minimum time
-	long minimum;
+	bench_t minimum;
 
 	// Maximum time
-	long maximum;
+	bench_t maximum;
 
 	// Sum (for averaging)
-	long sum;
+	bench_t sum;
 
 	// Squared sum (for standard deviation)
-	long squared_sum;
+	bench_t squared_sum;
 };
 
-long now();
+bench_t now();
 
 void setup_benchmarks(struct Benchmarks *bench);
 
