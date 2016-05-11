@@ -1,3 +1,4 @@
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,16 +15,16 @@ void cleanup(int connection, void* buffer) {
 	free(buffer);
 }
 
-void communicate(int connection, struct Arguments* args) {
+void communicate(int connection, struct Arguments* args, int busy_waiting) {
 	void* buffer = malloc(args->size);
 
 	for (; args->count > 0; --args->count) {
-		if (recv(connection, buffer, args->size, 0) == -1) {
+		if (receive(connection, buffer, args->size, busy_waiting) == -1) {
 			throw("Error receiving on client-side");
 		}
 
 		// Dummy operation
-		// memset(buffer, '*', args->size);
+		memset(buffer, '*', args->size);
 
 		if (send(connection, buffer, args->size, 0) == -1) {
 			throw("Error sending on client-side");
@@ -33,7 +34,7 @@ void communicate(int connection, struct Arguments* args) {
 	cleanup(connection, buffer);
 }
 
-void setup_socket(int connection) {
+void setup_socket(int connection, int busy_waiting) {
 	int return_code;
 
 	// The main datastructure for a UNIX-domain socket.
@@ -49,6 +50,16 @@ void setup_socket(int connection) {
 	struct sockaddr_un address;
 
 	adjust_socket_buffer_size(connection);
+
+	if (busy_waiting) {
+		// For domain sockets blocking or not seems to make no
+		// difference at all in terms of speed. Neither setting
+		// the timeout nor not blocking at all.
+		// adjust_socket_blocking_timeout(connection, 0, 1);
+		if (set_socket_flag(connection, O_NONBLOCK) == -1) {
+			throw("Error setting socket to non-blocking on client-side");
+		}
+	}
 
 	// Set the family of the address struct
 	address.sun_family = AF_UNIX;
@@ -73,7 +84,7 @@ void setup_socket(int connection) {
 	}
 }
 
-int create_connection() {
+int create_connection(int busy_waiting) {
 	// The connection socket (file descriptor) that we will return
 	int connection;
 
@@ -93,7 +104,7 @@ int create_connection() {
 		throw("Error opening socket on client-side");
 	}
 
-	setup_socket(connection);
+	setup_socket(connection, busy_waiting);
 
 	return connection;
 }
@@ -102,12 +113,19 @@ int main(int argc, char* argv[]) {
 	// File descriptor for the socket over which
 	// the communciation will happen with the client
 	int connection;
+
+	// Flag to determine whether or not to
+	// do busy-waiting and non-blocking calls
+	int busy_waiting;
+
 	// For command-line arguments
 	struct Arguments args;
+
+	busy_waiting = check_flag("busy", argc, argv);
 	parse_arguments(&args, argc, argv);
 
-	connection = create_connection();
-	communicate(connection, &args);
+	connection = create_connection(busy_waiting);
+	communicate(connection, &args, busy_waiting);
 
 	return EXIT_SUCCESS;
 }

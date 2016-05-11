@@ -1,3 +1,4 @@
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,7 +18,7 @@ void cleanup(int connection, void* buffer) {
 	}
 }
 
-void communicate(int connection, struct Arguments* args) {
+void communicate(int connection, struct Arguments* args, int busy_waiting) {
 	struct Benchmarks bench;
 	int message;
 	void* buffer;
@@ -32,7 +33,7 @@ void communicate(int connection, struct Arguments* args) {
 			throw("Error sending on server-side");
 		}
 
-		if (recv(connection, buffer, args->size, 0) < args->size) {
+		if (receive(connection, buffer, args->size, busy_waiting) == -1) {
 			throw("Error receiving on server-side");
 		}
 
@@ -57,10 +58,7 @@ void setup_socket(int socket_descriptor) {
 	//              size of such a path is 108 bytes.
 	struct sockaddr_un address;
 
-	// Let's first adjust the buffer size
-	adjust_socket_buffer_size(socket_descriptor);
-
-	// Set the family of the address strct
+	// Set the family of the address struct
 	address.sun_family = AF_UNIX;
 	// Copy in the path
 	strcpy(address.sun_path, SOCKET_PATH);
@@ -115,7 +113,8 @@ int create_socket() {
 
 	return socket_descriptor;
 }
-int accept_connection(int socket_descriptor) {
+
+int accept_connection(int socket_descriptor, int busy_waiting) {
 	struct sockaddr_un client;
 	int connection;
 	socklen_t length = sizeof client;
@@ -132,6 +131,15 @@ int accept_connection(int socket_descriptor) {
 		throw("Error accepting connection");
 	}
 
+	adjust_socket_buffer_size(connection);
+
+	if (busy_waiting) {
+		// adjust_socket_blocking_timeout(connection, 0, 1);
+		if (set_socket_flag(connection, O_NONBLOCK) == -1) {
+			throw("Error setting socket to non-blocking on server-side");
+		}
+	}
+
 	// Don't need this one anymore (because we only have one connection)
 	close(socket_descriptor);
 
@@ -144,14 +152,20 @@ int main(int argc, char* argv[]) {
 	// File descriptor for the socket over which
 	// the communciation will happen with the client
 	int connection;
+
+	// Flag to determine if we want busy-waiting
+	int busy_waiting;
+
 	// For command-line arguments
 	struct Arguments args;
+
+	busy_waiting = check_flag("busy", argc, argv);
 	parse_arguments(&args, argc, argv);
 
 	socket_descriptor = create_socket();
-	connection = accept_connection(socket_descriptor);
+	connection = accept_connection(socket_descriptor, busy_waiting);
 
-	communicate(connection, &args);
+	communicate(connection, &args, busy_waiting);
 
 	return EXIT_SUCCESS;
 }

@@ -1,4 +1,5 @@
 #include <arpa/inet.h>
+#include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <stdio.h>
@@ -16,8 +17,7 @@ void handle_blocking(int socket_descriptor) {
 	// Will be necessary when calling setsockopt to free busy sockets
 	int yes = 1;
 
-	// Reclaim blocked but unused sockets
-	// (from zombie processes)
+	// Reclaim blocked but unused sockets (from zombie processes)
 	// clang-format off
 	int return_code = setsockopt(
 		socket_descriptor,
@@ -28,9 +28,8 @@ void handle_blocking(int socket_descriptor) {
 	 );
 	// clang-format on
 
-	// If the socket is blocked, tell the OS to reclaim it
 	if (return_code == -1) {
-		throw("Error reclaiming socket!\n");
+		throw("Error reclaiming socket");
 	}
 }
 
@@ -94,7 +93,25 @@ void cleanup(int descriptor, void *buffer) {
 	free(buffer);
 }
 
-int accept_communication(int socket_descriptor) {
+void setup_socket(int socket_descriptor, int busy_waiting) {
+	adjust_socket_buffer_size(socket_descriptor);
+
+	if (busy_waiting) {
+		// Note that adjusting the blocking timeout would only make sense
+		// if busy waiting is a lot faster than blocking but maybe requires
+		// too many CPU resources, so we'd find a trade-off for a short polling
+		// time that mixes busy waiting with blocking. However, as it seems
+		// that busy waiting is slower, setting the timeout is not effective at
+		// all (setting the timeout to a small value like 10 microseconds
+		// does make it faster than plain busy waiting, though.)
+		// adjust_socket_blocking_timeout(socket_descriptor, 0, 10);
+		if (set_socket_flag(socket_descriptor, O_NONBLOCK) == -1) {
+			throw("Error setting socket to non-blocking on server-side");
+		}
+	}
+}
+
+int accept_communication(int socket_descriptor, int busy_waiting) {
 	// Data type big enough to hold both an sockaddr_in and sockaddr_in6 structure
 	// The ai_addr structure contained in the addrinfo struct can point to either
 	// an IPv4 sockaddr_in or an IPv6 sockaddr_in6 struct. Sometimes, we don't
@@ -125,13 +142,17 @@ int accept_communication(int socket_descriptor) {
 		throw("Error accepting");
 	}
 
-	// Make sure the buffer size is big enough for our messages
-	adjust_socket_buffer_size(connection);
+	setup_socket(connection, busy_waiting);
+
+	// Don't need the main server descriptor anymore at this
+	// point because we'll only communicate to the one client
+	// for this benchmark.
+	close(socket_descriptor);
 
 	return connection;
 }
 
-void communicate(int descriptor, struct Arguments *args) {
+void communicate(int descriptor, struct Arguments *args, int busy_waiting) {
 	struct Benchmarks bench;
 	void *buffer;
 	int message;
@@ -148,7 +169,7 @@ void communicate(int descriptor, struct Arguments *args) {
 		}
 
 		// Read from client
-		if (recv(descriptor, buffer, args->size, 0) == -1) {
+		if (receive(descriptor, buffer, args->size, busy_waiting) == -1) {
 			throw("Error receving from server");
 		}
 
@@ -158,6 +179,42 @@ void communicate(int descriptor, struct Arguments *args) {
 	evaluate(&bench, args);
 	cleanup(descriptor, buffer);
 }
+
+void get_server_information(struct addrinfo **server_info) {
+	// For system call return values
+	int return_code;
+
+	// We can supply some hints to the call to getaddrinfo
+	// as to what socket family (domain) or what socket type
+	// we want for the server address.
+	struct addrinfo hints;
+
+	// Fill the hints with zeros first
+	memset(&hints, 0, sizeof hints);
+
+	// We set to AF_UNSPEC so that we can work
+	// with either IPv6 or IPv4
+	hints.ai_family = AF_UNSPEC;
+	// Stream socket (TCP) as opposed to datagram sockets (UDP)
+	hints.ai_socktype = SOCK_STREAM;
+	// By setting this flag to AI_PASSIVE we can pass NULL for the hostname
+	// in getaddrinfo so that the current machine hostname is implied
+	//  hints.ai_flags = AI_PASSIVE;
+
+	// This function will return address information for the given:
+	// 1. Hostname or IP address (as string in digits-and-dots notation).
+	// 2. The port of the address.
+	// 3. The struct of hints we supply for the address.
+	// 4. The addrinfo struct the function should populate with addresses
+	//    (remember that addrinfo is a linked list)
+	return_code = getaddrinfo(HOST, PORT, &hints, server_info);
+
+	if (return_code != 0) {
+		fprintf(stderr, "getaddrinfo failed: %s\n", gai_strerror(return_code));
+		exit(EXIT_FAILURE);
+	}
+}
+
 
 int create_socket() {
 	// Sockets are returned by the OS as standard file descriptors.
@@ -192,35 +249,10 @@ int create_socket() {
 	// 8. ai_next: This struct is actually a node in a linked list. getaddrinfo
 	//             will sometimes return more than one address (e.g. one for IPv4
 	//             one for IPv6)
-	struct addrinfo hints, *server_info, *valid_address;
+	struct addrinfo *server_info = NULL;
+	struct addrinfo *valid_address;
 
-	// For system call return values
-	int return_code;
-
-	// Fill the hints with zeros first
-	memset(&hints, 0, sizeof hints);
-	// We set to AF_UNSPEC so that we can work
-	// with either IPv6 or IPv4
-	hints.ai_family = AF_UNSPEC;
-	// Stream socket (TCP) as opposed to datagram sockets (UDP)
-	hints.ai_socktype = SOCK_STREAM;
-	// By setting this flag to AI_PASSIVE we can pass NULL for the hostname
-	// in getaddrinfo so that the current machine hostname is implied
-	//  hints.ai_flags = AI_PASSIVE;
-
-	// This function will return address information for the given:
-	// 1. Hostname or IP address (as string in digits-and-dots notation).
-	// 2. The port of the address.
-	// 3. The struct of hints we supply for the address.
-	// 4. The addrinfo struct the function should populate with addresses
-	//    (remember that addrinfo is a linked list)
-	return_code = getaddrinfo(HOST, PORT, &hints, &server_info);
-
-	if (return_code != 0) {
-		fprintf(stderr, "getaddrinfo failed: %s\n", gai_strerror(return_code));
-		exit(EXIT_FAILURE);
-	}
-
+	get_server_information(&server_info);
 	valid_address = get_address(server_info, &socket_descriptor);
 
 	// Don't need this anymore
@@ -228,7 +260,7 @@ int create_socket() {
 
 	// If we didn't actually find a valid address
 	if (valid_address == NULL) {
-		throw("Error finding valid address!");
+		throw("Error finding valid address");
 	}
 
 	// Now that we have a socket and an address bound to it, we
@@ -236,9 +268,8 @@ int create_socket() {
 	// incoming connections on this port.
 	// Allow up to ten connections to queue up until the server
 	// accepts them (the OS limit is often between 10 and 20)
-	return_code = listen(socket_descriptor, 10);
 
-	if (return_code == 1) {
+	if (listen(socket_descriptor, 10) == 1) {
 		throw("Error listening on given socket!");
 	}
 
@@ -253,19 +284,20 @@ int main(int argc, char *argv[]) {
 	// client-communication will take place
 	int connection;
 
+	// Flag to determine whether or not to do busy waiting
+	// and not block the socket, or use normal blocking sockets.
+	int busy_waiting;
+
 	// Command line arguments
 	struct Arguments args;
+
+	busy_waiting = check_flag("busy", argc, argv);
 	parse_arguments(&args, argc, argv);
 
 	socket_descriptor = create_socket();
-	connection = accept_communication(socket_descriptor);
+	connection = accept_communication(socket_descriptor, busy_waiting);
 
-	// Don't need the main server descriptor anymore at this
-	// point because we'll only communicate to the one client
-	// for this benchmark.
-	close(socket_descriptor);
-
-	communicate(connection, &args);
+	communicate(connection, &args, busy_waiting);
 
 	return EXIT_SUCCESS;
 }
