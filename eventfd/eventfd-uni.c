@@ -1,68 +1,53 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <sys/eventfd.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 #include "common/common.h"
 
-#define SERVER_TOKEN 1
-#define CLIENT_TOKEN 2
-
-void eventfd_notify(int descriptor, uint64_t value) {
-	if (write(descriptor, &value, 8) == -1) {
-		throw("Error writing to eventfd");
-	}
-}
-
-void eventfd_wait(int descriptor, uint64_t wanted) {
-	uint64_t stored;
-
-	while (true) {
-		// A read from an eventfd returns the 8-byte integer
-		// stored in the eventfd object *and* resets the value
-		// to zero. That is, unless the EFD_SEMAPHORE flag was
-		// passed at the start. In that case, the returned value
-		// is *always* 1 and the stored value is decremented by
-		// 1 (not reset to zero).
-		if (read(descriptor, &stored, 8) == -1) {
-			throw("Error reading from eventfd");
-		}
-
-		if (stored == wanted) {
-			return;
-		}
-
-		// If this was not the value we were looking for
-		// (e.g. if the server read the signal it set)
-		// then write it back.
-		if (write(descriptor, &stored, 8) == -1) {
-			throw("Error writing back to eventfd");
-		}
-	}
-}
-
 void client_communicate(int descriptor, struct Arguments* args) {
+	uint64_t timestamp;
+
 	for (; args->count > 0; --args->count) {
-		eventfd_notify(descriptor, SERVER_TOKEN);
-		eventfd_wait(descriptor, CLIENT_TOKEN);
+		timestamp = now();
+
+		// A write *adds* the value stored in the
+		// eventfd to the value in the 8-byte buffer passed.
+		// Here we send the current timestamp to the server
+		if (write(descriptor, &timestamp, 8) == -1) {
+			throw("Error writing to eventfd");
+		}
 	}
 }
+
 
 void server_communicate(int descriptor, struct Arguments* args) {
-	struct Benchmarks bench;
 	int message;
+	struct Benchmarks bench;
 
 	setup_benchmarks(&bench);
 
 	for (message = 0; message < args->count; ++message) {
-		bench.single_start = now();
-
-		eventfd_wait(descriptor, SERVER_TOKEN);
-		eventfd_notify(descriptor, CLIENT_TOKEN);
-
+		// A read from an eventfd returns the 8-byte integer
+		// stored in the eventfd object *and* resets the value
+    // to zero. That is, if the value is non-zero. If it
+		// is zero and the EFD_NONBLOCK flag was not passed,
+		// the call blocks until the value is indeed nonzero.
+		// If the EFD_SEMAPHORE flag was passed at the start,
+		// the returned value is *always* 1 (if it was nonzero)
+		// and the stored value is decremented by 1 (not reset
+		// to zero). Here we read the start timestamp into the
+		// benchmark object.
+		if (read(descriptor, &bench.single_start, 8) == -1) {
+			throw("Error reading from eventfd");
+		}
 		benchmark(&bench);
 	}
 
-	evaluate(&bench);
+	// The message size is always one (it's just a signal)
+	args->size = 1;
+	evaluate(&bench, args);
 }
 
 void communicate(int descriptor, struct Arguments* args) {
@@ -77,10 +62,10 @@ void communicate(int descriptor, struct Arguments* args) {
 
 	// fork() returns 0 for the child process
 	if (pid == (pid_t)0) {
-		client_communicate(descriptor, &args);
+		client_communicate(descriptor, args);
 		close(descriptor);
 	} else {
-		server_communicate(descriptor, &args);
+		server_communicate(descriptor, args);
 	}
 }
 
