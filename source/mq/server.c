@@ -7,7 +7,7 @@
 #include "common/common.h"
 #include "mq/mq-common.h"
 
-void cleanup(int mq) {
+void cleanup(int mq, struct Message* message) {
 	// Destroy the message queue.
 	// Takes the message-queue ID and an operation,
 	// in this case IPC_RMID. The last parameter, for
@@ -16,25 +16,35 @@ void cleanup(int mq) {
 	if (msgctl(mq, IPC_RMID, NULL) == -1) {
 		throw("Error removing message queue");
 	}
+
+	free(message);
 }
 
 
 void communicate(int mq, struct Arguments* args) {
 	struct Benchmarks bench;
-	struct Message message;
-	struct sigaction signal_action;
+	struct Message* message;
 	int index;
 
-	setup_message(&message);
-	setup_server_signals(&signal_action);
+	message = create_message(args);
 	setup_benchmarks(&bench);
 
-	// Set things in motion
-	notify_client();
-
 	for (index = 0; index < args->count; ++index) {
-		wait_for_signal(&signal_action);
 		bench.single_start = now();
+
+		// Messages in message-queues are associated with
+		// a "type", which is simply an identifier for the message
+		// kind. This way, we can put different kinds of messages on
+		// the queue, but fetch only the ones we want, by passing
+		// the type of the message we want to msgrcv().
+		message->type = SERVER_MESSAGE;
+		memset(message->buffer, '2', args->size);
+
+		// Same parameters as msgrcv, but no message-type
+		// (because it is determined by the message's member)
+		if (msgsnd(mq, message, args->size, IPC_NOWAIT) == -1) {
+			throw("Error sending on server-side");
+		}
 
 		// Fetch a message from the queue.
 		// Arguments:
@@ -50,39 +60,23 @@ void communicate(int mq, struct Arguments* args) {
 		// 3. The size of the message, excluding the type member.
 		// 4. The message type/kind to fetch. The point is, that
 		//    you can put many kinds of messages on the queue, but
-		//    in this case only the first one with type = MESSAGE_TYPE
+		//    in this case only the first one with type = CLIENT_MESSAGE
 		//    will be retrieved. By passing 0, we could say that we
-		//    want *any* kind of message.
+		//    want *any* kind of message. This call will block until
+		//    such a message is available in the queue.
 		// 5. Flags, which we don't need.
-		if (msgrcv(mq, &message, MESSAGE_SIZE, MESSAGE_TYPE, 0) < MESSAGE_SIZE) {
+		if (msgrcv(mq, message, args->size, CLIENT_MESSAGE, 0) < args->size) {
 			throw("Error receiving on server-side");
 		}
 
-		// Dummy operation
-		memset(message.buffer, '*', MESSAGE_SIZE);
-
-		// Same parameters as msgrcv, but no message-type
-		// (because it is determined by the message's member)
-		// Note that msgsend only returns 0 on success, not the
-		// number of bytes, so we don't have to check for < MESSAGE_SIZE
-		if (msgsnd(mq, &message, MESSAGE_SIZE, 0) == -1) {
-			throw("Error sending on server-side");
-		}
-
 		benchmark(&bench);
-		notify_client();
 	}
 
-	// Wait for the client to finish, else
-	// the server will go on to delete the MQ
-	// and the client will get an error on its
-	// last call to msg
-	wait_for_signal(&signal_action);
-
 	// Since the buffer size must be fixed
-	args->size = MESSAGE_SIZE;
+	// args->size = MESSAGE_SIZE;
 	evaluate(&bench, args);
-	cleanup(mq);
+
+	cleanup(mq, message);
 }
 
 int create_mq() {
@@ -108,6 +102,19 @@ int create_mq() {
 	return mq;
 }
 
+void limit_message_size(struct Arguments* args) {
+	if (args->size > MAXIMUM_MESSAGE_SIZE) {
+		args->size = MAXIMUM_MESSAGE_SIZE;
+		// clang-format off
+		fprintf(
+			stderr,
+			"Reduced the message size to %d bytes!\n",
+			MAXIMUM_MESSAGE_SIZE
+		);
+		// clang-format on
+	}
+}
+
 int main(int argc, char* argv[]) {
 	// A message-queue is simply identified
 	// by a numeric ID
@@ -116,6 +123,8 @@ int main(int argc, char* argv[]) {
 	// For command-line arguments
 	struct Arguments args;
 	parse_arguments(&args, argc, argv);
+
+	limit_message_size(&args);
 
 	mq = create_mq();
 	communicate(mq, &args);
