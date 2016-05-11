@@ -9,7 +9,19 @@ fi
 
 cd ../build
 
-for tech in shm mq domain fifo pipe mmap tcp signal; do
+technologies=(
+		shm
+		mq
+		domain
+		fifo
+		pipe
+		mmap
+		tcp
+		signal
+		zeromq
+)
+
+for tech in $technologies; do
 		echo "Running $tech ..."
 		cd $tech
 
@@ -22,7 +34,11 @@ for tech in shm mq domain fifo pipe mmap tcp signal; do
 				for count_power in $(seq 0 3); do
 						count=$((10**count_power))
 						./$tech -s $size -c $count >> "$output/$tech.result"
-						sleep 0.1
+						if [ $tech = zeromq ]; then
+								sleep 0.2
+						else
+								sleep 0.1
+						fi
 				done
 		done
 
