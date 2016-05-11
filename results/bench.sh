@@ -7,7 +7,7 @@ if [ ! -d $output ]; then
 		mkdir $output
 fi
 
-cd ../build
+cd ${result_directory%/ipc-bench*}/ipc-bench/build/source
 
 technologies=(
 		shm

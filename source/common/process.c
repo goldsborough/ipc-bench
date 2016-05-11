@@ -6,8 +6,10 @@
 
 #include "common/utility.h"
 
+#define BUILD_PATH "/build/source\0"
+
 char *find_build_path() {
-	char *path = (char *)malloc(strlen(__FILE__) + strlen("/build"));
+	char *path = (char *)malloc(strlen(__FILE__) + strlen(BUILD_PATH));
 	char *right;
 	char *left;
 
@@ -27,7 +29,7 @@ char *find_build_path() {
 	}
 
 	// ++ because right is on the 'h'
-	strcpy(++right, "/build\0");
+	strcpy(++right, BUILD_PATH);
 
 	return path;
 }
