@@ -96,7 +96,7 @@ int main(int argc, char* argv[]) {
 	// For parsing command-line arguments
 	struct Arguments args;
 
-	use_tcp = 1;// check_flag("tcp", argc, argv);
+	use_tcp = check_flag("tcp", argc, argv);
 	parse_arguments(&args, argc, argv);
 
 	context = create_context();
