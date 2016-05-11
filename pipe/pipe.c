@@ -14,7 +14,9 @@ FILE *open_stream(int file_descriptor[2], int to_open) {
 	close(file_descriptor[1 - to_open]);
 
 	// Open a stream to the other end
-	if ((stream = fdopen(file_descriptor[to_open], mode)) == NULL) {
+	stream = fdopen(file_descriptor[to_open], mode);
+
+	if (stream == NULL) {
 		throw("Could not open stream for reading");
 	}
 
@@ -89,7 +91,7 @@ void communicate(int file_descriptors[2], struct Arguments *args) {
 
 	// Fork a child process
 	if ((pid = fork()) == -1) {
-		throw("Error forking process!\n");
+		throw("Error forking process");
 	}
 
 	// fork() returns 0 for the child process

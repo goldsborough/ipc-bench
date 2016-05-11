@@ -42,6 +42,7 @@ add_subdirectory(pipe)
 add_subdirectory(domain)
 add_subdirectory(mq)
 add_subdirectory(signal)
+add_subdirectory(eventfd)
 
 if (ZMQ_FOUND)
 	add_subdirectory(zeromq)
