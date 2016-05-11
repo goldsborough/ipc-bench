@@ -7,7 +7,12 @@ project(ipc-bench)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-set (CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -lm")
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
+
+# Apple's C standard library already contains the math functions
+if(NOT APPLE)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lm")
+endif()
 
 ###########################################################
 ## DEPENDENCIES
