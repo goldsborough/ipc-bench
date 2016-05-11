@@ -43,7 +43,7 @@ void communicate(int connection, struct Arguments* args) {
 	cleanup(connection, buffer);
 }
 
-void setup_socket(int socket_descriptor, struct Arguments* args) {
+void setup_socket(int socket_descriptor) {
 	int return_code;
 
 	// The main datastructure for a UNIX-domain socket.
@@ -58,7 +58,7 @@ void setup_socket(int socket_descriptor, struct Arguments* args) {
 	struct sockaddr_un address;
 
 	// Let's first adjust the buffer size
-	adjust_socket_buffer_size(socket_descriptor, args->size);
+	adjust_socket_buffer_size(socket_descriptor);
 
 	// Set the family of the address strct
 	address.sun_family = AF_UNIX;
@@ -91,7 +91,7 @@ void setup_socket(int socket_descriptor, struct Arguments* args) {
 	}
 }
 
-int create_socket(struct Arguments* args) {
+int create_socket() {
 	// File descriptor for the socket
 	int socket_descriptor;
 
@@ -108,7 +108,7 @@ int create_socket(struct Arguments* args) {
 		throw("Error opening socket on server-side");
 	}
 
-	setup_socket(socket_descriptor, args);
+	setup_socket(socket_descriptor);
 
 	// Notify the client that it can connect to the socket now
 	server_once(NOTIFY);
@@ -148,7 +148,7 @@ int main(int argc, char* argv[]) {
 	struct Arguments args;
 	parse_arguments(&args, argc, argv);
 
-	socket_descriptor = create_socket(&args);
+	socket_descriptor = create_socket();
 	connection = accept_connection(socket_descriptor);
 
 	communicate(connection, &args);

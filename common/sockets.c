@@ -1,14 +1,10 @@
+#include <stdio.h>
+
 #include "common/sockets.h"
 #include "common/utility.h"
 
-void adjust_socket_buffer_size(int socket_descriptor, int message_size) {
-	int return_code;
-
-	// The minimum allowed value is 1024
-	// http://man7.org/linux/man-pages/man7/socket.7.html
-	if (message_size < 1024) {
-		message_size = 1024;
-	}
+void adjust_socket_individual_buffer_size(int socket_descriptor, int which) {
+	int buffer_size = BUFFER_SIZE;
 
 	// set/getsockopt is the one-stop-shop for all socket options.
 	// With it, you can get/set a variety of options for a given socket.
@@ -21,29 +17,30 @@ void adjust_socket_buffer_size(int socket_descriptor, int message_size) {
 	// clang-format off
 
 	// Set the sockets send-buffer-size (SNDBUF)
-	return_code = setsockopt(
+	int return_code = setsockopt(
 		socket_descriptor,
 		SOL_SOCKET,
-		SO_SNDBUF,
-		&message_size,
-		sizeof message_size
+		which,
+		&buffer_size,
+		sizeof buffer_size
 	);
-
-	if (return_code == -1) {
-		throw("Error setting socket send buffer size");
-	}
-
-	// Set the socket's receive-buffer-size (RCVBUF)
-	return_code = setsockopt(
-		socket_descriptor,
-		SOL_SOCKET,
-		SO_RCVBUF,
-		&message_size,
-		sizeof message_size
-  );
 	// clang-format on
 
 	if (return_code == -1) {
-		throw("Error setting socket receive-buffer-size");
+		throw("Error setting socket buffer size");
 	}
+}
+
+void adjust_socket_buffer_size(int socket_descriptor) {
+	// clang-format off
+	adjust_socket_individual_buffer_size(
+		socket_descriptor,
+		SO_SNDBUF
+	 );
+
+	adjust_socket_individual_buffer_size(
+		socket_descriptor,
+		SO_RCVBUF
+	 );
+	// clang-format on
 }

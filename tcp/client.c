@@ -98,7 +98,7 @@ void communicate(int descriptor, struct Arguments *args) {
 	cleanup(descriptor, buffer);
 }
 
-int create_socket(struct Arguments *args) {
+int create_socket() {
 	// Address info structs are basic (relatively large) structures
 	// containing various pieces of information about a host's address,
 	// such as:
@@ -158,7 +158,7 @@ int create_socket(struct Arguments *args) {
 
 	socket_descriptor = get_address(server_info);
 
-	adjust_socket_buffer_size(socket_descriptor, args->size);
+	adjust_socket_buffer_size(socket_descriptor);
 
 	// Don't need this anymore
 	freeaddrinfo(server_info);
@@ -175,7 +175,7 @@ int main(int argc, char *argv[]) {
 	struct Arguments args;
 	parse_arguments(&args, argc, argv);
 
-	socket_descriptor = create_socket(&args);
+	socket_descriptor = create_socket();
 	communicate(socket_descriptor, &args);
 
 	return EXIT_SUCCESS;

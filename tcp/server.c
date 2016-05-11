@@ -94,17 +94,17 @@ void cleanup(int descriptor, void *buffer) {
 	free(buffer);
 }
 
-int accept_communication(int socket_descriptor, struct Arguments *args) {
+int accept_communication(int socket_descriptor) {
 	// Data type big enough to hold both an sockaddr_in and sockaddr_in6 structure
 	// The ai_addr structure contained in the addrinfo struct can point to either
 	// an IPv4 sockaddr_in or an IPv6 sockaddr_in6 struct. Sometimes, we don't
 	// know which will be returned from or which we have to pass to a function, so
 	// the sockaddr_storage struct is large enough to hold either (you can then
 	// cast as necessary)
-	struct sockaddr_storage their_addr;
+	struct sockaddr_storage other_address;
 
 	// Data type to store the size of an sockaddr_storage object
-	socklen_t sin_size = sizeof their_addr;
+	socklen_t sin_size = sizeof other_address;
 
 	// Start accepting connections on this address and machine.
 	// This call will block until a client connects to the
@@ -116,17 +116,17 @@ int accept_communication(int socket_descriptor, struct Arguments *args) {
 	// clang-format off
 	int connection = accept(
 		socket_descriptor,
-		(struct sockaddr *)&their_addr,
+		(struct sockaddr *)&other_address,
 		&sin_size
 	);
 	// clang-format on
 
 	if (connection == -1) {
-		throw("Error accepting!");
+		throw("Error accepting");
 	}
 
 	// Make sure the buffer size is big enough for our messages
-	adjust_socket_buffer_size(connection, args->size);
+	adjust_socket_buffer_size(connection);
 
 	return connection;
 }
@@ -258,7 +258,7 @@ int main(int argc, char *argv[]) {
 	parse_arguments(&args, argc, argv);
 
 	socket_descriptor = create_socket();
-	connection = accept_communication(socket_descriptor, &args);
+	connection = accept_communication(socket_descriptor);
 
 	// Don't need the main server descriptor anymore at this
 	// point because we'll only communicate to the one client
