@@ -1,9 +1,10 @@
+#include <stddef.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
 #include "common/utility.h"
-#include "shared_memory.h"
-#incldue "buffer.h"
+#include "tssx/buffer.h"
+#include "tssx/shared_memory.h"
 
 int create_segment(int buffer_size) {
 	int key;

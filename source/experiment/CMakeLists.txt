@@ -1,4 +1,10 @@
 ###########################################################
+## LINKER FLAGS
+###########################################################
+
+
+
+###########################################################
 ## TARGETS
 ###########################################################
 
@@ -10,6 +16,6 @@ add_executable(experiment experiment.c)
 ## COMMON
 ###########################################################
 
-target_link_libraries(experiment-client ipc-bench-common)
-target_link_libraries(experiment-server ipc-bench-common)
+target_link_libraries(experiment-client ipc-bench-common tssx)
+target_link_libraries(experiment-server ipc-bench-common tssx)
 target_link_libraries(experiment ipc-bench-common)

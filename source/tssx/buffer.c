@@ -1,8 +1,8 @@
 #include <assert.h>
 #include <string.h>
 
-#include "buffer.h"
 #include "common/utility.h"
+#include "tssx/buffer.h"
 
 Buffer* create_buffer(void* shared_memory, int requested_capacity) {
 	Buffer* buffer = (Buffer*)shared_memory;
@@ -52,7 +52,7 @@ int buffer_write(Buffer* buffer, void* data, int data_size) {
 	} else {
 		space = buffer->read - buffer->write;
 
-		memcpy_s(buffer->write, space, data, data_size);
+		return_code = memcpy_s(buffer->write, space, data, data_size);
 		check_write_error(return_code);
 	}
 
@@ -63,6 +63,7 @@ int buffer_write(Buffer* buffer, void* data, int data_size) {
 }
 
 int buffer_read(Buffer* buffer, void* data, int data_size) {
+	int space;
 	int return_code;
 
 	assert(buffer != NULL);
@@ -92,7 +93,7 @@ int buffer_read(Buffer* buffer, void* data, int data_size) {
 			check_read_error(return_code);
 		}
 	} else {
-		memcpy_s(data, data_size, buffer->read, data_size);
+		return_code = memcpy_s(data, data_size, buffer->read, data_size);
 		check_read_error(return_code);
 	}
 
@@ -112,8 +113,9 @@ int buffer_peak(Buffer* buffer, void* data, int data_size) {
 	old_size = buffer->size;
 	old_read = buffer->read;
 
-	bytes_read = read_from_buffer(buffer, data, data_size);
+	bytes_read = buffer_read(buffer, data, data_size);
 
+	// Restore
 	buffer->size = old_size;
 	buffer->read = old_read;
 
@@ -122,14 +124,13 @@ int buffer_peak(Buffer* buffer, void* data, int data_size) {
 
 int buffer_skip(Buffer* buffer, int how_many) {
 	assert(buffer != NULL);
-	assert(data != NULL);
 
 	if (how_many <= 0) return 0;
 	if (how_many > buffer->size) return 0;
 
 	buffer->read += how_many;
 
-	if (buffer->read >= end(buffer)) {
+	if (buffer->read >= buffer_end(buffer)) {
 		buffer->read -= buffer->capacity;
 	}
 

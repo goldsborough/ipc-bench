@@ -1,9 +1,9 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include "buffer.h"
-#include "hashtable.h"
-#include "overrides.h"
+#include "tssx/buffer.h"
+#include "tssx/hashtable.h"
+#include "tssx/overrides.h"
 
 int connection_write(int socket_fd,
 										 struct HashTable* table,

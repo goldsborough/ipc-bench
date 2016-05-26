@@ -7,6 +7,7 @@
 
 #include "common/common.h"
 #include "common/sockets.h"
+#include "tssx/tssx.h"
 
 #define SOCKET_PATH "/tmp/domain_socket"
 
@@ -138,11 +139,13 @@ int connect_to_client() {
 }
 
 int main(int argc, char* argv[]) {
-	// The socket through which we communciate with the client
+	// The socket through which we communicate with the client
 	int connection;
 
 	Arguments args;
 	parse_arguments(&args, argc, argv);
+
+	tssx();
 
 	connection = connect_to_client();
 	communicate(connection, &args);

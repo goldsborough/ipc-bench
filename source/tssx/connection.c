@@ -1,6 +1,6 @@
-#include "connection.h"
-#include "buffer.h"
-#include "shared_memory.h"
+#include "tssx/connection.h"
+#include "tssx/buffer.h"
+#include "tssx/shared_memory.h"
 
 void setup_connection(Connection* connection, int buffer_size) {
 	void* shared_memory;

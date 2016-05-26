@@ -1,6 +1,12 @@
 #ifndef OVERRIDES_H
 #define OVERRIDES_H
 
+#include "common/utility.h"
+#include "tssx/connection.h"
+#include "tssx/hashtable.h"
+#include "tssx/shared_memory.h"
+#include "tssx/tssx.h"
+
 #define SERVER_BUFFER 0
 #define CLIENT_BUFFER 1
 
@@ -9,6 +15,8 @@
 struct HashTable;
 struct Connection;
 struct Buffer;
+
+typedef struct sockaddr sockaddr;
 
 int connection_write(int socket_fd,
 										 struct HashTable* table,

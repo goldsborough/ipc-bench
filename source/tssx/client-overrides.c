@@ -1,31 +1,29 @@
+#include <stdio.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include "common/utility.h"
-#include "connection.h"
-#include "hashtable.h"
-
-HashTable connection_map;
-ht_setup(&connection_map, 0);
+#include "tssx/overrides.h"
 
 typedef struct sockaddr sockaddr;
 
-int __real_connect(int, sockaddr*, int*);
+void __real_connect(int, sockaddr*, int*);
 int __real_read(int, void*, int);
 int __real_write(int, void*, int);
 
-int __wrap_connect(int client_socket, sockaddr* address, int* length) {
+void __wrap_connect(int client_socket, sockaddr* address, int* length) {
 	Connection connection;
-	int client_socket;
 	int return_code;
 
 	__real_connect(client_socket, address, length);
 
+	printf("??\n");
+
 	// clang-format off
 	return_code = recv(
 		client_socket,
-		&connection->segment_id,
-		sizeof connection->segment_id
+		&connection.segment_id,
+		sizeof connection.segment_id,
+		0
 	);
 	// clang-format on
 

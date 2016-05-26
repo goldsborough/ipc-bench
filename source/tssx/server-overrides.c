@@ -1,16 +1,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include "common/utility.h"
-#include "connection.h"
-#include "hashtable.h"
-
-#define BUFFER_SIZE 4096
-
-HashTable connection_map;
-ht_setup(&connection_map, 0);
-
-typedef struct sockaddr sockaddr;
+#include "tssx/overrides.h"
 
 int __real_accept(int, sockaddr*, int*);
 int __real_read(int, void*, int);
@@ -25,13 +16,13 @@ int __wrap_accept(int server_socket, sockaddr* address, int* length) {
 
 	if (client_socket == -1) return -1;
 
-	connection->segment_id = _create_segment(BUFFER_SIZE);
+	connection.segment_id = create_segment(BUFFER_SIZE);
 
 	// clang-format off
 	return_code = send(
 		client_socket,
-		&connection->segment_id,
-		sizeof connection->segment_id,
+		&connection.segment_id,
+		sizeof connection.segment_id,
 		0
 	);
 	// clang-format on
