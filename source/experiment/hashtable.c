@@ -33,7 +33,7 @@ void ht_destroy(HashTable* table) {
 	free(table->nodes);
 }
 
-int ht_insert(HashTable* table, Connection* connection) {
+int ht_insert(HashTable* table, int key, Connection* connection) {
 	Node* node;
 	int index;
 
@@ -43,17 +43,17 @@ int ht_insert(HashTable* table, Connection* connection) {
 		ht_resize(table);
 	}
 
-	index = ht_hash(table, connection->segment_id);
+	index = ht_hash(table, key);
 	node = table->nodes[index];
 
 	for (; node; node = node->next) {
-		if (ht_id(node) == connection->segment_id) {
+		if (node->key == key) {
 			node->connection = *connection;
 			return HT_UPDATED;
 		}
 	}
 
-	node = ht_create_node(connection, table->nodes[index]);
+	node = ht_create_node(key, connection, table->nodes[index]);
 	table->nodes[index] = node;
 
 	++table->size;
@@ -61,17 +61,17 @@ int ht_insert(HashTable* table, Connection* connection) {
 	return HT_INSERTED;
 }
 
-Connection* ht_get(HashTable* table, int id) {
+Connection* ht_get(HashTable* table, int key) {
 	Node* node;
 	int index;
 
 	assert(table != NULL);
 
-	index = ht_hash(table, id);
+	index = ht_hash(table, key);
 	node = table->nodes[index];
 
 	for (; node; node = node->next) {
-		if (ht_id(node) == id) {
+		if (node->key == key) {
 			return &node->connection;
 		}
 	}
@@ -79,18 +79,18 @@ Connection* ht_get(HashTable* table, int id) {
 	return NULL;
 }
 
-int ht_remove(HashTable* table, int id) {
+int ht_remove(HashTable* table, int key) {
 	Node* node;
 	Node* previous;
 	int index;
 
 	assert(table != NULL);
 
-	index = ht_hash(table, id);
+	index = ht_hash(table, key);
 	node = table->nodes[index];
 
 	for (previous = NULL; node; previous = node, node = node->next) {
-		if (ht_id(node) == id) {
+		if (node->key == key) {
 			if (previous) {
 				previous->next = node->next;
 			} else {
@@ -131,21 +131,22 @@ void ht_allocate(HashTable* table, int capacity) {
 	table->threshold = capacity * HT_LOAD_FACTOR;
 }
 
-Node* ht_create_node(Connection* connection, Node* next) {
+Node* ht_create_node(int key, Connection* connection, Node* next) {
 	Node* node = (Node*)malloc(sizeof(Node));
 
+	node->key = key;
 	node->connection = *connection;
 	node->next = next;
 
 	return node;
 }
 
-int ht_hash(HashTable* table, int id) {
+int ht_hash(HashTable* table, int key) {
 	const int a = 69;
 	const int b = 99;
 	const int p = 123;
 
-	return (((a * id) + b) % p) % table->capacity;
+	return (((a * key) + b) % p) % table->capacity;
 }
 
 void ht_resize(HashTable* table) {
@@ -172,15 +173,11 @@ void ht_rehash(HashTable* table, Node** old, int old_capacity) {
 		for (node = old[i]; node;) {
 			next = node->next;
 
-			new_index = ht_hash(table, ht_id(node));
+			new_index = ht_hash(table, node->key);
 			node->next = table->nodes[new_index];
 			table->nodes[new_index] = node;
 
 			node = next;
 		}
 	}
-}
-
-int ht_id(Node* node) {
-	return node->connection.segment_id;
 }

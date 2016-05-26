@@ -13,7 +13,9 @@
 #define HT_OK 1
 
 typedef struct Node {
+	int key;
 	Connection connection;
+
 	struct Node* next;
 
 } Node;
@@ -31,10 +33,10 @@ typedef struct HashTable {
 void ht_setup(HashTable* table, int capacity);
 void ht_destroy(HashTable* table);
 
-int ht_insert(HashTable* table, Connection* connection);
-Connection* ht_get(HashTable* table, int id);
+int ht_insert(HashTable* table, int key, Connection* connection);
+Connection* ht_get(HashTable* table, int key);
 
-int ht_remove(HashTable* table, int id);
+int ht_remove(HashTable* table, int key);
 void ht_clear(HashTable* table);
 
 int ht_is_empty(HashTable* table);
@@ -43,14 +45,12 @@ int ht_is_empty(HashTable* table);
 
 void ht_allocate(HashTable* table, int capacity);
 
-Node* ht_create_node(Connection* connection, Node* next);
+Node* ht_create_node(int key, Connection* connection, Node* next);
 
-int ht_hash(HashTable* table, int id);
+int ht_hash(HashTable* table, int key);
 
 void ht_resize(HashTable* table);
 
 void ht_rehash(HashTable* table, Node** old, int old_capacity);
-
-int ht_id(Node* node);
 
 #endif /* HASHTABLE_H */
