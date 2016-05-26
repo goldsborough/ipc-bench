@@ -3,12 +3,13 @@
 
 void print_usage();
 
-struct Arguments {
+typedef struct Arguments {
 	int size;
 	int count;
-};
 
-void parse_arguments(struct Arguments* arguments, int argc, char* argv[]);
+} Arguments;
+
+void parse_arguments(Arguments* arguments, int argc, char* argv[]);
 
 int check_flag(const char* name, int argc, char* argv[]);
 

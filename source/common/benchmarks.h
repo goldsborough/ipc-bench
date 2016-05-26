@@ -5,8 +5,7 @@ struct Arguments;
 
 typedef unsigned long bench_t;
 
-struct Benchmarks {
-
+typedef struct Benchmarks {
 	// Start of the total benchmarking
 	bench_t total_start;
 
@@ -24,14 +23,15 @@ struct Benchmarks {
 
 	// Squared sum (for standard deviation)
 	bench_t squared_sum;
-};
+
+} Benchmarks;
 
 bench_t now();
 
-void setup_benchmarks(struct Benchmarks *bench);
+void setup_benchmarks(Benchmarks *bench);
 
-void benchmark(struct Benchmarks *bench);
+void benchmark(Benchmarks *bench);
 
-void evaluate(struct Benchmarks *bench, struct Arguments *args);
+void evaluate(Benchmarks *bench, struct Arguments *args);
 
 #endif /* IPC_BENCH_BENCHMARKS_H */

@@ -17,7 +17,7 @@ void print_usage() {
 	exit(EXIT_FAILURE);
 }
 
-void parse_arguments(struct Arguments *arguments, int argc, char *argv[]) {
+void parse_arguments(Arguments *arguments, int argc, char *argv[]) {
 	// For getopt long options
 	int long_index = 0;
 	// For getopt chars

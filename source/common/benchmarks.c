@@ -20,7 +20,7 @@ bench_t now() {
 #endif
 }
 
-void setup_benchmarks(struct Benchmarks* bench) {
+void setup_benchmarks(Benchmarks* bench) {
 	bench->minimum = INT32_MAX;
 	bench->maximum = 0;
 	bench->sum = 0;
@@ -28,7 +28,7 @@ void setup_benchmarks(struct Benchmarks* bench) {
 	bench->total_start = now();
 }
 
-void benchmark(struct Benchmarks* bench) {
+void benchmark(Benchmarks* bench) {
 	const bench_t time = now() - bench->single_start;
 
 	if (time < bench->minimum) {
@@ -43,7 +43,7 @@ void benchmark(struct Benchmarks* bench) {
 	bench->squared_sum += (time * time);
 }
 
-void evaluate(struct Benchmarks* bench, struct Arguments* args) {
+void evaluate(Benchmarks* bench, Arguments* args) {
 	assert(args->count > 0);
 	const bench_t total_time = now() - bench->total_start;
 	const double average = ((double)bench->sum) / args->count;
