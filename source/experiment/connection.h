@@ -1,7 +1,7 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
-struct Connection {
+typedef struct Connection {
 	// The ID of the shared memory
 	int segment_id;
 
@@ -10,14 +10,15 @@ struct Connection {
 
 	// The cast shared memory for the client buffer
 	struct Buffer* client_buffer;
-};
 
-void setup_connection(struct Connection* connection, int buffer_size);
+} Connection;
 
-void create_server_buffer(struct Connection* connection,
+void setup_connection(Connection* connection, int buffer_size);
+
+void create_server_buffer(Connection* connection,
 													void* shared_memory,
 													int buffer_size);
-void create_client_buffer(struct Connection* connection,
+void create_client_buffer(Connection* connection,
 													void* shared_memory,
 													int buffer_size);
 

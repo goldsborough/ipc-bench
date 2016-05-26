@@ -18,8 +18,8 @@ void cleanup(int connection, void* buffer) {
 	}
 }
 
-void communicate(int connection, struct Arguments* args) {
-	struct Benchmarks bench;
+void communicate(int connection, Arguments* args) {
+	Benchmarks bench;
 	int message;
 	void* buffer;
 
@@ -141,7 +141,7 @@ int main(int argc, char* argv[]) {
 	// The socket through which we communciate with the client
 	int connection;
 
-	struct Arguments args;
+	Arguments args;
 	parse_arguments(&args, argc, argv);
 
 	connection = connect_to_client();

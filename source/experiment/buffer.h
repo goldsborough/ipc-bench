@@ -1,7 +1,7 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
-struct Buffer {
+typedef struct Buffer {
 	// The pointer to the first byte of the buffer
 	void* memory;
 
@@ -16,24 +16,25 @@ struct Buffer {
 
 	// The write pointer
 	void* write;
-};
 
-struct Buffer* create_buffer(void* shared_memory, int requested_capacity);
+} Buffer;
 
-int buffer_write(struct Buffer* buffer, void* data, int data_size);
-int buffer_read(struct Buffer* buffer, void* data, int data_size);
+Buffer* create_buffer(void* shared_memory, int requested_capacity);
 
-int buffer_peak(struct Buffer* buffer, void* data, int data_size);
-int buffer_skip(struct Buffer* buffer, int how_many);
+int buffer_write(Buffer* buffer, void* data, int data_size);
+int buffer_read(Buffer* buffer, void* data, int data_size);
 
-void clear_buffer(struct Buffer* buffer);
+int buffer_peak(Buffer* buffer, void* data, int data_size);
+int buffer_skip(Buffer* buffer, int how_many);
 
-int buffer_is_full(struct Buffer* buffer);
-int buffer_is_empty(struct Buffer* buffer);
+void clear_buffer(Buffer* buffer);
+
+int buffer_is_full(Buffer* buffer);
+int buffer_is_empty(Buffer* buffer);
 
 void check_write_error(int return_code);
 void check_read_error(int return_code);
 
-void* buffer_end(struct Buffer* buffer);
+void* buffer_end(Buffer* buffer);
 
 #endif /* BUFFER_H */

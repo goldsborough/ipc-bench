@@ -4,10 +4,10 @@
 #include "buffer.h"
 #include "common/utility.h"
 
-struct Buffer* create_buffer(void* shared_memory, int requested_capacity) {
-	struct Buffer* buffer = (struct Buffer*)shared_memory;
+Buffer* create_buffer(void* shared_memory, int requested_capacity) {
+	Buffer* buffer = (Buffer*)shared_memory;
 
-	buffer->memory = buffer + sizeof(struct Buffer);
+	buffer->memory = buffer + sizeof(Buffer);
 	buffer->capacity = requested_capacity;
 
 	clear_buffer(buffer);
@@ -15,7 +15,7 @@ struct Buffer* create_buffer(void* shared_memory, int requested_capacity) {
 	return buffer;
 }
 
-int buffer_write(struct Buffer* buffer, void* data, int data_size) {
+int buffer_write(Buffer* buffer, void* data, int data_size) {
 	int space;
 	int return_code;
 
@@ -62,7 +62,7 @@ int buffer_write(struct Buffer* buffer, void* data, int data_size) {
 	return data_size;
 }
 
-int buffer_read(struct Buffer* buffer, void* data, int data_size) {
+int buffer_read(Buffer* buffer, void* data, int data_size) {
 	int return_code;
 
 	assert(buffer != NULL);
@@ -102,7 +102,7 @@ int buffer_read(struct Buffer* buffer, void* data, int data_size) {
 	return data_size;
 }
 
-int buffer_peak(struct Buffer* buffer, void* data, int data_size) {
+int buffer_peak(Buffer* buffer, void* data, int data_size) {
 	int bytes_read;
 	int old_size;
 	void* old_read;
@@ -120,7 +120,7 @@ int buffer_peak(struct Buffer* buffer, void* data, int data_size) {
 	return bytes_read;
 }
 
-int buffer_skip(struct Buffer* buffer, int how_many) {
+int buffer_skip(Buffer* buffer, int how_many) {
 	assert(buffer != NULL);
 	assert(data != NULL);
 
@@ -136,17 +136,17 @@ int buffer_skip(struct Buffer* buffer, int how_many) {
 	return how_many;
 }
 
-void clear_buffer(struct Buffer* buffer) {
+void clear_buffer(Buffer* buffer) {
 	buffer->read = buffer->memory;
 	buffer->write = buffer->memory;
 	buffer->size = 0;
 }
 
-int buffer_is_full(struct Buffer* buffer) {
+int buffer_is_full(Buffer* buffer) {
 	return buffer->size == buffer->capacity;
 }
 
-int buffer_is_empty(struct Buffer* buffer) {
+int buffer_is_empty(Buffer* buffer) {
 	return buffer->size == 0;
 }
 
@@ -162,6 +162,6 @@ void check_read_error(int return_code) {
 	}
 }
 
-void* buffer_end(struct Buffer* buffer) {
+void* buffer_end(Buffer* buffer) {
 	return buffer->memory + buffer->capacity;
 }

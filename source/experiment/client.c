@@ -15,7 +15,7 @@ void cleanup(int socket, void* buffer) {
 	free(buffer);
 }
 
-void communicate(int connection, struct Arguments* args) {
+void communicate(int connection, Arguments* args) {
 	void* buffer = malloc(args->size);
 
 	client_once(NOTIFY);
@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
 	// The socket through which we communciate with the client
 	int connection;
 
-	struct Arguments args;
+	Arguments args;
 	parse_arguments(&args, argc, argv);
 
 	connection = connect_to_server();
