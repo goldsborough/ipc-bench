@@ -82,6 +82,7 @@ void setup_socket(int socket_descriptor) {
 		throw("Error binding socket to address");
 	}
 
+	// Enable listening on this socket
 	return_code = listen(socket_descriptor, 10);
 
 	if (return_code == -1) {
@@ -119,6 +120,9 @@ int accept_connection(int socket_descriptor, int busy_waiting) {
 	int connection;
 	socklen_t length = sizeof client;
 
+	// Start accepting connections on this socket and
+	// receive a connection-specific socket for any
+	// incoming socket
 	// clang-format off
 	connection = accept(
 		socket_descriptor,

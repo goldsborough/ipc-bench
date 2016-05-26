@@ -72,6 +72,7 @@ void setup_socket(int connection, int busy_waiting) {
 	// 2. A sockaddr struct describing the socket address to connect to.
 	// 3. The length of the struct, as computed by the SUN_LEN macro.
 	// clang-format off
+	// Blocks until the connection is accepted by the other end.
 	return_code = connect(
 		connection,
 		(struct sockaddr*)&address,

@@ -40,12 +40,13 @@ for most implementations. There are many ways to handle this:
 3. Exploit alignment constraints on pointers and use the first bit of the write
    (or read) pointer as a flag.
 
-Because the available input space is non-contiguous, any messages will have to
-be written manually, byte-by-byte (or so) by the implementation (rather than
-using standard `memcpy` functions). Given that the read and write functions
-return the number of bytes read or written, we can use these return values to
-indicate that the buffer is full (returning zero for an attempt to write more
-data than there was space available) or empty.
+Because the available input space is possibly non-contiguous, messages will
+sometimes have to be written by the implementation with two calls to
+`memcpy`. Given that the read and write functions return the number of bytes
+read or written, we can use these return values to indicate that the buffer is
+full (returning zero for an attempt to write more data than there was space
+available) or empty. We would most likely not want partial reads or writes,
+i.e. returning a value $0 < \text{returned value} < \text{size}$.
 
 ### Step-By-Step Example
 
@@ -79,18 +80,19 @@ single identifier for the connection. Also on the client side, there is only the
 socket FD returned by `socket` to identify the connection. However, we really
 actually have two identifiers: the file descriptor for the socket and the
 segment ID. Also, the call to `shmat` yields a pointer to the shared memory,
-which also needs to be stored somewher. As such, we need some way of associating
-a unique identifier with all three of these values, such that calls to `read`,
-`write`, `close` etc. can all work with the *single* value returned by `accept`
-and `connect` (which would normally just be the socket file descriptor). One
-possibility would be to maintain a global mapping from the socket file
-descriptor to the memory ID and the memory segment. In calls to `read`, `write`
-etc. we could then retrieve the segment ID and shared memory as necessary. Note
-that we have to use the socket as a key because that is the only identifier the
-client ever gets (when calling `socket`), as opposed to the server which gets a
-new identifier for each connection (which we could have chosen as the segment
-ID). Note also that on the client-side, we theoretically don't need to store the
-segment ID, as it is only required by one party to deallocate the segment.
+which also needs to be stored somewhere. As such, we need some way of
+associating a unique identifier with all three of these values, such that calls
+to `read`, `write`, `close` etc. can all work with the *single* value returned
+by `accept` and `connect` (which would normally just be the socket file
+descriptor). One possibility would be to maintain a global mapping from the
+socket file descriptor to the memory ID and the memory segment. In calls to
+`read`, `write` etc. we could then retrieve the segment ID and shared memory as
+necessary. Note that we have to use the socket as a key because that is the only
+identifier the client ever gets (when calling `socket`), as opposed to the
+server which gets a new identifier for each connection (which we could have
+chosen as the segment ID). Note also that on the client-side, we theoretically
+don't need to store the segment ID, as it is only required by one party to
+deallocate the segment.
 
 ```C
 int accept(primary_socket, ...) {
@@ -99,6 +101,8 @@ int accept(primary_socket, ...) {
 
 	// Create a shared memory segment
 	segment_id = shmget(key, size, ...);
+
+	// Initialize our data structures
 
 	// Communicate the ID with the client
 	send(connection, segment_id);
@@ -133,3 +137,64 @@ void connect(connection, server_address) {
 
 Note: we also need to construct the data structures in the shared memory
 (e.g. in map).
+Note: Also need to handle the fact that each end may only read or write from/to
+its respective buffer. Will need a `connection_info.who` identifier anyway.
+
+How to wrap syscalls?
+http://stackoverflow.com/questions/3662856/how-to-reimplement-or-wrap-a-syscall-function-in-linux
+<3
+
+Note that because we will only override `read`/`write` or `recv`/`send` (only
+one of these two pairs), the other will remain for exclusive communication over
+the domain socket.
+
+One idea would actually be to allocate two shared memory segements, one for each
+channel. Then we could set the file permissions on server/client side such that
+each side could only read or write to the buffers it is allowed to.
+
+```C
+struct Connection* connection(int socket_fd) {
+	return connection_map[socket_fd];
+}
+
+// More like: read_buffer(int socket_fd)
+
+void create_buffer(RingBuffer** buffer, int size, int segment_id) {
+
+	// Get the memory
+	*buffer->memory = shmat(segment_id);
+
+	//Assign the ID
+	*buffer->id = segment_id;
+
+	// Setup the pointers
+	*buffer->read = *buffer->write = *buffer->memory;
+
+	// Setup the integers
+	*buffer->capacity = size;
+	*buffer->size = 0;
+}
+
+void accept(primary_socket, ...) {
+	socket = accept(primary_socket, ...);
+
+	first_segment = shmget(key, size, flags);
+	send(socket, &first_segment, sizeof first_segment);
+	create_buffer(&connection(socket).read_buffer, first_segment);
+
+	second_segment = shmget(key, size, flags);
+	send(socket, &second_segment, sizeof second_segment);
+	create_buffer(&connection(socket).write_buffer, second_segment);
+
+	return socket;
+}
+```
+
+## TODO
+
+1. Write domain socket code
+2. Write buffer code
+3. Write connection-info struct code
+4. Override `connect` and `accept`
+5. Override `send` and `recv`
+6. Profit $
