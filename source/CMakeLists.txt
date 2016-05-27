@@ -4,7 +4,7 @@
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
+#set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
 
 # Apple's C standard library already contains the math functions
 if(NOT APPLE)

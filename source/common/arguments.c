@@ -28,7 +28,7 @@ void parse_arguments(Arguments *arguments, int argc, char *argv[]) {
 	optind = 0;
 
 	// Default values
-	arguments->size = getpagesize();
+	arguments->size = DEFAULT_MESSAGE_SIZE;
 	arguments->count = 1000;
 
 	// Command line arguments

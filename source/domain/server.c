@@ -33,6 +33,8 @@ void communicate(int connection, struct Arguments* args, int busy_waiting) {
 			throw("Error sending on server-side");
 		}
 
+		memset(buffer, '*', args->size);
+
 		if (receive(connection, buffer, args->size, busy_waiting) == -1) {
 			throw("Error receiving on server-side");
 		}

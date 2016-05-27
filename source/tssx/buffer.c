@@ -32,13 +32,13 @@ int buffer_write(Buffer* buffer, void* data, int data_size) {
 
 		// Enough forward space
 		if (data_size <= space) {
-			return_code = memcpy_s(buffer->write, space, data, data_size);
-			check_write_error(return_code);
+			memcpy(buffer->write, data, data_size);
+			// check_write_error(return_code);
 
 		} else {
 			// Write first portion, up to the end of the buffer
-			return_code = memcpy_s(buffer->write, space, data, space);
-			check_write_error(return_code);
+			memcpy(buffer->write, data, space);
+			// check_write_error(return_code);
 
 			buffer->write = buffer->memory;
 			data_size -= space;
@@ -46,14 +46,14 @@ int buffer_write(Buffer* buffer, void* data, int data_size) {
 			space = buffer->read - buffer->memory;
 
 			// Write seocnd portion
-			memcpy_s(buffer->write, space, data, data_size);
-			check_write_error(return_code);
+			memcpy(buffer->write, data, data_size);
+			// check_write_error(return_code);
 		}
 	} else {
 		space = buffer->read - buffer->write;
 
-		return_code = memcpy_s(buffer->write, space, data, data_size);
-		check_write_error(return_code);
+		memcpy(buffer->write, data, data_size);
+		// check_write_error(return_code);
 	}
 
 	buffer->write += data_size;
@@ -77,24 +77,24 @@ int buffer_read(Buffer* buffer, void* data, int data_size) {
 		space = buffer_end(buffer) - buffer->write;
 
 		if (data_size <= space) {
-			return_code = memcpy_s(data, data_size, buffer->read, data_size);
-			check_read_error(return_code);
+			memcpy(data, buffer->read, data_size);
+			// check_read_error(return_code);
 		} else {
 			// Read first portion, up to the end of the buffer
-			return_code = memcpy_s(data, data_size, buffer->read, space);
-			check_read_error(return_code);
+			memcpy(data, buffer->read, space);
+			// check_read_error(return_code);
 
 			buffer->read = buffer->memory;
 			data_size -= space;
 			data += space;
 
 			// Read second portion
-			memcpy_s(data, data_size, buffer->read, data_size);
-			check_read_error(return_code);
+			memcpy(data, buffer->read, data_size);
+			// check_read_error(return_code);
 		}
 	} else {
-		return_code = memcpy_s(data, data_size, buffer->read, data_size);
-		check_read_error(return_code);
+		memcpy(data, buffer->read, data_size);
+		// check_read_error(return_code);
 	}
 
 	buffer->read += data_size;

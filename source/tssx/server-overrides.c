@@ -4,8 +4,6 @@
 #include "tssx/overrides.h"
 
 int __real_accept(int, sockaddr*, int*);
-int __real_read(int, void*, int);
-int __real_write(int, void*, int);
 
 int __wrap_accept(int server_socket, sockaddr* address, int* length) {
 	Connection connection;

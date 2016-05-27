@@ -32,13 +32,13 @@ void communicate(int connection, Arguments* args) {
 	for (message = 0; message < args->count; ++message) {
 		bench.single_start = now();
 
-		if (read(connection, buffer, args->size) == -1) {
+		if (read(connection, buffer, args->size) < args->size) {
 			throw("Error reading on server-side");
 		}
 
 		memset(buffer, '*', args->size);
 
-		if (write(connection, buffer, args->size) == -1) {
+		if (write(connection, buffer, args->size) < args->size) {
 			throw("Error sending on server-side");
 		}
 

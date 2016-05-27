@@ -25,11 +25,11 @@ void communicate(int connection, Arguments* args) {
 		// Dummy operation
 		memset(buffer, '*', args->size);
 
-		if (write(connection, buffer, args->size) == -1) {
+		if (write(connection, buffer, args->size) < args->size) {
 			throw("Error receiving on client-side");
 		}
 
-		if (read(connection, buffer, args->size) == -1) {
+		if (read(connection, buffer, args->size) < args->size) {
 			throw("Error sending on client-side");
 		}
 	}

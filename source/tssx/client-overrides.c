@@ -1,22 +1,18 @@
-#include <stdio.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <stdio.h>
 
 #include "tssx/overrides.h"
 
 typedef struct sockaddr sockaddr;
 
 void __real_connect(int, sockaddr*, int*);
-int __real_read(int, void*, int);
-int __real_write(int, void*, int);
 
 void __wrap_connect(int client_socket, sockaddr* address, int* length) {
 	Connection connection;
 	int return_code;
 
 	__real_connect(client_socket, address, length);
-
-	printf("??\n");
 
 	// clang-format off
 	return_code = recv(
