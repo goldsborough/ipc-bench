@@ -3,7 +3,6 @@
 ###########################################################
 
 set(TSSX_COMMON_SOURCES
-	${CMAKE_CURRENT_SOURCE_DIR}/tssx.c
 	${CMAKE_CURRENT_SOURCE_DIR}/buffer.c
 	${CMAKE_CURRENT_SOURCE_DIR}/connection.c
 	${CMAKE_CURRENT_SOURCE_DIR}/hashtable.c

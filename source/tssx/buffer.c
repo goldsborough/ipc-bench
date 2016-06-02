@@ -17,12 +17,11 @@ Buffer* create_buffer(void* shared_memory, int requested_capacity) {
 
 int buffer_write(Buffer* buffer, void* data, int data_size) {
 	int space;
-	int return_code;
 
 	assert(buffer != NULL);
 	assert(data != NULL);
 
-	if (data_size <= 0) return 0;
+	if (data_size == 0) return 0;
 	if (data_size > (buffer->capacity - buffer->size)) return 0;
 
 	// The == is when the buffer is empty
@@ -33,27 +32,20 @@ int buffer_write(Buffer* buffer, void* data, int data_size) {
 		// Enough forward space
 		if (data_size <= space) {
 			memcpy(buffer->write, data, data_size);
-			// check_write_error(return_code);
 
 		} else {
 			// Write first portion, up to the end of the buffer
 			memcpy(buffer->write, data, space);
-			// check_write_error(return_code);
 
 			buffer->write = buffer->memory;
 			data_size -= space;
 			data += space;
-			space = buffer->read - buffer->memory;
 
-			// Write seocnd portion
+			// Write second portion
 			memcpy(buffer->write, data, data_size);
-			// check_write_error(return_code);
 		}
 	} else {
-		space = buffer->read - buffer->write;
-
 		memcpy(buffer->write, data, data_size);
-		// check_write_error(return_code);
 	}
 
 	buffer->write += data_size;
@@ -64,7 +56,6 @@ int buffer_write(Buffer* buffer, void* data, int data_size) {
 
 int buffer_read(Buffer* buffer, void* data, int data_size) {
 	int space;
-	int return_code;
 
 	assert(buffer != NULL);
 	assert(data != NULL);
@@ -78,11 +69,9 @@ int buffer_read(Buffer* buffer, void* data, int data_size) {
 
 		if (data_size <= space) {
 			memcpy(data, buffer->read, data_size);
-			// check_read_error(return_code);
 		} else {
 			// Read first portion, up to the end of the buffer
 			memcpy(data, buffer->read, space);
-			// check_read_error(return_code);
 
 			buffer->read = buffer->memory;
 			data_size -= space;
@@ -90,11 +79,9 @@ int buffer_read(Buffer* buffer, void* data, int data_size) {
 
 			// Read second portion
 			memcpy(data, buffer->read, data_size);
-			// check_read_error(return_code);
 		}
 	} else {
 		memcpy(data, buffer->read, data_size);
-		// check_read_error(return_code);
 	}
 
 	buffer->read += data_size;
@@ -109,6 +96,7 @@ int buffer_peak(Buffer* buffer, void* data, int data_size) {
 	void* old_read;
 
 	assert(buffer != NULL);
+	assert(data != NULL);
 
 	old_size = buffer->size;
 	old_read = buffer->read;

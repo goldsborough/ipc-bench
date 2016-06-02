@@ -26,7 +26,7 @@ int __wrap_accept(int server_socket, sockaddr* address, int* length) {
 	// clang-format on
 
 	if (return_code == -1) {
-		throw("Error writing segment ID to client");
+		throw("Error sending segment ID to client");
 		return -1;
 	}
 
@@ -41,7 +41,6 @@ int __wrap_read(int socket_fd, void* destination, int requested_bytes) {
 	// clang-format off
 	return connection_read(
 		socket_fd,
-		&connection_map,
 		destination,
 		requested_bytes,
 		CLIENT_BUFFER
@@ -53,7 +52,6 @@ int __wrap_write(int socket_fd, void* source, int requested_bytes) {
 	// clang-format off
 	return connection_write(
 		socket_fd,
-		&connection_map,
 		source,
 		requested_bytes,
 		SERVER_BUFFER

@@ -7,7 +7,6 @@
 
 #include "common/common.h"
 #include "common/sockets.h"
-#include "tssx/tssx.h"
 
 #define SOCKET_PATH "/tmp/domain_socket"
 
@@ -94,8 +93,6 @@ int main(int argc, char* argv[]) {
 
 	Arguments args;
 	parse_arguments(&args, argc, argv);
-
-	tssx();
 
 	connection = connect_to_server();
 	communicate(connection, &args);
