@@ -116,7 +116,7 @@ int accept_client(int server_socket) {
 		throw("Error accepting connection");
 	}
 
-	adjust_socket_buffer_size(client_socket);
+	set_socket_both_buffer_sizes(client_socket);
 
 	return client_socket;
 }

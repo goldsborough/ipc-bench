@@ -4,8 +4,6 @@
 
 #include "hashtable.h"
 
-HashTable HT_INITIALIZER = {0, 0, 0, HT_UNINITIALIZED};
-
 void ht_setup(HashTable* table, int capacity) {
 	assert(table != NULL);
 

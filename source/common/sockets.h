@@ -3,14 +3,22 @@
 
 #define BUFFER_SIZE 64000
 
-void adjust_socket_individual_buffer_size(int socket_descriptor, int which);
+#define SEND 0
+#define RECEIVE 1
 
-void adjust_socket_buffer_size(int socket_descriptor);
+struct timeval;
+typedef struct timeval timeval;
 
-void adjust_socket_blocking_timeout(int socket_descriptor,
-																		int seconds,
-																		int microseconds);
+int get_socket_buffer_size(int socket_fd, int which);
+timeval get_socket_timeout(int socket_fd, int which);
+double get_socket_timeout_seconds(int socket_fd, int which);
 
-int set_socket_flag(int socket_descriptor, int flag);
+void set_socket_buffer_size(int socket_fd, int which);
+void set_socket_both_buffer_sizes(int socket_fd);
+
+void set_socket_timeout(int socket_fd, timeval* timeout, int which);
+void set_socket_both_timeouts(int socket_fd, int seconds, int microseconds);
+
+int set_io_flag(int socket_fd, int flag);
 
 int receive(int connection, void* buffer, int size, int busy_waiting);

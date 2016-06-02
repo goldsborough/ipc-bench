@@ -17,6 +17,8 @@
 
 #define HT_UNINITIALIZED NULL
 
+#define HT_INITIALIZER {0, 0, 0, HT_UNINITIALIZED};
+
 /***** STRUCTURES *****/
 
 typedef struct Node {
@@ -36,8 +38,6 @@ typedef struct HashTable {
 	Node** nodes;
 
 } HashTable;
-
-extern HashTable HT_INITIIALIZER;
 
 /***** METHODS *****/
 

@@ -1,16 +1,21 @@
 #include <assert.h>
+#include <sched.h>
 #include <string.h>
+#include <time.h>
+#include <unistd.h>
 
 #include "common/utility.h"
 #include "tssx/buffer.h"
 
-Buffer* create_buffer(void* shared_memory, int requested_capacity) {
+Buffer*
+create_buffer(void* shared_memory, int requested_capacity, double timeout) {
 	Buffer* buffer = (Buffer*)shared_memory;
 
 	buffer->memory = buffer + sizeof(Buffer);
 	buffer->capacity = requested_capacity;
+	buffer->timeout = timeout;
 
-	clear_buffer(buffer);
+	buffer_clear(buffer);
 
 	return buffer;
 }
@@ -22,7 +27,7 @@ int buffer_write(Buffer* buffer, void* data, int data_size) {
 	assert(data != NULL);
 
 	if (data_size == 0) return 0;
-	if (data_size > (buffer->capacity - buffer->size)) return 0;
+	if (_block(buffer, data_size, _enough_space) == TIMEOUT) return TIMEOUT;
 
 	// The == is when the buffer is empty
 	if (buffer->write >= buffer->read) {
@@ -61,7 +66,7 @@ int buffer_read(Buffer* buffer, void* data, int data_size) {
 	assert(data != NULL);
 
 	if (data_size <= 0) return 0;
-	if (data_size > buffer->size) return 0;
+	if (_block(buffer, data_size, _enough_data) == TIMEOUT) return TIMEOUT;
 
 	if (buffer->read >= buffer->write) {
 		// Available space to the right of the write pointer
@@ -125,7 +130,7 @@ int buffer_skip(Buffer* buffer, int how_many) {
 	return how_many;
 }
 
-void clear_buffer(Buffer* buffer) {
+void buffer_clear(Buffer* buffer) {
 	buffer->read = buffer->memory;
 	buffer->write = buffer->memory;
 	buffer->size = 0;
@@ -139,18 +144,69 @@ int buffer_is_empty(Buffer* buffer) {
 	return buffer->size == 0;
 }
 
-void check_write_error(int return_code) {
+int buffer_has_timeout(Buffer* buffer) {
+	return buffer->timeout != 0;
+}
+
+void* buffer_end(Buffer* buffer) {
+	return buffer->memory + buffer->capacity;
+}
+
+int buffer_free_space(Buffer* buffer) {
+	return buffer->capacity - buffer->size;
+}
+
+/******* PRIVATE *******/
+
+void _check_write_error(int return_code) {
 	if (return_code != 0) {
 		throw("Error writing to buffer");
 	}
 }
 
-void check_read_error(int return_code) {
+void _check_read_error(int return_code) {
 	if (return_code != 0) {
 		throw("Error reading from buffer");
 	}
 }
 
-void* buffer_end(Buffer* buffer) {
-	return buffer->memory + buffer->capacity;
+int _enough_space(Buffer* buffer, int requested_size) {
+	return requested_size <= buffer_free_space(buffer);
+}
+
+int _enough_data(Buffer* buffer, int requested_size) {
+	return requested_size <= buffer->size;
+}
+
+double _now() {
+	return ((double)clock()) / CLOCKS_PER_SEC;
+}
+
+int _escalation_level(Buffer* buffer, double start_time) {
+	double elapsed = _now() - start_time;
+
+	if (buffer_has_timeout(buffer) && elapsed > buffer->timeout) {
+		return TIMEOUT;
+	} else if (elapsed > LEVEL_TWO_TIME) {
+		return LEVEL_THREE;
+	} else if (elapsed > LEVEL_ONE_TIME) {
+		return LEVEL_TWO;
+	} else {
+		return LEVEL_ONE;
+	}
+}
+
+int _block(Buffer* buffer, int requested_size, Condition condition) {
+	double start_time = _now();
+
+	while (!condition(buffer, requested_size)) {
+		switch (_escalation_level(buffer, start_time)) {
+			case LEVEL_ONE: break;
+			case LEVEL_TWO: sched_yield(); break;
+			case LEVEL_THREE: usleep(100000); break;
+			case TIMEOUT: return -1;
+		}
+	}
+
+	return 0;
 }

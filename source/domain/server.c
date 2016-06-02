@@ -137,11 +137,11 @@ int accept_connection(int socket_descriptor, int busy_waiting) {
 		throw("Error accepting connection");
 	}
 
-	adjust_socket_buffer_size(connection);
+	set_socket_both_buffer_sizes(connection);
 
 	if (busy_waiting) {
 		// adjust_socket_blocking_timeout(connection, 0, 1);
-		if (set_socket_flag(connection, O_NONBLOCK) == -1) {
+		if (set_io_flag(connection, O_NONBLOCK) == -1) {
 			throw("Error setting socket to non-blocking on server-side");
 		}
 	}

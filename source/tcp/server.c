@@ -94,7 +94,7 @@ void cleanup(int descriptor, void *buffer) {
 }
 
 void setup_socket(int socket_descriptor, int busy_waiting) {
-	adjust_socket_buffer_size(socket_descriptor);
+	set_socket_both_buffer_sizes(socket_descriptor);
 
 	if (busy_waiting) {
 		// Note that adjusting the blocking timeout would only make sense
@@ -105,7 +105,7 @@ void setup_socket(int socket_descriptor, int busy_waiting) {
 		// all (setting the timeout to a small value like 10 microseconds
 		// does make it faster than plain busy waiting, though.)
 		// adjust_socket_blocking_timeout(socket_descriptor, 0, 10);
-		if (set_socket_flag(socket_descriptor, O_NONBLOCK) == -1) {
+		if (set_io_flag(socket_descriptor, O_NONBLOCK) == -1) {
 			throw("Error setting socket to non-blocking on server-side");
 		}
 	}

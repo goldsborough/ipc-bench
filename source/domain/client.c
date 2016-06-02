@@ -49,14 +49,14 @@ void setup_socket(int connection, int busy_waiting) {
 
 	struct sockaddr_un address;
 
-	adjust_socket_buffer_size(connection);
+	set_socket_both_buffer_sizes(connection);
 
 	if (busy_waiting) {
 		// For domain sockets blocking or not seems to make no
 		// difference at all in terms of speed. Neither setting
 		// the timeout nor not blocking at all.
 		// adjust_socket_blocking_timeout(connection, 0, 1);
-		if (set_socket_flag(connection, O_NONBLOCK) == -1) {
+		if (set_io_flag(connection, O_NONBLOCK) == -1) {
 			throw("Error setting socket to non-blocking on client-side");
 		}
 	}

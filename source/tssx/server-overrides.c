@@ -34,7 +34,7 @@ int __wrap_accept(int server_socket, sockaddr* address, int* length) {
 		return -1;
 	}
 
-	setup_connection(&connection, BUFFER_SIZE);
+	setup_connection(&connection, &DEFAULT_OPTIONS);
 
 	ht_insert(&connection_map, client_socket, &connection);
 
