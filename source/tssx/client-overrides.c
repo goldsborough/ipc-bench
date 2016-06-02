@@ -1,12 +1,13 @@
+#include <stdio.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <stdio.h>
 
 #include "tssx/overrides.h"
 
-typedef struct sockaddr sockaddr;
-
+int __real_read(int, void*, int);
+int __real_write(int, void*, int);
 void __real_connect(int, sockaddr*, int*);
+int __real_close(int);
 
 void __wrap_connect(int client_socket, sockaddr* address, int* length) {
 	Connection connection;
@@ -36,7 +37,6 @@ int __wrap_read(int socket_fd, void* destination, int requested_bytes) {
 	// clang-format off
 	return connection_read(
 		socket_fd,
-		&connection_map,
 		destination,
 		requested_bytes,
 		SERVER_BUFFER
@@ -48,10 +48,18 @@ int __wrap_write(int socket_fd, void* source, int requested_bytes) {
 	// clang-format off
 	return connection_write(
 		socket_fd,
-		&connection_map,
 		source,
 		requested_bytes,
 		CLIENT_BUFFER
 	);
 	// clang-format on
+}
+
+int __wrap_close(int socket_fd) {
+	Connection* connection;
+
+	connection = ht_get(&connection_map, socket_fd);
+	disconnect(connection);
+
+	return __real_close(socket_fd);
 }

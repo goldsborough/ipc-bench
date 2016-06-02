@@ -15,6 +15,10 @@ typedef struct Connection {
 
 void setup_connection(Connection* connection, int buffer_size);
 
+void destroy_connection(Connection* connection);
+
+void disconnect(Connection* connection);
+
 void create_server_buffer(Connection* connection,
 													void* shared_memory,
 													int buffer_size);

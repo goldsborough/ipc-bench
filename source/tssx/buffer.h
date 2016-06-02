@@ -1,6 +1,8 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
+/******* STRUCTURES *******/
+
 typedef struct Buffer {
 	// The pointer to the first byte of the buffer
 	void* memory;
@@ -18,6 +20,8 @@ typedef struct Buffer {
 	void* write;
 
 } Buffer;
+
+/******* METHODS *******/
 
 Buffer* create_buffer(void* shared_memory, int requested_capacity);
 

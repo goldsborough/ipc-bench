@@ -1,9 +1,13 @@
+#include <assert.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
 #include "tssx/overrides.h"
 
+int __real_read(int, void*, int);
+int __real_write(int, void*, int);
 int __real_accept(int, sockaddr*, int*);
+int __real_close(int);
 
 int __wrap_accept(int server_socket, sockaddr* address, int* length) {
 	Connection connection;
@@ -57,4 +61,13 @@ int __wrap_write(int socket_fd, void* source, int requested_bytes) {
 		SERVER_BUFFER
 	);
 	// clang-format on
+}
+
+int __wrap_close(int socket_fd) {
+	Connection* connection;
+
+	connection = ht_get(&connection_map, socket_fd);
+	destroy_connection(connection);
+
+	return __real_close(socket_fd);
 }

@@ -32,11 +32,15 @@ void* attach_segment(int segment_id) {
 }
 
 void detach_segment(void* shared_memory) {
-	shmdt(shared_memory);
+	if (shmdt(shared_memory) == -1) {
+		throw("Error detaching shared memory segment");
+	}
 }
 
 void destroy_segment(int segment_id) {
-	shmctl(segment_id, IPC_RMID, NULL);
+	if (shmctl(segment_id, IPC_RMID, NULL) == -1) {
+		throw("Error destroying shared memory segment");
+	}
 }
 
 int segment_size(Buffer* buffer) {

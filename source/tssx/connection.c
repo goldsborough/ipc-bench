@@ -1,5 +1,8 @@
-#include "tssx/connection.h"
+#include <assert.h>
+#include <stddef.h>
+
 #include "tssx/buffer.h"
+#include "tssx/connection.h"
 #include "tssx/shared_memory.h"
 
 void setup_connection(Connection* connection, int buffer_size) {
@@ -9,6 +12,18 @@ void setup_connection(Connection* connection, int buffer_size) {
 
 	create_server_buffer(connection, shared_memory, buffer_size);
 	create_client_buffer(connection, shared_memory, buffer_size);
+}
+
+void destroy_connection(Connection* connection) {
+	assert(connection != NULL);
+
+	disconnect(connection);
+	destroy_segment(connection->segment_id);
+}
+
+void disconnect(Connection* connection) {
+	// The segment starts at the server_buffer pointer
+	detach_segment(connection->server_buffer);
 }
 
 void create_server_buffer(Connection* connection,
