@@ -1,13 +1,15 @@
 #include <assert.h>
 #include <stddef.h>
+#include <stdio.h>
 
 #include "common/sockets.h"
+#include "tssx/hashtable.h"
 #include "tssx/buffer.h"
 #include "tssx/connection.h"
 #include "tssx/shared_memory.h"
 
 // clang-format off
-ConnectionOptions DEFAULT_OPTIONS = {
+ConnectionOptions DEFAULT_OPTIONS_OBJECT = {
 	DEFAULT_BUFFER_SIZE,
 	DEFAULT_TIMEOUT,
 	DEFAULT_BUFFER_SIZE,
@@ -50,6 +52,8 @@ void destroy_connection(Connection* connection) {
 }
 
 void disconnect(Connection* connection) {
+	assert(connection != NULL);
+
 	// The segment starts at the server_buffer pointer
 	detach_segment(connection->server_buffer);
 }
@@ -77,4 +81,23 @@ void create_client_buffer(Connection* connection,
 			options->client_timeout
 	);
 	// clang-format on
+}
+
+
+int options_segment_size(ConnectionOptions* options) {
+	int segment_size;
+
+	segment_size += sizeof(Buffer) + options->server_buffer_size;
+	segment_size += sizeof(Buffer) + options->client_buffer_size;
+
+	return segment_size;
+}
+
+int connection_segment_size(Connection* connection) {
+	int segment_size;
+
+	segment_size += sizeof(Buffer) + connection->server_buffer->size;
+	segment_size += sizeof(Buffer) + connection->client_buffer->size;
+
+	return segment_size;
 }

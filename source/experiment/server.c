@@ -22,24 +22,36 @@ void communicate(int connection, Arguments* args) {
 	Benchmarks bench;
 	int message;
 	void* buffer;
+	bench_t start;
 
 	buffer = malloc(args->size);
 	setup_benchmarks(&bench);
 
+	// Synchronize for the benchmarks
 	server_once(WAIT);
 
 	for (message = 0; message < args->count; ++message) {
 		bench.single_start = now();
 
-		if (read(connection, buffer, args->size) < args->size) {
+		//printf("Server read start: %ld\n", now());
+		//start = now();
+
+		if (read(connection, buffer, args->size) == -1) {
 			throw("Error reading on server-side");
 		}
 
+		//printf("Server read done: %ld %f\n", now(), (now() - start) / 1e3);
+
 		memset(buffer, '*', args->size);
 
-		if (write(connection, buffer, args->size) < args->size) {
+		//printf("Server write start: %ld\n", now());
+		//start = now();
+
+		if (write(connection, buffer, args->size) == -1) {
 			throw("Error sending on server-side");
 		}
+
+		//printf("Server write done: %ld %f\n", now(), (now() - start) / 1e3);
 
 		benchmark(&bench);
 	}

@@ -1,8 +1,13 @@
 #include <assert.h>
+#include <errno.h>
 #include <sched.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+
+
+#include <stdio.h>
+
 
 #include "common/utility.h"
 #include "tssx/buffer.h"
@@ -11,7 +16,6 @@ Buffer*
 create_buffer(void* shared_memory, int requested_capacity, double timeout) {
 	Buffer* buffer = (Buffer*)shared_memory;
 
-	buffer->memory = buffer + sizeof(Buffer);
 	buffer->capacity = requested_capacity;
 	buffer->timeout = timeout;
 
@@ -21,118 +25,94 @@ create_buffer(void* shared_memory, int requested_capacity, double timeout) {
 }
 
 int buffer_write(Buffer* buffer, void* data, int data_size) {
-	int space;
+	int right_space = 0;
 
-	assert(buffer != NULL);
-	assert(data != NULL);
-
+	if (buffer == NULL) return ERROR;
+	if (data == NULL) return ERROR;
 	if (data_size == 0) return 0;
-	if (_block(buffer, data_size, _enough_space) == TIMEOUT) return TIMEOUT;
+	if (_block(buffer, data_size, _writeable) == TIMEOUT) return ERROR;
+	//while (data_size > buffer_free_space(buffer)) nsleep(1);
 
 	// The == is when the buffer is empty
 	if (buffer->write >= buffer->read) {
 		// Available space to the right of the write pointer
-		space = buffer_end(buffer) - buffer->write;
+		right_space = buffer->capacity - buffer->write;
 
-		// Enough forward space
-		if (data_size <= space) {
-			memcpy(buffer->write, data, data_size);
-
-		} else {
+		if (data_size >= right_space) {
 			// Write first portion, up to the end of the buffer
-			memcpy(buffer->write, data, space);
-
-			buffer->write = buffer->memory;
-			data_size -= space;
-			data += space;
-
-			// Write second portion
-			memcpy(buffer->write, data, data_size);
+			memcpy(_write_pointer(buffer), data, right_space);
+			_wrap_write(buffer, &data, &data_size, right_space);
 		}
-	} else {
-		memcpy(buffer->write, data, data_size);
 	}
+
+	memcpy(_write_pointer(buffer), data, data_size);
 
 	buffer->write += data_size;
 	buffer->size += data_size;
 
-	return data_size;
+		// How many bytes we wrote
+	return data_size + right_space;
 }
 
 int buffer_read(Buffer* buffer, void* data, int data_size) {
-	int space;
+	int right_space = 0;
 
-	assert(buffer != NULL);
-	assert(data != NULL);
-
-	if (data_size <= 0) return 0;
-	if (_block(buffer, data_size, _enough_data) == TIMEOUT) return TIMEOUT;
+	if (buffer == NULL) return ERROR;
+	if (data == NULL) return ERROR;
+	if (data_size == 0) return 0;
+	if (_block(buffer, data_size, _readable) == TIMEOUT) return ERROR;
+	//while (data_size > buffer->size) nsleep(1);
 
 	if (buffer->read >= buffer->write) {
-		// Available space to the right of the write pointer
-		space = buffer_end(buffer) - buffer->write;
+		right_space = buffer->capacity - buffer->read;
 
-		if (data_size <= space) {
-			memcpy(data, buffer->read, data_size);
-		} else {
-			// Read first portion, up to the end of the buffer
-			memcpy(data, buffer->read, space);
-
-			buffer->read = buffer->memory;
-			data_size -= space;
-			data += space;
-
-			// Read second portion
-			memcpy(data, buffer->read, data_size);
+		if (data_size >= right_space) {
+			// Read first portion, then wrap around and write the rest below
+			memcpy(data, _read_pointer(buffer), right_space);
+			_wrap_read(buffer, &data, &data_size, right_space);
 		}
-	} else {
-		memcpy(data, buffer->read, data_size);
 	}
+
+	memcpy(data, _read_pointer(buffer), data_size);
 
 	buffer->read += data_size;
 	buffer->size -= data_size;
 
-	return data_size;
+	// How many bytes we wrote
+	return data_size + right_space;
 }
 
-int buffer_peak(Buffer* buffer, void* data, int data_size) {
-	int bytes_read;
+int buffer_peek(Buffer* buffer, void* data, int data_size) {
+	int return_value;
 	int old_size;
-	void* old_read;
-
-	assert(buffer != NULL);
-	assert(data != NULL);
+	int old_read;
 
 	old_size = buffer->size;
 	old_read = buffer->read;
 
-	bytes_read = buffer_read(buffer, data, data_size);
+	return_value = buffer_read(buffer, data, data_size);
 
 	// Restore
 	buffer->size = old_size;
 	buffer->read = old_read;
 
-	return bytes_read;
+	return return_value;
 }
 
 int buffer_skip(Buffer* buffer, int how_many) {
 	assert(buffer != NULL);
 
-	if (how_many <= 0) return 0;
-	if (how_many > buffer->size) return 0;
+	if (how_many < 0) return ERROR;
+	if (how_many > buffer->size) return ERROR;
 
-	buffer->read += how_many;
-
-	if (buffer->read >= buffer_end(buffer)) {
-		buffer->read -= buffer->capacity;
-	}
+	buffer->read = (buffer->read + how_many) % buffer->capacity;
 
 	return how_many;
 }
 
 void buffer_clear(Buffer* buffer) {
-	buffer->read = buffer->memory;
-	buffer->write = buffer->memory;
+	buffer->read = 0;
+	buffer->write = 0;
 	buffer->size = 0;
 }
 
@@ -148,15 +128,57 @@ int buffer_has_timeout(Buffer* buffer) {
 	return buffer->timeout != 0;
 }
 
-void* buffer_end(Buffer* buffer) {
-	return buffer->memory + buffer->capacity;
-}
-
 int buffer_free_space(Buffer* buffer) {
 	return buffer->capacity - buffer->size;
 }
 
 /******* PRIVATE *******/
+
+void* _start_pointer(Buffer* buffer) {
+	return (void*)++buffer;
+}
+
+void* _end_pointer(Buffer* buffer) {
+	return _pointer_to(buffer, buffer->capacity);
+}
+
+void* _read_pointer(Buffer* buffer) {
+	return _pointer_to(buffer, buffer->read);
+}
+
+void* _write_pointer(Buffer* buffer) {
+	return _pointer_to(buffer, buffer->write);
+}
+
+void* _pointer_to(Buffer* buffer, int index) {
+	assert(index >= 0);
+	assert(index <= buffer->capacity);
+
+	return _start_pointer(buffer) + index;
+}
+int _index_at(Buffer* buffer, void* pointer) {
+	assert(pointer >= _start_pointer(buffer));
+	assert(pointer <= _end_pointer(buffer));
+
+	return pointer - _start_pointer(buffer);
+}
+
+void _wrap_read(Buffer* buffer, void** data, int* data_size, int delta) {
+	buffer->read = 0;
+	buffer->size -= delta;
+	_reduce_data(data, data_size, delta);
+}
+
+void _wrap_write(Buffer* buffer, void** data, int* data_size, int delta) {
+	buffer->write = 0;
+	buffer->size += delta;
+	_reduce_data(data, data_size, delta);
+}
+
+void _reduce_data(void** data, int* data_size, int delta) {
+	*data_size -= delta;
+	*data += delta;
+}
 
 void _check_write_error(int return_code) {
 	if (return_code != 0) {
@@ -170,11 +192,11 @@ void _check_read_error(int return_code) {
 	}
 }
 
-int _enough_space(Buffer* buffer, int requested_size) {
+int _writeable(Buffer* buffer, int requested_size) {
 	return requested_size <= buffer_free_space(buffer);
 }
 
-int _enough_data(Buffer* buffer, int requested_size) {
+int _readable(Buffer* buffer, int requested_size) {
 	return requested_size <= buffer->size;
 }
 
@@ -186,6 +208,7 @@ int _escalation_level(Buffer* buffer, double start_time) {
 	double elapsed = _now() - start_time;
 
 	if (buffer_has_timeout(buffer) && elapsed > buffer->timeout) {
+		errno = EWOULDBLOCK;
 		return TIMEOUT;
 	} else if (elapsed > LEVEL_TWO_TIME) {
 		return LEVEL_THREE;
@@ -200,13 +223,20 @@ int _block(Buffer* buffer, int requested_size, Condition condition) {
 	double start_time = _now();
 
 	while (!condition(buffer, requested_size)) {
+		// Busy waiting sucks really, really, really hard!
+		// sched_yield is really, really, really good
 		switch (_escalation_level(buffer, start_time)) {
-			case LEVEL_ONE: break;
-			case LEVEL_TWO: sched_yield(); break;
-			case LEVEL_THREE: usleep(100000); break;
-			case TIMEOUT: return -1;
+		  case LEVEL_ONE:
+		  case LEVEL_TWO: sched_yield(); break;
+		  case LEVEL_THREE: usleep(1); break;
+		  case TIMEOUT: return -1;
 		}
 	}
+
+	start_time *= 1e6;
+	//double end_time = _now() * 1e6;
+
+	//printf("Blocked: %f - %f: %f\n", start_time, end_time, end_time - start_time);
 
 	return 0;
 }

@@ -1,8 +1,13 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
-#define DEFAULT_BUFFER_SIZE 1048576
+#define DEFAULT_BUFFER_SIZE 1000000
 #define DEFAULT_TIMEOUT 0
+
+#define DEFAULT_OPTIONS &DEFAULT_OPTIONS_OBJECT
+
+struct Buffer;
+typedef struct Buffer Buffer;
 
 typedef struct Connection {
 	// The ID of the shared memory
@@ -25,7 +30,8 @@ typedef struct ConnectionOptions {
 
 } ConnectionOptions;
 
-extern ConnectionOptions DEFAULT_OPTIONS;
+extern ConnectionOptions DEFAULT_OPTIONS_OBJECT;
+
 
 void setup_connection(Connection* connection, ConnectionOptions* options);
 
@@ -41,5 +47,8 @@ void create_server_buffer(Connection* connection,
 void create_client_buffer(Connection* connection,
 													void* shared_memory,
 													ConnectionOptions* options);
+
+int options_segment_size(ConnectionOptions* options);
+int connection_segment_size(Connection* connection);
 
 #endif /* CONNECTION_H */

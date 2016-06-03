@@ -2,9 +2,10 @@
 #define BUFFER_H
 
 #define FOREVER 1
+#define ERROR -1
 
-#define LEVEL_ONE_TIME 0.01
-#define LEVEL_TWO_TIME 1.00
+#define LEVEL_ONE_TIME 0.001
+#define LEVEL_TWO_TIME 0.01
 
 #define TIMEOUT -1
 #define LEVEL_ONE 1
@@ -12,9 +13,6 @@
 #define LEVEL_THREE 3
 
 typedef struct Buffer {
-	// The pointer to the first byte of the buffer
-	void* memory;
-
 	// The current size of the buffer (number of bytes used)
 	int size;
 
@@ -24,11 +22,11 @@ typedef struct Buffer {
 	// The blocking timeout, in fractional seconds.
 	double timeout;
 
-	// The read pointer
-	void* read;
+	// The read index
+	int read;
 
-	// The write pointer
-	void* write;
+	// The write index
+	int  write;
 
 } Buffer;
 
@@ -39,7 +37,7 @@ create_buffer(void* shared_memory, int requested_capacity, double timeout);
 int buffer_write(Buffer* buffer, void* data, int data_size);
 int buffer_read(Buffer* buffer, void* data, int data_size);
 
-int buffer_peak(Buffer* buffer, void* data, int data_size);
+int buffer_peek(Buffer* buffer, void* data, int data_size);
 int buffer_skip(Buffer* buffer, int how_many);
 
 void buffer_clear(Buffer* buffer);
@@ -50,17 +48,27 @@ int buffer_has_timeout(Buffer* buffer);
 
 int buffer_free_space(Buffer* buffer);
 
-void* buffer_end(Buffer* buffer);
-
 /******* PRIVATE *******/
 
 typedef int (*Condition)(Buffer*, int);
 
+void* _start_pointer(Buffer* buffer);
+void* _end_pointer(Buffer* buffer);
+void* _read_pointer(Buffer* buffer);
+void* _write_pointer(Buffer* buffer);
+
+void* _pointer_to(Buffer* buffer, int index);
+int _index_at(Buffer* buffer, void* pointer);
+
+void _wrap_read(Buffer* buffer, void** data, int* data_size, int delta);
+void _wrap_write(Buffer* buffer, void** data, int* data_size, int delta);
+void _reduce_data(void** data, int* data_size, int delta);
+
 void _check_write_error(int return_code);
 void _check_read_error(int return_code);
 
-int _enough_space(Buffer* buffer, int requested_size);
-int _enough_data(Buffer* buffer, int requested_size);
+int _writeable(Buffer* buffer, int requested_size);
+int _readable(Buffer* buffer, int requested_size);
 
 double _now();
 

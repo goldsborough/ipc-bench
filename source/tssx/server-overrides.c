@@ -18,7 +18,7 @@ int __wrap_accept(int server_socket, sockaddr* address, int* length) {
 
 	if (client_socket == -1) return -1;
 
-	connection.segment_id = create_segment(BUFFER_SIZE);
+	connection.segment_id = create_segment(options_segment_size(DEFAULT_OPTIONS));
 
 	// clang-format off
 	return_code = send(
@@ -34,7 +34,7 @@ int __wrap_accept(int server_socket, sockaddr* address, int* length) {
 		return -1;
 	}
 
-	setup_connection(&connection, &DEFAULT_OPTIONS);
+	setup_connection(&connection, DEFAULT_OPTIONS);
 
 	ht_insert(&connection_map, client_socket, &connection);
 
@@ -67,7 +67,13 @@ int __wrap_close(int socket_fd) {
 	Connection* connection;
 
 	connection = ht_get(&connection_map, socket_fd);
-	destroy_connection(connection);
+
+	// Not all socket FDs will be associated with a connection
+	// for example the server socket is not (only the server-client
+	// communication socket)
+	if (connection != NULL) {
+		destroy_connection(connection);
+	}
 
 	return __real_close(socket_fd);
 }

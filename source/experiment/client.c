@@ -17,6 +17,7 @@ void cleanup(int socket, void* buffer) {
 
 void communicate(int connection, Arguments* args) {
 	void* buffer = malloc(args->size);
+	bench_t start;
 
 	client_once(NOTIFY);
 
@@ -24,13 +25,23 @@ void communicate(int connection, Arguments* args) {
 		// Dummy operation
 		memset(buffer, '*', args->size);
 
-		if (write(connection, buffer, args->size) < args->size) {
-			throw("Error receiving on client-side");
+		//printf("Client write start: %ld\n", now());
+		//start = now();
+
+		if (write(connection, buffer, args->size) == -1) {
+			throw("Error writing on client-side");
 		}
 
-		if (read(connection, buffer, args->size) < args->size) {
-			throw("Error sending on client-side");
+		//printf("Client write done: %ld %f\n", now(), (now() - start) / 1e3);
+
+		//printf("Client read start: %ld\n", now());
+		//start = now();
+
+		if (read(connection, buffer, args->size) == -1) {
+			throw("Error reading on client-side");
 		}
+
+		//printf("Client read done: %ld %f\n", now(), (now() - start) / 1e3);
 	}
 
 	cleanup(connection, buffer);
@@ -50,7 +61,7 @@ int create_socket() {
 		throw("Error creating socket on client-side");
 	}
 
-	adjust_socket_buffer_size(connection);
+	set_socket_both_buffer_sizes(connection);
 
 	return connection;
 }
