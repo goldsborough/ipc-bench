@@ -1,8 +1,31 @@
-#include <stdio.h>
+#define _GNU_SOURCE
+
 #include <assert.h>
+#include <dlfcn.h>
 
 #include "tssx/overrides.h"
 #include "tssx/buffer.h"
+
+// RTDL_NEXT = look in the symbol table of the *next* object file after this one
+ssize_t real_write(int fd, const void* data, size_t size) {
+	return ((real_write_t)dlsym(RTLD_NEXT, "write"))(fd, data, size);
+}
+
+ssize_t real_read(int fd, void* data, size_t size) {
+	return  ((real_read_t)dlsym(RTLD_NEXT, "read"))(fd, data, size);
+}
+
+int real_accept(int fd, sockaddr* address, int* length) {
+	return ((real_accept_t)dlsym(RTLD_NEXT, "accept"))(fd, address, length);
+}
+
+void real_connect(int fd, const sockaddr* address, int length) {
+	((real_connect_t)dlsym(RTLD_NEXT, "connect"))(fd, address, length);
+}
+
+int real_close(int fd) {
+	return ((real_close_t)dlsym(RTLD_NEXT, "close"))(fd);
+}
 
 HashTable connection_map = HT_INITIALIZER;
 

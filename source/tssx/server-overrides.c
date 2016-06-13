@@ -1,20 +1,13 @@
 #include <assert.h>
-#include <sys/socket.h>
-#include <unistd.h>
 
 #include "tssx/overrides.h"
 
-int __real_read(int, void*, int);
-int __real_write(int, void*, int);
-int __real_accept(int, sockaddr*, int*);
-int __real_close(int);
-
-int __wrap_accept(int server_socket, sockaddr* address, int* length) {
+int accept(int server_socket, sockaddr* address, int* length) {
 	Connection connection;
 	int client_socket;
 	int return_code;
 
-	client_socket = __real_accept(server_socket, address, length);
+	client_socket = real_accept(server_socket, address, length);
 
 	if (client_socket == -1) return -1;
 
@@ -22,11 +15,10 @@ int __wrap_accept(int server_socket, sockaddr* address, int* length) {
 			create_segment(options_segment_size(&DEFAULT_OPTIONS));
 
 	// clang-format off
-	return_code = send(
+	return_code = real_write(
 		client_socket,
 		&connection.segment_id,
-		sizeof connection.segment_id,
-		0
+		sizeof connection.segment_id
 	);
 	// clang-format on
 
@@ -42,7 +34,7 @@ int __wrap_accept(int server_socket, sockaddr* address, int* length) {
 	return client_socket;
 }
 
-int __wrap_read(int socket_fd, void* destination, int requested_bytes) {
+ssize_t read(int socket_fd, void* destination, size_t requested_bytes) {
 	// clang-format off
 	return connection_read(
 		socket_fd,
@@ -53,7 +45,7 @@ int __wrap_read(int socket_fd, void* destination, int requested_bytes) {
 	// clang-format on
 }
 
-int __wrap_write(int socket_fd, void* source, int requested_bytes) {
+ssize_t write(int socket_fd, void* source, size_t requested_bytes) {
 	// clang-format off
 	return connection_write(
 		socket_fd,
@@ -64,7 +56,7 @@ int __wrap_write(int socket_fd, void* source, int requested_bytes) {
 	// clang-format on
 }
 
-int __wrap_close(int socket_fd) {
+int close(int socket_fd) {
 	Connection* connection;
 
 	connection = ht_get(&connection_map, socket_fd);
@@ -76,5 +68,5 @@ int __wrap_close(int socket_fd) {
 		destroy_connection(connection);
 	}
 
-	return __real_close(socket_fd);
+	return real_close(socket_fd);
 }

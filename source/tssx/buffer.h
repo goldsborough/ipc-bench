@@ -1,10 +1,10 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
-#include "tssx/timeouts.h"
-
 #include <stdint.h>
 #include <stdatomic.h>
+
+#include "tssx/timeouts.h"
 
 #define ERROR -1
 
