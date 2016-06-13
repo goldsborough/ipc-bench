@@ -1,8 +1,7 @@
 #ifndef IPC_BENCH_UTILITY_H
 #define IPC_BENCH_UTILITY_H
 
-#define true 1
-#define false 0
+typedef enum { false, true } bool;
 
 void throw(const char* message);
 

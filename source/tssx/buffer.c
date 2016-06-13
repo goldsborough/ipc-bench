@@ -5,25 +5,22 @@
 #include <time.h>
 #include <unistd.h>
 
-
-#include <stdio.h>
-
-
 #include "common/utility.h"
 #include "tssx/buffer.h"
+#include "tssx/timeouts.h"
 
 Buffer*
-create_buffer(void* shared_memory, int requested_capacity, double timeout) {
+create_buffer(void* shared_memory, int requested_capacity, Timeouts* timeouts) {
 	Buffer* buffer = (Buffer*)shared_memory;
 
 	buffer->capacity = requested_capacity;
-	buffer->timeout = timeout;
+	buffer->timeouts = *timeouts;
 
 	buffer_clear(buffer);
 
 	return buffer;
 }
-
+}
 int buffer_write(Buffer* buffer, void* data, int data_size) {
 	int right_space = 0;
 
@@ -31,7 +28,7 @@ int buffer_write(Buffer* buffer, void* data, int data_size) {
 	if (data == NULL) return ERROR;
 	if (data_size == 0) return 0;
 	if (_block(buffer, data_size, _writeable) == TIMEOUT) return ERROR;
-	//while (data_size > buffer_free_space(buffer)) nsleep(1);
+	// while (data_size > buffer_free_space(buffer)) nsleep(1);
 
 	// The == is when the buffer is empty
 	if (buffer->write >= buffer->read) {
@@ -50,7 +47,7 @@ int buffer_write(Buffer* buffer, void* data, int data_size) {
 	buffer->write += data_size;
 	buffer->size += data_size;
 
-		// How many bytes we wrote
+	// How many bytes we wrote
 	return data_size + right_space;
 }
 
@@ -61,7 +58,7 @@ int buffer_read(Buffer* buffer, void* data, int data_size) {
 	if (data == NULL) return ERROR;
 	if (data_size == 0) return 0;
 	if (_block(buffer, data_size, _readable) == TIMEOUT) return ERROR;
-	//while (data_size > buffer->size) nsleep(1);
+	// while (data_size > buffer->size) nsleep(1);
 
 	if (buffer->read >= buffer->write) {
 		right_space = buffer->capacity - buffer->read;
@@ -108,6 +105,12 @@ int buffer_skip(Buffer* buffer, int how_many) {
 	buffer->read = (buffer->read + how_many) % buffer->capacity;
 
 	return how_many;
+}
+
+void buffer_set_timeout_in_seconds(Buffer* buffer, double timeout) {
+}
+
+double buffer_get_timeout_in_seconds(Buffer* buffer) {
 }
 
 void buffer_clear(Buffer* buffer) {
@@ -200,22 +203,38 @@ int _readable(Buffer* buffer, int requested_size) {
 	return requested_size <= buffer->size;
 }
 
-double _now() {
-	return ((double)clock()) / CLOCKS_PER_SEC;
+int _timeout_elapsed(Buffer* buffer, cycle_t elapsed) {
+	return buffer_has_timeout(buffer) && elapsed > buffer->timeouts.timeout;
+}
+
+int _level_elapsed(Buffer* buffer, int level, cycle_t elapsed) {
+	return elapsed > buffer->timeouts.level[level];
+}
+
+void _pause() {
+	// pause waits between 38 and 40 clock cycles
+	// wherease a NOP would wait between 0.4 and 0.5 cycles.
+	// http://stackoverflow.com/questions/7371869/minimum-time-a-thread-can-pause-in-linux
+	asm volatile("pause" ::: "memory");
+}
+
+uint64_t _now() {
+	uint32_t lower, upper;
+	asm volatile("rdtsc" : "=a"(lower), "=d"(upper));
+	return ((uint64_t)(upper) << 32) | (uint64_t)(lower);
 }
 
 int _escalation_level(Buffer* buffer, double start_time) {
-	double elapsed = _now() - start_time;
-
-	if (buffer_has_timeout(buffer) && elapsed > buffer->timeout) {
+	uint64_t elapsed = _now() - start_time;
+	if (_timeout_elapsed(buffer, elapsed)) {
 		errno = EWOULDBLOCK;
 		return TIMEOUT;
-	} else if (elapsed > LEVEL_TWO_TIME) {
-		return LEVEL_THREE;
-	} else if (elapsed > LEVEL_ONE_TIME) {
+	} else if (_level_elapsed(buffer, LEVEL_ONE, elapsed)) {
 		return LEVEL_TWO;
-	} else {
+	} else if (_level_elapsed(buffer, LEVEL_ZERO, elapsed)) {
 		return LEVEL_ONE;
+	} else {
+		return LEVEL_ZERO;
 	}
 }
 
@@ -223,20 +242,13 @@ int _block(Buffer* buffer, int requested_size, Condition condition) {
 	double start_time = _now();
 
 	while (!condition(buffer, requested_size)) {
-		// Busy waiting sucks really, really, really hard!
-		// sched_yield is really, really, really good
 		switch (_escalation_level(buffer, start_time)) {
-		  case LEVEL_ONE:
-		  case LEVEL_TWO: sched_yield(); break;
-		  case LEVEL_THREE: usleep(1); break;
-		  case TIMEOUT: return -1;
+			case LEVEL_ZERO: _pause(); break;
+			case LEVEL_ONE: sched_yield(); break;
+			case LEVEL_TWO: usleep(1); break;
+			case TIMEOUT: return -1;
 		}
 	}
-
-	start_time *= 1e6;
-	//double end_time = _now() * 1e6;
-
-	//printf("Blocked: %f - %f: %f\n", start_time, end_time, end_time - start_time);
 
 	return 0;
 }

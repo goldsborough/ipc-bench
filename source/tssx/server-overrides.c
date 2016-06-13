@@ -18,7 +18,8 @@ int __wrap_accept(int server_socket, sockaddr* address, int* length) {
 
 	if (client_socket == -1) return -1;
 
-	connection.segment_id = create_segment(options_segment_size(DEFAULT_OPTIONS));
+	connection.segment_id =
+			create_segment(options_segment_size(&DEFAULT_OPTIONS));
 
 	// clang-format off
 	return_code = send(
@@ -34,7 +35,7 @@ int __wrap_accept(int server_socket, sockaddr* address, int* length) {
 		return -1;
 	}
 
-	setup_connection(&connection, DEFAULT_OPTIONS);
+	setup_connection(&connection, &DEFAULT_OPTIONS);
 
 	ht_insert(&connection_map, client_socket, &connection);
 

@@ -2,12 +2,12 @@
 #define CONNECTION_H
 
 #define DEFAULT_BUFFER_SIZE 1000000
-#define DEFAULT_TIMEOUT 0
-
-#define DEFAULT_OPTIONS &DEFAULT_OPTIONS_OBJECT
 
 struct Buffer;
 typedef struct Buffer Buffer;
+
+struct Timeouts;
+typedef struct Timeouts Timeouts;
 
 typedef struct Connection {
 	// The ID of the shared memory
@@ -23,15 +23,14 @@ typedef struct Connection {
 
 typedef struct ConnectionOptions {
 	int server_buffer_size;
-	int server_timeout;
+	Timeouts server_timeouts;
 
 	int client_buffer_size;
-	int client_timeout;
+	Timeouts client_timeouts;
 
 } ConnectionOptions;
 
-extern ConnectionOptions DEFAULT_OPTIONS_OBJECT;
-
+extern ConnectionOptions DEFAULT_OPTIONS;
 
 void setup_connection(Connection* connection, ConnectionOptions* options);
 
