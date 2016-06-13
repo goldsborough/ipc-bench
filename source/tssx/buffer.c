@@ -209,12 +209,12 @@ void _pause() {
 	// pause waits between 38 and 40 clock cycles
 	// wherease a NOP would wait between 0.4 and 0.5 cycles.
 	// http://stackoverflow.com/questions/7371869/minimum-time-a-thread-can-pause-in-linux
-	asm volatile("pause" ::: "memory");
+	__asm__ __volatile__("pause" ::: "memory");
 }
 
 uint64_t _now() {
 	uint32_t lower, upper;
-	asm volatile("rdtsc" : "=a"(lower), "=d"(upper));
+	__asm__ __volatile__("rdtsc" : "=a"(lower), "=d"(upper));
 	return ((uint64_t)(upper) << 32) | (uint64_t)(lower);
 }
 
