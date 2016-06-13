@@ -1,23 +1,22 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
+#include "tssx/timeouts.h"
+
 #define DEFAULT_BUFFER_SIZE 1000000
 
 struct Buffer;
 typedef struct Buffer Buffer;
-
-struct Timeouts;
-typedef struct Timeouts Timeouts;
 
 typedef struct Connection {
 	// The ID of the shared memory
 	int segment_id;
 
 	// The cast shared memory for the server buffer
-	struct Buffer* server_buffer;
+	Buffer* server_buffer;
 
 	// The cast shared memory for the client buffer
-	struct Buffer* client_buffer;
+	Buffer* client_buffer;
 
 } Connection;
 

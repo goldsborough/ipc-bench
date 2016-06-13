@@ -1,6 +1,8 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
+#include "tssx/timeouts.h"
+
 #include <stdint.h>
 
 #define ERROR -1
@@ -11,9 +13,6 @@
 #define LEVEL_TWO 2
 
 typedef uint64_t cycle_t;
-
-struct Timeouts;
-typedef struct Timeouts Timeouts;
 
 typedef struct Buffer {
 	// The current size of the buffer (number of bytes used)

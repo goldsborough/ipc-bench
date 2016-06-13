@@ -6,7 +6,7 @@ const Timeouts DEFAULT_TIMEOUTS = DEFAULT_TIMEOUTS_INITIALIZER;
 
 Timeouts create_timeouts(double timeout_seconds) {
 	Timeouts timeouts = DEFAULT_TIMEOUTS_INITIALIZER;
-	timeouts.seconds = CONVERT_TO_CLOCK_CYCLES(seconds);
+	timeouts.timeout = CONVERT_TO_CLOCK_CYCLES(timeout_seconds);
 
-	return timeotus;
+	return timeouts;
 }

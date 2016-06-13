@@ -4,12 +4,8 @@
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-#set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
-
-# Apple's C standard library already contains the math functions
-if(NOT APPLE)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lm")
-endif()
+#add_compile_options(-std=c11)
+link_libraries(m)
 
 ###########################################################
 ## DEPENDENCIES
@@ -24,6 +20,11 @@ pkg_check_modules(ZMQ libzmq libzeromq)
 ###########################################################
 ## SUBDIRECTORIES
 ###########################################################
+
+# Apple's C standard library already contains the math functions
+if(NOT APPLE)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lm")
+endif()
 
 add_subdirectory(common)
 add_subdirectory(tcp)

@@ -8,7 +8,6 @@
 #include "tssx/connection.h"
 #include "tssx/hashtable.h"
 #include "tssx/shared_memory.h"
-#include "tssx/timeouts.h"
 
 // clang-format off
 ConnectionOptions DEFAULT_OPTIONS = {
@@ -36,10 +35,10 @@ void server_options_from_socket(ConnectionOptions* options, int socket_fd) {
 	options->client_buffer_size = get_socket_buffer_size(socket_fd, RECEIVE);
 
 	// clang-format off
-	options->server_timeout = create_timeouts(
+	options->server_timeouts = create_timeouts(
 		get_socket_timeout_seconds(socket_fd, SEND)
 	);
-	options->client_timeout = create_timeouts(
+	options->client_timeouts = create_timeouts(
 		get_socket_timeout_seconds(socket_fd, RECEIVE)
 	);
 	// clang-format on
@@ -49,10 +48,10 @@ void client_options_from_socket(ConnectionOptions* options, int socket_fd) {
 	options->client_buffer_size = get_socket_buffer_size(socket_fd, SEND);
 
 	// clang-format off
-	options->server_timeout = create_timeouts(
+	options->server_timeouts = create_timeouts(
 		get_socket_timeout_seconds(socket_fd, RECEIVE)
 	);
-	options->client_timeout = create_timeouts(
+	options->client_timeouts = create_timeouts(
 		get_socket_timeout_seconds(socket_fd, SEND)
 	);
 	// clang-format on
@@ -79,7 +78,7 @@ void create_server_buffer(Connection* connection,
 	connection->server_buffer = create_buffer(
 			shared_memory,
 			options->server_buffer_size,
-			options->server_timeout
+			&options->server_timeouts
 	);
 	// clang-format on
 }
@@ -92,7 +91,7 @@ void create_client_buffer(Connection* connection,
 	connection->client_buffer = create_buffer(
 			shared_memory,
 			options->client_buffer_size,
-			options->client_timeout
+			&options->client_timeouts
 	);
 	// clang-format on
 }

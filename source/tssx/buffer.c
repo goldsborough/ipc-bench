@@ -20,7 +20,7 @@ create_buffer(void* shared_memory, int requested_capacity, Timeouts* timeouts) {
 
 	return buffer;
 }
-}
+
 int buffer_write(Buffer* buffer, void* data, int data_size) {
 	int right_space = 0;
 
@@ -128,7 +128,7 @@ int buffer_is_empty(Buffer* buffer) {
 }
 
 int buffer_has_timeout(Buffer* buffer) {
-	return buffer->timeout != 0;
+	return buffer->timeouts.timeout != 0;
 }
 
 int buffer_free_space(Buffer* buffer) {
@@ -208,7 +208,7 @@ int _timeout_elapsed(Buffer* buffer, cycle_t elapsed) {
 }
 
 int _level_elapsed(Buffer* buffer, int level, cycle_t elapsed) {
-	return elapsed > buffer->timeouts.level[level];
+	return elapsed > buffer->timeouts.levels[level];
 }
 
 void _pause() {

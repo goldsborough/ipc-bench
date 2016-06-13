@@ -28,7 +28,7 @@ void __wrap_connect(int client_socket, sockaddr* address, int* length) {
 		throw("Error receiving segment ID on client side");
 	}
 
-	setup_connection(&connection, DEFAULT_OPTIONS);
+	setup_connection(&connection, &DEFAULT_OPTIONS);
 
 	ht_insert(&connection_map, client_socket, &connection);
 }
