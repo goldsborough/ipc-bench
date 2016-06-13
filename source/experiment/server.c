@@ -18,11 +18,16 @@ void cleanup(int connection, void* buffer) {
 	}
 }
 
+#include <x86intrin.h>
+clock_t t_now() {
+	return __rdtsc();
+}
+
 void communicate(int connection, Arguments* args) {
 	Benchmarks bench;
 	int message;
 	void* buffer;
-	bench_t start;
+	clock_t start;
 
 	buffer = malloc(args->size);
 	setup_benchmarks(&bench);
@@ -33,25 +38,26 @@ void communicate(int connection, Arguments* args) {
 	for (message = 0; message < args->count; ++message) {
 		bench.single_start = now();
 
-		//printf("Server read start: %ld\n", now());
-		//start = now();
+		//printf("Server start\n");
+		//clock_t start = t_now();
 
 		if (read(connection, buffer, args->size) == -1) {
 			throw("Error reading on server-side");
 		}
 
-		//printf("Server read done: %ld %f\n", now(), (now() - start) / 1e3);
+		//printf("Server read done %llu\n", t_now() - start);
 
 		memset(buffer, '*', args->size);
 
-		//printf("Server write start: %ld\n", now());
-		//start = now();
+		//start = t_now();
+		//printf("Server write done %llu\n", t_now() - start);
+		//start = t_now();
 
 		if (write(connection, buffer, args->size) == -1) {
 			throw("Error sending on server-side");
 		}
 
-		//printf("Server write done: %ld %f\n", now(), (now() - start) / 1e3);
+		//printf("Server write done %llu\n", t_now() - start);
 
 		benchmark(&bench);
 	}

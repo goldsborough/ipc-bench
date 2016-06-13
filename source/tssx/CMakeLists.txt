@@ -35,3 +35,10 @@ add_library(tssx-client STATIC ${TSSX_CLIENT_SOURCES})
 
 target_compile_options(tssx-server PUBLIC "-O1")
 target_compile_options(tssx-client PUBLIC "-O1")
+
+###########################################################
+## CONFIGURATION FOR TRY
+###########################################################
+
+add_executable(try try.c)
+target_link_libraries(try tssx-server ipc-bench-common)

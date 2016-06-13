@@ -34,7 +34,7 @@ typedef struct Buffer {
 } Buffer;
 
 Buffer*
-create_buffer(void* shared_memory, int requested_capacity, Timeouts* timeouts);
+create_buffer(void* shared_memory, int requested_capacity, const Timeouts* timeouts);
 
 int buffer_write(Buffer* buffer, void* data, int data_size);
 int buffer_read(Buffer* buffer, void* data, int data_size);

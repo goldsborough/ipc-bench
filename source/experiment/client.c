@@ -15,33 +15,37 @@ void cleanup(int socket, void* buffer) {
 	free(buffer);
 }
 
+#include <x86intrin.h>
+clock_t t_now() {
+	return __rdtsc();
+}
+
 void communicate(int connection, Arguments* args) {
 	void* buffer = malloc(args->size);
-	bench_t start;
 
+	// Benchmarks can start
 	client_once(NOTIFY);
 
 	for (; args->count > 0; --args->count) {
 		// Dummy operation
 		memset(buffer, '*', args->size);
 
-		//printf("Client write start: %ld\n", now());
-		//start = now();
+		//printf("Client start\n");
+		//clock_t start = t_now();
 
 		if (write(connection, buffer, args->size) == -1) {
 			throw("Error writing on client-side");
 		}
 
-		//printf("Client write done: %ld %f\n", now(), (now() - start) / 1e3);
+		//printf("Client write done %llu\n", t_now() - start);
 
-		//printf("Client read start: %ld\n", now());
-		//start = now();
+		//start = t_now();
 
 		if (read(connection, buffer, args->size) == -1) {
 			throw("Error reading on client-side");
 		}
 
-		//printf("Client read done: %ld %f\n", now(), (now() - start) / 1e3);
+		//printf("Client read  done %llu\n", t_now() - start);
 	}
 
 	cleanup(connection, buffer);

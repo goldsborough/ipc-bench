@@ -4,13 +4,17 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <xmmintrin.h>
+#include <x86intrin.h>
 
 #include "common/utility.h"
 #include "tssx/buffer.h"
 #include "tssx/timeouts.h"
 
 Buffer*
-create_buffer(void* shared_memory, int requested_capacity, Timeouts* timeouts) {
+create_buffer(void* shared_memory,
+							int requested_capacity,
+							const Timeouts* timeouts) {
 	Buffer* buffer = (Buffer*)shared_memory;
 
 	buffer->capacity = requested_capacity;
@@ -204,17 +208,11 @@ int _level_elapsed(Buffer* buffer, int level, cycle_t elapsed) {
 }
 
 void _pause() {
-	// pause waits between 38 and 40 clock cycles
-	// wherease a NOP would wait between 0.4 and 0.5 cycles.
-	// http://stackoverflow.com/questions/7371869/minimum-time-a-thread-can-pause-in-linux
-	__asm__ __volatile__("pause" ::: "memory");
+	_mm_pause();
 }
 
 cycle_t _now() {
-	uint32_t lower, upper;
-	__asm__ __volatile__("rdtsc" : "=a"(lower), "=d"(upper));
-
-	return ((cycle_t)(upper) << 32) | (cycle_t)(lower);
+	return __rdtsc();
 }
 
 int _escalation_level(Buffer* buffer, cycle_t start_time) {
@@ -232,17 +230,21 @@ int _escalation_level(Buffer* buffer, cycle_t start_time) {
 	}
 }
 
+#include <stdio.h>
+
 int _block(Buffer* buffer, int requested_size, Condition condition) {
 	cycle_t start_time = _now();
 
 	while (!condition(buffer, requested_size)) {
 		switch (_escalation_level(buffer, start_time)) {
-			case LEVEL_ZERO: _pause(); break;
+		case LEVEL_ZERO: //_pause(); break;
 			case LEVEL_ONE: sched_yield(); break;
 			case LEVEL_TWO: usleep(1); break;
 			case TIMEOUT: return -1;
-		}
+			}
 	}
+
+//	printf("Blocked: %llu\n", _now() - start_time);
 
 	return 0;
 }
