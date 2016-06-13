@@ -212,14 +212,16 @@ void _pause() {
 	__asm__ __volatile__("pause" ::: "memory");
 }
 
-uint64_t _now() {
+cycle_t _now() {
 	uint32_t lower, upper;
 	__asm__ __volatile__("rdtsc" : "=a"(lower), "=d"(upper));
-	return ((uint64_t)(upper) << 32) | (uint64_t)(lower);
+
+	return ((cycle_t)(upper) << 32) | (cycle_t)(lower);
 }
 
-int _escalation_level(Buffer* buffer, double start_time) {
-	uint64_t elapsed = _now() - start_time;
+int _escalation_level(Buffer* buffer, cycle_t start_time) {
+	cycle_t elapsed = _now() - start_time;
+
 	if (_timeout_elapsed(buffer, elapsed)) {
 		errno = EWOULDBLOCK;
 		return TIMEOUT;
@@ -233,7 +235,7 @@ int _escalation_level(Buffer* buffer, double start_time) {
 }
 
 int _block(Buffer* buffer, int requested_size, Condition condition) {
-	double start_time = _now();
+	cycle_t start_time = _now();
 
 	while (!condition(buffer, requested_size)) {
 		switch (_escalation_level(buffer, start_time)) {

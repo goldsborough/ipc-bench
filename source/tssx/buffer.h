@@ -77,7 +77,7 @@ int _level_elapsed(Buffer* buffer, int level, cycle_t elapsed);
 void _pause();
 cycle_t _now();
 
-int _escalation_level(Buffer* buffer, double start_time);
+int _escalation_level(Buffer* buffer, cycle_t start_time);
 
 int _block(Buffer* buffer, int requested_size, Condition predicate);
 
