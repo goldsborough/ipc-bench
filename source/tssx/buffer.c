@@ -107,12 +107,6 @@ int buffer_skip(Buffer* buffer, int how_many) {
 	return how_many;
 }
 
-void buffer_set_timeout_in_seconds(Buffer* buffer, double timeout) {
-}
-
-double buffer_get_timeout_in_seconds(Buffer* buffer) {
-}
-
 void buffer_clear(Buffer* buffer) {
 	buffer->read = 0;
 	buffer->write = 0;
