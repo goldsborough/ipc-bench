@@ -28,7 +28,6 @@ int buffer_write(Buffer* buffer, void* data, int data_size) {
 	if (data == NULL) return ERROR;
 	if (data_size == 0) return 0;
 	if (_block(buffer, data_size, _writeable) == TIMEOUT) return ERROR;
-	// while (data_size > buffer_free_space(buffer)) nsleep(1);
 
 	// The == is when the buffer is empty
 	if (buffer->write >= buffer->read) {
@@ -45,7 +44,7 @@ int buffer_write(Buffer* buffer, void* data, int data_size) {
 	memcpy(_write_pointer(buffer), data, data_size);
 
 	buffer->write += data_size;
-	buffer->size += data_size;
+	atomic_fetch_add(&buffer->size, data_size);
 
 	// How many bytes we wrote
 	return data_size + right_space;
@@ -58,7 +57,6 @@ int buffer_read(Buffer* buffer, void* data, int data_size) {
 	if (data == NULL) return ERROR;
 	if (data_size == 0) return 0;
 	if (_block(buffer, data_size, _readable) == TIMEOUT) return ERROR;
-	// while (data_size > buffer->size) nsleep(1);
 
 	if (buffer->read >= buffer->write) {
 		right_space = buffer->capacity - buffer->read;
@@ -73,7 +71,7 @@ int buffer_read(Buffer* buffer, void* data, int data_size) {
 	memcpy(data, _read_pointer(buffer), data_size);
 
 	buffer->read += data_size;
-	buffer->size -= data_size;
+	atomic_fetch_sub(&buffer->size, data_size);
 
 	// How many bytes we wrote
 	return data_size + right_space;
@@ -84,13 +82,13 @@ int buffer_peek(Buffer* buffer, void* data, int data_size) {
 	int old_size;
 	int old_read;
 
-	old_size = buffer->size;
+	old_size = atomic_load(&buffer->size);
 	old_read = buffer->read;
 
 	return_value = buffer_read(buffer, data, data_size);
 
 	// Restore
-	buffer->size = old_size;
+	atomic_store(&buffer->size, old_size);
 	buffer->read = old_read;
 
 	return return_value;
@@ -100,7 +98,7 @@ int buffer_skip(Buffer* buffer, int how_many) {
 	assert(buffer != NULL);
 
 	if (how_many < 0) return ERROR;
-	if (how_many > buffer->size) return ERROR;
+	if (how_many > atomic_load(&buffer->size)) return ERROR;
 
 	buffer->read = (buffer->read + how_many) % buffer->capacity;
 
@@ -110,15 +108,15 @@ int buffer_skip(Buffer* buffer, int how_many) {
 void buffer_clear(Buffer* buffer) {
 	buffer->read = 0;
 	buffer->write = 0;
-	buffer->size = 0;
+	atomic_store(&buffer->size, 0);
 }
 
 int buffer_is_full(Buffer* buffer) {
-	return buffer->size == buffer->capacity;
+	return atomic_load(&buffer->size) == buffer->capacity;
 }
 
 int buffer_is_empty(Buffer* buffer) {
-	return buffer->size == 0;
+	return atomic_load(&buffer->size) == 0;
 }
 
 int buffer_has_timeout(Buffer* buffer) {
@@ -126,7 +124,7 @@ int buffer_has_timeout(Buffer* buffer) {
 }
 
 int buffer_free_space(Buffer* buffer) {
-	return buffer->capacity - buffer->size;
+	return buffer->capacity - atomic_load(&buffer->size);
 }
 
 /******* PRIVATE *******/
@@ -162,13 +160,13 @@ int _index_at(Buffer* buffer, void* pointer) {
 
 void _wrap_read(Buffer* buffer, void** data, int* data_size, int delta) {
 	buffer->read = 0;
-	buffer->size -= delta;
+	atomic_fetch_sub(&buffer->size, delta);
 	_reduce_data(data, data_size, delta);
 }
 
 void _wrap_write(Buffer* buffer, void** data, int* data_size, int delta) {
 	buffer->write = 0;
-	buffer->size += delta;
+	atomic_fetch_add(&buffer->size, delta);
 	_reduce_data(data, data_size, delta);
 }
 
@@ -194,7 +192,7 @@ int _writeable(Buffer* buffer, int requested_size) {
 }
 
 int _readable(Buffer* buffer, int requested_size) {
-	return requested_size <= buffer->size;
+	return requested_size <= atomic_load(&buffer->size);
 }
 
 int _timeout_elapsed(Buffer* buffer, cycle_t elapsed) {

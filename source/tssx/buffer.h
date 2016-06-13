@@ -4,6 +4,7 @@
 #include "tssx/timeouts.h"
 
 #include <stdint.h>
+#include <stdatomic.h>
 
 #define ERROR -1
 
@@ -16,7 +17,7 @@ typedef uint64_t cycle_t;
 
 typedef struct Buffer {
 	// The current size of the buffer (number of bytes used)
-	int size;
+	atomic_int size;
 
 	// The length of the memory segment in bytes
 	int capacity;
