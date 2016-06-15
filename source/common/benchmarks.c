@@ -51,6 +51,8 @@ void evaluate(Benchmarks* bench, Arguments* args) {
 	double sigma = bench->squared_sum / args->count;
 	sigma = sqrt(sigma - (average * average));
 
+	int messageRate = (int) (args->count / (total_time / 1e9));
+
 	printf("\n============ RESULTS =============\n");
 	printf("Message size:       %d\n", args->size);
 	printf("Message count:      %d\n", args->count);
@@ -59,6 +61,7 @@ void evaluate(Benchmarks* bench, Arguments* args) {
 	printf("Minimum duration:   %.3f\tus\n", bench->minimum / 1000.0);
 	printf("Maximum duration:   %.3f\tus\n", bench->maximum / 1000.0);
 	printf("Standard deviation: %.3f\tus\n", sigma / 1000.0);
+	printf("Message rate:       %d\tmsg/s\n", messageRate);
 	printf("EasyToPlot min %.3f us\n", bench->minimum / 1000.0);
 	printf("==================================\n");
 }
