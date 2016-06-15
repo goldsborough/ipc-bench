@@ -4,6 +4,8 @@
 #include <string.h>
 #include <sys/shm.h>
 #include <unistd.h>
+#include <stdatomic.h>
+#include <assert.h>
 
 #include "common/common.h"
 
@@ -13,13 +15,13 @@ void cleanup(char* shared_memory) {
 	shmdt(shared_memory);
 }
 
-void shm_wait(char* shared_memory) {
-	while (*shared_memory != 'c')
+void shm_wait(atomic_char* guard) {
+	while (atomic_load(guard) != 'c')
 		;
 }
 
-void shm_notify(char* shared_memory) {
-	*shared_memory = 's';
+void shm_notify(atomic_char* guard) {
+	atomic_store(guard, 's');
 }
 
 void communicate(char* shared_memory, struct Arguments* args) {
@@ -27,17 +29,19 @@ void communicate(char* shared_memory, struct Arguments* args) {
 	void* buffer = malloc(args->size);
 
 	// First signal to set things going
-	shm_notify(shared_memory);
+	atomic_char* guard = (atomic_char*) shared_memory;
+   atomic_init(shared_memory, 's');
+	assert(sizeof(atomic_char) == 1);
 
 	for (; args->count > 0; --args->count) {
-		shm_wait(shared_memory);
+		shm_wait(guard);
 		// Read
 		memcpy(buffer, shared_memory + 1, args->size);
 
 		// Write back
 		memset(shared_memory + 1, '*', args->size);
 
-		shm_notify(shared_memory);
+		shm_notify(guard);
 	}
 
 	free(buffer);

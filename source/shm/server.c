@@ -4,6 +4,7 @@
 #include <string.h>
 #include <sys/shm.h>
 #include <unistd.h>
+#include <stdatomic.h>
 
 #include "common/common.h"
 
@@ -24,23 +25,23 @@ void cleanup(int segment_id, char* shared_memory) {
 	shmctl(segment_id, IPC_RMID, NULL);
 }
 
-void shm_wait(char* shared_memory) {
-	while (*shared_memory != 's')
+void shm_wait(atomic_char* guard) {
+	while (atomic_load(guard) != 's')
 		;
 }
 
-void shm_notify(char* shared_memory) {
-	*shared_memory = 'c';
+void shm_notify(atomic_char* guard) {
+	atomic_store(guard, 'c');
 }
-
 
 void communicate(char* shared_memory, struct Arguments* args) {
 	struct Benchmarks bench;
 	int message;
 	void* buffer = malloc(args->size);
+	atomic_char* guard = (atomic_char*) shared_memory;
 
 	// Wait for signal from client
-	shm_wait(shared_memory);
+	shm_wait(guard);
 	setup_benchmarks(&bench);
 
 	for (message = 0; message < args->count; ++message) {
@@ -49,8 +50,8 @@ void communicate(char* shared_memory, struct Arguments* args) {
 		// Write
 		memset(shared_memory + 1, '*', args->size);
 
-		shm_notify(shared_memory);
-		shm_wait(shared_memory);
+		shm_notify(guard);
+		shm_wait(guard);
 
 		// Read
 		memcpy(buffer, shared_memory + 1, args->size);
