@@ -7,20 +7,21 @@ typedef uint64_t cycle_t;
 
 #define INFINITE 0
 
-#define DEFAULT_LEVEL_ZERO_TIME 0.001
-#define DEFAULT_LEVEL_ONE_TIME 0.01
+#define DEFAULT_LEVEL_ZERO_CLOCKS (1000)
+#define DEFAULT_LEVEL_ONE_CLOCKS (100*1000)
 
+// TODO: use with caution .. CLOCKS_PER_SEC seams broken on some systems, it's 1e6 on my mac -.-
 #define CONVERT_TO_CLOCK_CYCLES(seconds) ((cycle_t)((seconds)*CLOCKS_PER_SEC))
 #define CONVERT_TO_SECONDS(clock_cycles) (((double)seconds) / CLOCKS_PER_SEC)
 
 // clang-format off
-#define DEFAULT_TIMEOUTS_INITIALIZER									\
-{                                                     \
-	{																										\
-		CONVERT_TO_CLOCK_CYCLES(DEFAULT_LEVEL_ZERO_TIME),	\
-		CONVERT_TO_CLOCK_CYCLES(DEFAULT_LEVEL_ZERO_TIME)	\
-	},																									\
-	INFINITE																						\
+#define DEFAULT_TIMEOUTS_INITIALIZER	\
+{                                      \
+	{												\
+		DEFAULT_LEVEL_ZERO_CLOCKS,			\
+		DEFAULT_LEVEL_ONE_CLOCKS			\
+	},												\
+	INFINITE										\
 }
 // clang-format on
 
