@@ -13,7 +13,7 @@
 #define V_UNINITIALIZED NULL
 #define V_INITIALIZER {0, 0, V_UNINITIALIZED};
 
-#define V_CAST(element) ((void*)(element), sizeof(*(element)))
+#define V_CAST(element) (void*)(element), sizeof(*(element))
 #define V_TIMES(type, number) (sizeof((type)) * (number))
 
 #define V_ERROR -1
@@ -38,6 +38,7 @@ int v_destroy(Vector* vector);
 int v_push_back(Vector* vector, void* element, size_t element_size);
 int v_push_front(Vector* vector, void* element, size_t element_size);
 int v_insert(Vector* vector, size_t index, void* element, size_t element_size);
+int v_assign(Vector* vector, size_t index, void* element, size_t element_size);
 
 // Deletion
 int v_pop_back(Vector* vector, size_t element_size);
@@ -59,6 +60,12 @@ bool v_is_empty(Vector* vector);
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 size_t _v_free_bytes(Vector* vector, size_t element_size);
+void* _v_offset(Vector* vector, size_t index, size_t element_size);
+
+void _v_assign(Vector* vector,
+							 size_t index,
+							 void* element,
+							 size_t element_size);
 
 int _v_move_right(Vector* vector,
 									size_t index,

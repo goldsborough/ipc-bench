@@ -47,22 +47,7 @@ int v_push_back(Vector* vector, void* element, size_t element_size) {
 		}
 	}
 
-	// Insert the element
-	offset = vector->data + (vector->size * element_size);
-
-#ifdef __STDC_LIB_EXT1__
-	// clang-format off
-	return_code = memcpy_s(
-			offset,
-			_v_free_bytes(vector, element_size),
-			element,
-			element_size
-	);
-	// clang-format on
-	if (return_code != 0) return V_ERROR;
-#else
-	memcpy(offset, element, element_size);
-#endif
+	_v_assign(vector, vector->size, element, element_size);
 
 	++vector->size;
 
@@ -93,7 +78,7 @@ int v_insert(Vector* vector, size_t index, void* element, size_t element_size) {
 	}
 
 	// Move other elements to the right
-	offset = vector->data + (index * element_size);
+	offset = _v_offset(vector, index, element_size);
 	if (_v_move_right(vector, index, offset, element_size) == V_ERROR) {
 		return V_ERROR;
 	}
@@ -101,6 +86,24 @@ int v_insert(Vector* vector, size_t index, void* element, size_t element_size) {
 	// Insert the element
 	memcpy(offset, element, element_size);
 	++vector->size;
+
+	return V_SUCCESS;
+}
+
+int v_assign(Vector* vector, size_t index, void* element, size_t element_size) {
+	void* offset;
+
+	assert(vector != NULL);
+	assert(element != NULL);
+	assert(element_size > 0);
+	assert(index < vector->size);
+
+	if (vector == NULL) return V_ERROR;
+	if (element == NULL) return V_ERROR;
+	if (element_size == 0) return V_ERROR;
+	if (index >= vector->size) return V_ERROR;
+
+	_v_assign(vector, index, element, element_size);
 
 	return V_SUCCESS;
 }
@@ -158,7 +161,7 @@ void* v_get(Vector* vector, size_t index, size_t element_size) {
 	if (element_size == 0) return NULL;
 	if (index >= vector->size) return NULL;
 
-	return vector->data + (index * element_size);
+	return _v_offset(vector, index, element_size);
 }
 
 void* v_front(Vector* vector, size_t element_size) {
@@ -189,6 +192,19 @@ size_t _v_free_bytes(Vector* vector, size_t element_size) {
 	return v_free_space(vector) * element_size;
 }
 
+void* _v_offset(Vector* vector, size_t index, size_t element_size) {
+	return vector->data + (index * element_size);
+}
+
+void _v_assign(Vector* vector,
+							 size_t index,
+							 void* element,
+							 size_t element_size) {
+	// Insert the element
+	void* offset = _v_offset(vector, index, element_size);
+	memcpy(offset, element, element_size);
+}
+
 int _v_move_right(Vector* vector,
 									size_t index,
 									void* offset,
@@ -217,7 +233,8 @@ void _v_move_left(Vector* vector, size_t index, size_t element_size) {
 	size_t right_elements_in_bytes;
 	void* offset;
 
-	offset = vector->data + (index * element_size);
+	// The offset into the memory
+	offset = _v_offset(vector, index, element_size);
 
 	// How many to move to the left
 	right_elements_in_bytes = (vector->size - index - 1) * element_size;

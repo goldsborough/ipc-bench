@@ -18,6 +18,8 @@ set(TSSX_COMMON_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/source/string-set.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/selective.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/vector.c
+	${CMAKE_CURRENT_SOURCE_DIR}/source/connection-table.c
+	${CMAKE_CURRENT_SOURCE_DIR}/source/free-list.c
 	)
 
 set(TSSX_SERVER_SOURCES
