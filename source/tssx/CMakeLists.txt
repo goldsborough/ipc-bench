@@ -17,6 +17,7 @@ set(TSSX_COMMON_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/source/timeouts.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/string-set.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/selective.c
+	${CMAKE_CURRENT_SOURCE_DIR}/source/vector.c
 	)
 
 set(TSSX_SERVER_SOURCES
@@ -44,6 +45,9 @@ add_library(tssx-client SHARED ${TSSX_CLIENT_SOURCES})
 # Necessary for the preload magic
 target_link_libraries(tssx-server dl ipc-bench-common)
 target_link_libraries(tssx-client dl ipc-bench-common)
+
+target_compile_options(tssx-server PUBLIC -std=c11)
+target_compile_options(tssx-client PUBLIC -std=c11)
 
 ###########################################################
 ## CONFIGURATION FOR TRY
