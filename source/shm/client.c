@@ -1,11 +1,11 @@
+#include <assert.h>
 #include <signal.h>
+#include <stdatomic.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/shm.h>
 #include <unistd.h>
-#include <stdatomic.h>
-#include <assert.h>
 
 #include "common/common.h"
 
@@ -28,9 +28,8 @@ void communicate(char* shared_memory, struct Arguments* args) {
 	// Buffer into which to read data
 	void* buffer = malloc(args->size);
 
-	// First signal to set things going
-	atomic_char* guard = (atomic_char*) shared_memory;
-   atomic_init(shared_memory, 's');
+	atomic_char* guard = (atomic_char*)shared_memory;
+	atomic_init(guard, 's');
 	assert(sizeof(atomic_char) == 1);
 
 	for (; args->count > 0; --args->count) {

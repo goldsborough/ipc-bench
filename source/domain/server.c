@@ -52,7 +52,8 @@ void setup_socket(int socket_descriptor) {
 	// The main datastructure for a UNIX-domain socket.
 	// It only has two members:
 	// 1. sun_family: The family of the socket. Should be AF_UNIX
-	//                for UNIX-domain sockets.
+	//                for UNIX-domain sockets (AF_LOCAL is the same,
+	//                but AF_UNIX is POSIX).
 	// 2. sun_path: Noting that a UNIX-domain socket ist just a
 	//              file in the file-system, it also has a path.
 	//              This may be any path the program has permission

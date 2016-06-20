@@ -3,8 +3,8 @@
 #include <assert.h>
 #include <dlfcn.h>
 
-#include "tssx/overrides.h"
 #include "tssx/buffer.h"
+#include "tssx/overrides.h"
 
 // RTDL_NEXT = look in the symbol table of the *next* object file after this one
 ssize_t real_write(int fd, const void* data, size_t size) {
@@ -12,7 +12,7 @@ ssize_t real_write(int fd, const void* data, size_t size) {
 }
 
 ssize_t real_read(int fd, void* data, size_t size) {
-	return  ((real_read_t)dlsym(RTLD_NEXT, "read"))(fd, data, size);
+	return ((real_read_t)dlsym(RTLD_NEXT, "read"))(fd, data, size);
 }
 
 int real_accept(int fd, sockaddr* address, int* length) {

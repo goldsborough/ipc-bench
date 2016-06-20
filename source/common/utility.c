@@ -1,12 +1,12 @@
 #include <stdio.h>
-#include <time.h>
 #include <stdlib.h>
 #include <sys/ipc.h>
+#include <time.h>
 #define __USE_GNU
 #include <pthread.h>
 #include <sched.h>
 
-#include "utility.h"
+#include "common/utility.h"
 
 void throw(const char* message) {
 	perror(message);
@@ -26,16 +26,16 @@ void nsleep(int nanoseconds) {
 }
 
 void pin_thread(int where) {
-	int j;
-	cpu_set_t cpuset;
-	pthread_t thread;
-	thread = pthread_self();
-	CPU_ZERO(&cpuset);
-	CPU_SET(where, &cpuset);
-	pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
-	int s = pthread_getaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
-	if (s != 0) {
-		printf("error: pthread_getaffinity_np");
-		exit(-1);
-	}
+	// int j;
+	// cpu_set_t cpuset;
+	// pthread_t thread;
+	// thread = pthread_self();
+	// CPU_ZERO(&cpuset);
+	// CPU_SET(where, &cpuset);
+	// pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
+	// int s = pthread_getaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
+	// if (s != 0) {
+	// 	fprintf(stderr, "error: pthread_getaffinity_np");
+	// 	exit(-1);
+	// }
 }

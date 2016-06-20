@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "hashtable.h"
+#include "tssx/hashtable.h"
 
 void ht_setup(HashTable* table, int capacity) {
 	assert(table != NULL);
