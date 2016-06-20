@@ -2,6 +2,9 @@
 
 #include <assert.h>
 #include <dlfcn.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 
 #include "tssx/buffer.h"
 #include "tssx/overrides.h"

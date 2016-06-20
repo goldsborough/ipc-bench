@@ -1,10 +1,18 @@
 #include "tssx/overrides.h"
+#include "tssx/selective.h"
 
 void connect(int client_socket, const sockaddr* address, size_t length) {
 	Connection connection;
+	int check;
 	int return_code;
 
 	real_connect(client_socket, address, length);
+
+	// if ((check = check_use_tssx(client_socket)) == ERROR) {
+	// 	throw("Could not check if socket uses TSSX");
+	// } else if (!check) {
+	// 	return;
+	// }
 
 	// clang-format off
 	return_code = real_read(
@@ -19,7 +27,6 @@ void connect(int client_socket, const sockaddr* address, size_t length) {
 	}
 
 	setup_connection(&connection, &DEFAULT_OPTIONS);
-
 	ht_insert(&connection_map, client_socket, &connection);
 }
 

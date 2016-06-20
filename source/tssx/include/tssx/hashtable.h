@@ -1,6 +1,7 @@
 #ifndef HASHTABLE_H
 #define HASHTABLE_H
 
+#include <stdbool.h>
 #include <stddef.h>
 
 #include "connection.h"
@@ -11,11 +12,12 @@
 #define HT_LOAD_FACTOR 5
 #define HT_MINIMUM_THRESHOLD (HT_MINIUM_CAPACITY) * (HT_LOAD_FACTOR)
 
-#define HT_UPDATED 0
-#define HT_INSERTED 1
+#define HT_UPDATED false
+#define HT_INSERTED true
 
-#define HT_NOT_FOUND 0
-#define HT_OK 1
+#define HT_NOT_FOUND false
+#define HT_FOUND true
+#define HT_OK true
 
 #define HT_UNINITIALIZED NULL
 
@@ -32,9 +34,9 @@ typedef struct Node {
 } Node;
 
 typedef struct HashTable {
-	int size;
-	int threshold;
-	int capacity;
+	size_t size;
+	size_t threshold;
+	size_t capacity;
 
 	// The node table
 	Node** nodes;
@@ -43,29 +45,30 @@ typedef struct HashTable {
 
 /***** METHODS *****/
 
-void ht_setup(HashTable* table, int capacity);
+void ht_setup(HashTable* table, size_t capacity);
 void ht_destroy(HashTable* table);
 
-int ht_insert(HashTable* table, int key, Connection* connection);
+bool ht_insert(HashTable* table, int key, Connection* connection);
+bool ht_contains(HashTable* table, int key);
 Connection* ht_get(HashTable* table, int key);
 
-int ht_remove(HashTable* table, int key);
+bool ht_remove(HashTable* table, int key);
 void ht_clear(HashTable* table);
 
-int ht_is_empty(HashTable* table);
+bool ht_is_empty(HashTable* table);
 
 /***** PRIVATE *****/
 
 void _ht_create_if_necessary(HashTable* table);
 
-void _ht_allocate(HashTable* table, int capacity);
+void _ht_allocate(HashTable* table, size_t capacity);
 
 Node* _ht_create_node(int key, Connection* connection, Node* next);
 
-int _ht_hash(HashTable* table, int key);
+size_t _ht_hash(HashTable* table, int key);
 
 void _ht_resize(HashTable* table);
 
-void _ht_rehash(HashTable* table, Node** old, int old_capacity);
+void _ht_rehash(HashTable* table, Node** old, size_t old_capacity);
 
 #endif /* HASHTABLE_H */

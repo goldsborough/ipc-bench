@@ -8,6 +8,7 @@
 #include "tssx/hashtable.h"
 #include "tssx/shared_memory.h"
 
+#define ERROR -1
 #define SERVER_BUFFER 0
 #define CLIENT_BUFFER 1
 

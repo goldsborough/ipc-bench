@@ -2,19 +2,23 @@
 #include <sys/un.h>
 
 #include "tssx/overrides.h"
+#include "tssx/selective.h"
 
 int accept(int server_socket, sockaddr* address, int* length) {
 	Connection connection;
 	int client_socket;
+	int check;
 	int return_code;
 
-	printf("???\n");
+	if ((client_socket = real_accept(server_socket, address, length)) == ERROR) {
+		return ERROR;
+	}
 
-	client_socket = real_accept(server_socket, address, length);
-
-	printf("Address: %s\n", ((struct sockaddr_un*)address)->sun_path);
-
-	if (client_socket == -1) return -1;
+	// if ((check = check_use_tssx(server_socket)) == ERROR) {
+	// 	return ERROR;
+	// } else if (!check) {
+	// 	return client_socket;
+	// }
 
 	connection.segment_id =
 			create_segment(options_segment_size(&DEFAULT_OPTIONS));
@@ -27,13 +31,9 @@ int accept(int server_socket, sockaddr* address, int* length) {
 	);
 	// clang-format on
 
-	if (return_code == -1) {
-		throw("Error sending segment ID to client");
-		return -1;
-	}
+	if (return_code == ERROR) return ERROR;
 
 	setup_connection(&connection, &DEFAULT_OPTIONS);
-
 	ht_insert(&connection_map, client_socket, &connection);
 
 	return client_socket;

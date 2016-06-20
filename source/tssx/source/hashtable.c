@@ -4,7 +4,7 @@
 
 #include "tssx/hashtable.h"
 
-void ht_setup(HashTable* table, int capacity) {
+void ht_setup(HashTable* table, size_t capacity) {
 	assert(table != NULL);
 
 	if (capacity < HT_MINIMUM_CAPACITY) {
@@ -21,7 +21,7 @@ void ht_destroy(HashTable* table) {
 
 	assert(table != NULL);
 
-	for (int i = 0; i < table->capacity; ++i) {
+	for (size_t i = 0; i < table->capacity; ++i) {
 		node = table->nodes[i];
 		while (node) {
 			next = node->next;
@@ -33,9 +33,9 @@ void ht_destroy(HashTable* table) {
 	free(table->nodes);
 }
 
-int ht_insert(HashTable* table, int key, Connection* connection) {
+bool ht_insert(HashTable* table, int key, Connection* connection) {
 	Node* node;
-	int index;
+	size_t index;
 
 	_ht_create_if_necessary(table);
 
@@ -61,11 +61,27 @@ int ht_insert(HashTable* table, int key, Connection* connection) {
 	return HT_INSERTED;
 }
 
+bool ht_contains(HashTable* table, int key) {
+	Node* node;
+	size_t index;
+
+	if (table->nodes != HT_UNINITIALIZED) {
+		index = _ht_hash(table, key);
+		for (node = table->nodes[index]; node; node = node->next) {
+			if (node->key == key) return HT_FOUND;
+		}
+	}
+
+	return HT_NOT_FOUND;
+}
+
 Connection* ht_get(HashTable* table, int key) {
 	Node* node;
-	int index;
+	size_t index;
 
-	_ht_create_if_necessary(table);
+	if (table->nodes == HT_UNINITIALIZED) {
+		return NULL;
+	}
 
 	index = _ht_hash(table, key);
 	node = table->nodes[index];
@@ -79,13 +95,14 @@ Connection* ht_get(HashTable* table, int key) {
 	return NULL;
 }
 
-int ht_remove(HashTable* table, int key) {
+bool ht_remove(HashTable* table, int key) {
 	Node* node;
 	Node* previous;
-	int index;
+	size_t index;
 
-	_ht_create_if_necessary(table);
-
+	if (table->nodes == HT_UNINITIALIZED) {
+		return HT_NOT_FOUND;
+	}
 
 	index = _ht_hash(table, key);
 	node = table->nodes[index];
@@ -112,12 +129,13 @@ int ht_remove(HashTable* table, int key) {
 }
 
 void ht_clear(HashTable* table) {
+	if (table->nodes == HT_UNINITIALIZED) return;
 	ht_destroy(table);
 	_ht_allocate(table, HT_MINIMUM_CAPACITY);
 	table->size = 0;
 }
 
-int ht_is_empty(HashTable* table) {
+bool ht_is_empty(HashTable* table) {
 	return table->size == 0;
 }
 
@@ -130,8 +148,8 @@ void _ht_create_if_necessary(HashTable* table) {
 	}
 }
 
-void _ht_allocate(HashTable* table, int capacity) {
-	int bytes;
+void _ht_allocate(HashTable* table, size_t capacity) {
+	size_t bytes;
 
 	bytes = sizeof(Node*) * capacity;
 	table->nodes = (Node**)malloc(bytes);
@@ -151,7 +169,7 @@ Node* _ht_create_node(int key, Connection* connection, Node* next) {
 	return node;
 }
 
-int _ht_hash(HashTable* table, int key) {
+size_t _ht_hash(HashTable* table, int key) {
 	const int a = 69;
 	const int b = 99;
 	const int p = 123;
@@ -160,8 +178,8 @@ int _ht_hash(HashTable* table, int key) {
 }
 
 void _ht_resize(HashTable* table) {
-	int old_capacity = table->capacity;
-	int new_capacity = table->size * 2;
+	size_t old_capacity = table->capacity;
+	size_t new_capacity = table->size * 2;
 
 	if (new_capacity < HT_MINIMUM_CAPACITY) return;
 
@@ -173,13 +191,12 @@ void _ht_resize(HashTable* table) {
 	free(old);
 }
 
-void _ht_rehash(HashTable* table, Node** old, int old_capacity) {
+void _ht_rehash(HashTable* table, Node** old, size_t old_capacity) {
 	Node* node;
 	Node* next;
-	int new_index;
-	int i;
+	size_t new_index;
 
-	for (i = 0; i < old_capacity; ++i) {
+	for (int i = 0; i < old_capacity; ++i) {
 		for (node = old[i]; node;) {
 			next = node->next;
 

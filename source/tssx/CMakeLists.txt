@@ -15,6 +15,8 @@ set(TSSX_COMMON_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/source/overrides.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/shared_memory.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/timeouts.c
+	${CMAKE_CURRENT_SOURCE_DIR}/source/string-set.c
+	${CMAKE_CURRENT_SOURCE_DIR}/source/selective.c
 	)
 
 set(TSSX_SERVER_SOURCES
