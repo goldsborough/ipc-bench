@@ -1,6 +1,10 @@
 #ifndef IPC_BENCH_UTILITY_H
 #define IPC_BENCH_UTILITY_H
 
+#ifdef DEBUG
+#include <stdio.h>
+#endif /* DEBUG */
+
 #include <stdbool.h>
 
 void throw(const char* message);

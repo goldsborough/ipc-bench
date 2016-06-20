@@ -6,13 +6,13 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 # Apple's C standard library already contains the math functions
 if(APPLE)
-	add_compile_options(-std=c11 -g -O3)
-	link_libraries(pthread)
+	add_compile_options(-std=c11 -g -O3 -DDEBUG)
 else()
-	add_compile_options(-std=gnu11 -g -O3)
+	add_compile_options(-std=gnu11 -g -O3 -DDEBUG)
 	link_libraries(m)
-	link_libraries(pthread)
 endif()
+
+link_libraries(pthread)
 
 ###########################################################
 ## DEPENDENCIES

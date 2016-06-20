@@ -17,3 +17,4 @@ set(IPC_BENCH_COMMON_SOURCES
 ###########################################################
 
 add_library(ipc-bench-common STATIC ${IPC_BENCH_COMMON_SOURCES})
+target_compile_options(ipc-bench-common PUBLIC -fPIC)
