@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <sys/un.h>
 
 #include "tssx/overrides.h"
 
@@ -7,7 +8,11 @@ int accept(int server_socket, sockaddr* address, int* length) {
 	int client_socket;
 	int return_code;
 
+	printf("???\n");
+
 	client_socket = real_accept(server_socket, address, length);
+
+	printf("Address: %s\n", ((struct sockaddr_un*)address)->sun_path);
 
 	if (client_socket == -1) return -1;
 
@@ -66,6 +71,7 @@ int close(int socket_fd) {
 	// communication socket)
 	if (connection != NULL) {
 		destroy_connection(connection);
+		ht_remove(&connection_map, socket_fd);
 	}
 
 	return real_close(socket_fd);

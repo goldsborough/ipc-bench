@@ -1,4 +1,6 @@
+#include <errno.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
@@ -6,16 +8,19 @@
 #include "tssx/buffer.h"
 #include "tssx/shared_memory.h"
 
+#define SHM_FLAGS IPC_CREAT | IPC_EXCL | 0666
+
 int create_segment(int buffer_size) {
-	int key;
 	int id;
 	int total_size;
 
 	total_size = 2 * (sizeof(Buffer) + buffer_size);
-	key = generate_key(__FILE__);
 
-	if ((id = shmget(key, total_size, IPC_CREAT | 0666)) == -1) {
-		throw("Error getting segment");
+	// Generate a random key until it is not taken yet
+	while ((id = shmget(rand(), total_size, SHM_FLAGS)) == -1) {
+		if (errno != EEXIST) {
+			throw("Error creating segment");
+		}
 	}
 
 	return id;

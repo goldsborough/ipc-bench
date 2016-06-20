@@ -24,29 +24,29 @@ void communicate(int connection, Arguments* args) {
 	void* buffer = malloc(args->size);
 
 	// Benchmarks can start
-	//client_once(NOTIFY);
+	// client_once(NOTIFY);
 	write(connection, buffer, 1);
 
 	for (; args->count > 0; --args->count) {
 		// Dummy operation
 		memset(buffer, '*', args->size);
 
-		//printf("Client start\n");
-		//clock_t start = t_now();
+		// printf("Client start\n");
+		// clock_t start = t_now();
 
 		if (write(connection, buffer, args->size) == -1) {
 			throw("Error writing on client-side");
 		}
 
-		//printf("Client write done %llu\n", t_now() - start);
+		// printf("Client write done %llu\n", t_now() - start);
 
-		//start = t_now();
+		// start = t_now();
 
 		if (read(connection, buffer, args->size) == -1) {
 			throw("Error reading on client-side");
 		}
 
-		//printf("Client read  done %llu\n", t_now() - start);
+		// printf("Client read  done %llu\n", t_now() - start);
 	}
 
 	cleanup(connection, buffer);
@@ -95,7 +95,7 @@ int connect_to_server() {
 	int connection;
 
 	// Wait until the server created the socket
-	//client_once(WAIT);
+	// client_once(WAIT);
 
 	connection = create_socket();
 	connect_socket(connection);

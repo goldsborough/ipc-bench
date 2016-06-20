@@ -39,26 +39,26 @@ void communicate(int connection, Arguments* args) {
 	for (message = 0; message < args->count; ++message) {
 		bench.single_start = now();
 
-		//printf("Server start\n");
-		//clock_t start = t_now();
+		// printf("Server start\n");
+		// clock_t start = t_now();
 
 		if (read(connection, buffer, args->size) == -1) {
 			throw("Error reading on server-side");
 		}
 
-		//printf("Server read done %llu\n", t_now() - start);
+		// printf("Server read done %llu\n", t_now() - start);
 
 		memset(buffer, '*', args->size);
 
-		//start = t_now();
-		//printf("Server write done %llu\n", t_now() - start);
-		//start = t_now();
+		// start = t_now();
+		// printf("Server write done %llu\n", t_now() - start);
+		// start = t_now();
 
 		if (write(connection, buffer, args->size) == -1) {
 			throw("Error sending on server-side");
 		}
 
-		//printf("Server write done %llu\n", t_now() - start);
+		// printf("Server write done %llu\n", t_now() - start);
 
 		benchmark(&bench);
 	}
@@ -113,7 +113,7 @@ int create_server_socket() {
 
 	setup_socket(server_socket);
 
-	//server_once(NOTIFY);
+	// server_once(NOTIFY);
 
 	return server_socket;
 }

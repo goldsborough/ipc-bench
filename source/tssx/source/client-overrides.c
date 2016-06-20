@@ -49,7 +49,12 @@ int close(int socket_fd) {
 	Connection* connection;
 
 	connection = ht_get(&connection_map, socket_fd);
-	disconnect(connection);
+
+	// In case this connection did not use our tssx
+	if (connection != NULL) {
+		disconnect(connection);
+		ht_remove(&connection_map, socket_fd);
+	}
 
 	return real_close(socket_fd);
 }
