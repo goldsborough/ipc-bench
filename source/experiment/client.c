@@ -24,7 +24,8 @@ void communicate(int connection, Arguments* args) {
 	void* buffer = malloc(args->size);
 
 	// Benchmarks can start
-	client_once(NOTIFY);
+	//client_once(NOTIFY);
+	write(connection, buffer, 1);
 
 	for (; args->count > 0; --args->count) {
 		// Dummy operation
@@ -94,7 +95,7 @@ int connect_to_server() {
 	int connection;
 
 	// Wait until the server created the socket
-	client_once(WAIT);
+	//client_once(WAIT);
 
 	connection = create_socket();
 	connect_socket(connection);

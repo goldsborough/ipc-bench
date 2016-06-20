@@ -1,6 +1,8 @@
 #ifndef HASHTABLE_H
 #define HASHTABLE_H
 
+#include <stddef.h>
+
 #include "connection.h"
 
 /***** DEFINITIONS *****/

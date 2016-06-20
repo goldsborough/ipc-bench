@@ -1,26 +1,16 @@
-#include <stdio.h>
-#include <sys/socket.h>
-#include <unistd.h>
-
 #include "tssx/overrides.h"
 
-int __real_read(int, void*, int);
-int __real_write(int, void*, int);
-void __real_connect(int, sockaddr*, int*);
-int __real_close(int);
-
-void __wrap_connect(int client_socket, sockaddr* address, int* length) {
+void connect(int client_socket, const sockaddr* address, size_t length) {
 	Connection connection;
 	int return_code;
 
-	__real_connect(client_socket, address, length);
+	real_connect(client_socket, address, length);
 
 	// clang-format off
-	return_code = recv(
+	return_code = real_read(
 		client_socket,
 		&connection.segment_id,
-		sizeof connection.segment_id,
-		0
+		sizeof connection.segment_id
 	);
 	// clang-format on
 
@@ -33,7 +23,7 @@ void __wrap_connect(int client_socket, sockaddr* address, int* length) {
 	ht_insert(&connection_map, client_socket, &connection);
 }
 
-int __wrap_read(int socket_fd, void* destination, int requested_bytes) {
+ssize_t read(int socket_fd, void* destination, size_t requested_bytes) {
 	// clang-format off
 	return connection_read(
 		socket_fd,
@@ -44,7 +34,7 @@ int __wrap_read(int socket_fd, void* destination, int requested_bytes) {
 	// clang-format on
 }
 
-int __wrap_write(int socket_fd, void* source, int requested_bytes) {
+ssize_t write(int socket_fd, void* source, size_t requested_bytes) {
 	// clang-format off
 	return connection_write(
 		socket_fd,
@@ -55,11 +45,11 @@ int __wrap_write(int socket_fd, void* source, int requested_bytes) {
 	// clang-format on
 }
 
-int __wrap_close(int socket_fd) {
+int close(int socket_fd) {
 	Connection* connection;
 
 	connection = ht_get(&connection_map, socket_fd);
 	disconnect(connection);
 
-	return __real_close(socket_fd);
+	return real_close(socket_fd);
 }

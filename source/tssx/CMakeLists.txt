@@ -26,8 +26,8 @@ set(TSSX_CLIENT_SOURCES
 ## TARGETS
 ###########################################################
 
-add_library(tssx-server STATIC ${TSSX_SERVER_SOURCES})
-add_library(tssx-client STATIC ${TSSX_CLIENT_SOURCES})
+add_library(tssx-server SHARED ${TSSX_SERVER_SOURCES})
+add_library(tssx-client SHARED ${TSSX_CLIENT_SOURCES})
 
 ###########################################################
 ## COMPILER FLAGS
@@ -35,6 +35,9 @@ add_library(tssx-client STATIC ${TSSX_CLIENT_SOURCES})
 
 target_compile_options(tssx-server PUBLIC "-O1")
 target_compile_options(tssx-client PUBLIC "-O1")
+
+target_link_libraries(tssx-server dl)
+target_link_libraries(tssx-client dl)
 
 ###########################################################
 ## CONFIGURATION FOR TRY

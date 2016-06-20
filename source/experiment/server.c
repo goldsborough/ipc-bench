@@ -33,7 +33,8 @@ void communicate(int connection, Arguments* args) {
 	setup_benchmarks(&bench);
 
 	// Synchronize for the benchmarks
-	server_once(WAIT);
+	// server_once(WAIT);
+	read(connection, buffer, 1);
 
 	for (message = 0; message < args->count; ++message) {
 		bench.single_start = now();
@@ -112,7 +113,7 @@ int create_server_socket() {
 
 	setup_socket(server_socket);
 
-	server_once(NOTIFY);
+	//server_once(NOTIFY);
 
 	return server_socket;
 }
