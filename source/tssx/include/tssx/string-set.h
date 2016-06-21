@@ -27,6 +27,7 @@ typedef const char* String;
 
 typedef struct Node {
 	struct Node* next;
+
 	char key[];// flexible arrray
 
 } Node;

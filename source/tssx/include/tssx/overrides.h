@@ -4,8 +4,8 @@
 #include <sys/types.h>
 
 #include "common/utility.h"
+#include "tssx/bridge.h"
 #include "tssx/connection.h"
-#include "tssx/hashtable.h"
 #include "tssx/shared_memory.h"
 
 #define ERROR -1
@@ -27,7 +27,7 @@ typedef int (*real_accept_t)(int, sockaddr*, int*);
 typedef void (*real_connect_t)(int, const sockaddr*, int);
 typedef int (*real_close_t)(int);
 
-extern HashTable connection_map;
+extern Bridge bridge;
 
 ssize_t real_write(int fd, const void* data, size_t size);
 ssize_t real_read(int fd, void* data, size_t size);

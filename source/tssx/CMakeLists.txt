@@ -20,6 +20,8 @@ set(TSSX_COMMON_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/source/vector.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/connection-table.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/free-list.c
+	${CMAKE_CURRENT_SOURCE_DIR}/source/bitset.c
+	${CMAKE_CURRENT_SOURCE_DIR}/source/bridge.c
 	)
 
 set(TSSX_SERVER_SOURCES

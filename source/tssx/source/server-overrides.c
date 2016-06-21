@@ -34,7 +34,7 @@ int accept(int server_socket, sockaddr* address, int* length) {
 	if (return_code == ERROR) return ERROR;
 
 	setup_connection(&connection, &DEFAULT_OPTIONS);
-	ht_insert(&connection_map, client_socket, &connection);
+	bridge_insert(&bridge, &connection);
 
 	return client_socket;
 }

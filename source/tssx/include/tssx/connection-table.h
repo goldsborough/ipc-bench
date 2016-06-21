@@ -15,6 +15,6 @@ void table_destroy(ConnectionTable* table);
 void table_assign(ConnectionTable* table, size_t index, Connection* connection);
 void table_push_back(ConnectionTable* table, Connection* connection);
 
-Connection* table_lookup(ConnectionTable* table, size_t index);
+Connection* table_get(ConnectionTable* table, size_t index);
 
 #endif /* CONNECTION_TABLE_H */

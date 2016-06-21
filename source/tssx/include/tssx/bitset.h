@@ -16,11 +16,14 @@ typedef struct BitSet {
 void bitset_setup(BitSet* bitset);
 void bitset_destroy(BitSet* bitset);
 
-void bit_push(BitSet* bitset);
+void bit_push(BitSet* bitset, bool value);
+void bit_push_one(BitSet* bitset);
+void bit_push_zero(BitSet* bitset);
 void bit_pop(BitSet* bitset);
 
 void bit_set(BitSet* bitset, size_t index);
 void bit_unset(BitSet* bitset, size_t index);
+void bit_assign(BitSet* bitset, size_t index, bool value);
 void bit_flip(BitSet* bitset, size_t index);
 
 bool bit_get(BitSet* bitset, size_t index);

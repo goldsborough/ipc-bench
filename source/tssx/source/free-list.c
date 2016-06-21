@@ -34,3 +34,7 @@ key_t free_list_pop(FreeList* list) {
 
 	return key;
 }
+
+bool free_list_is_empty(FreeList* list) {
+	return v_is_empty(list);
+}

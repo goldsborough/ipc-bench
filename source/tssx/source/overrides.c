@@ -9,6 +9,8 @@
 #include "tssx/buffer.h"
 #include "tssx/overrides.h"
 
+Bridge bridge;
+
 // RTDL_NEXT = look in the symbol table of the *next* object file after this one
 ssize_t real_write(int fd, const void* data, size_t size) {
 	return ((real_write_t)dlsym(RTLD_NEXT, "write"))(fd, data, size);

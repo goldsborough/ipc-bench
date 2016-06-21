@@ -29,11 +29,11 @@ void table_push_back(ConnectionTable* table, Connection* connection) {
 	}
 }
 
-Connection* table_lookup(ConnectionTable* table, size_t index) {
+Connection* table_get(ConnectionTable* table, size_t index) {
 	void* connection;
 
 	if ((connection = v_get(table, index, sizeof(Connection))) == NULL) {
-		terminate("Error looking up connection");
+		terminate("Error getting connection");
 	}
 
 	return (Connection*)connection;

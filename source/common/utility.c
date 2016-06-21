@@ -31,6 +31,7 @@ void nsleep(int nanoseconds) {
 }
 
 void pin_thread(int where) {
+	// Doesn't work on OS X right now
 	// int j;
 	// cpu_set_t cpuset;
 	// pthread_t thread;
