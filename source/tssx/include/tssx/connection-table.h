@@ -1,15 +1,20 @@
 #ifndef CONNECTION_TABLE_H
 #define CONNECTION_TABLE_H
 
+#include <stddef.h>
+
 struct Vector;
 struct Connection;
 
 typedef struct Connection Connection;
 typedef struct Vector ConnectionTable;
 
-int table_assign(ConnectionTable* table, int index, Connection* connection);
-int table_push_back(ConnectionTable* table, Connection* connection);
+void table_setup(ConnectionTable* table);
+void table_destroy(ConnectionTable* table);
 
-Connection* table_lookup(ConnectionTable* table, int index);
+void table_assign(ConnectionTable* table, size_t index, Connection* connection);
+void table_push_back(ConnectionTable* table, Connection* connection);
+
+Connection* table_lookup(ConnectionTable* table, size_t index);
 
 #endif /* CONNECTION_TABLE_H */

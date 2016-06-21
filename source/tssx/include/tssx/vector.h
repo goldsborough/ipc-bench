@@ -31,7 +31,7 @@ typedef struct Vector {
 /***** METHODS *****/
 
 // Constructor / Destructor
-int v_setup(Vector* vector, size_t capacity);
+int v_setup(Vector* vector, size_t capacity, size_t element_size);
 int v_destroy(Vector* vector);
 
 // Insertion

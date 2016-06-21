@@ -13,6 +13,11 @@ void throw(const char* message) {
 	exit(EXIT_FAILURE);
 }
 
+void terminate(const char* message) {
+	fputs(message, stderr);
+	exit(EXIT_FAILURE);
+}
+
 int generate_key(const char* path) {
 	// Generate a random key from the given file path
 	// (inode etc.) plus the arbitrary character

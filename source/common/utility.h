@@ -8,6 +8,7 @@
 #include <stdbool.h>
 
 void throw(const char* message);
+void terminate(const char* message);
 
 int generate_key(const char* path);
 

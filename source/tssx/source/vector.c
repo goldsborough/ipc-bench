@@ -6,7 +6,7 @@
 
 #include "tssx/vector.h"
 
-int v_setup(Vector* vector, size_t capacity) {
+int v_setup(Vector* vector, size_t capacity, size_t element_size) {
 	assert(vector != NULL);
 	assert(!v_is_initialized(vector));
 
@@ -15,7 +15,7 @@ int v_setup(Vector* vector, size_t capacity) {
 
 	vector->size = 0;
 	vector->capacity = MAX(V_MINIMUM_CAPACITY, capacity);
-	vector->data = malloc(capacity);
+	vector->data = malloc(capacity * element_size);
 
 	return vector->data ? V_SUCCESS : V_ERROR;
 }
