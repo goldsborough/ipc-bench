@@ -46,7 +46,7 @@ bool bridge_is_empty(const Bridge* bridge) {
 	return vector_is_empty(&bridge->table);
 }
 
-key_t bridge_generate_key(const Bridge* bridge) {
+key_t bridge_generate_key(Bridge* bridge) {
 	key_t key;
 
 	if (free_list_is_empty(&bridge->free_list)) {

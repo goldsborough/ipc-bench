@@ -33,7 +33,7 @@ void bridge_destroy(Bridge* bridge);
 bool bridge_is_initialized(const Bridge* bridge);
 bool bridge_is_empty(const Bridge* bridge);
 
-key_t bridge_generate_key(const Bridge* bridge);
+key_t bridge_generate_key(Bridge* bridge);
 
 key_t bridge_insert(Bridge* bridge, struct Connection* connection);
 void bridge_remove(Bridge* bridge, key_t key);

@@ -14,6 +14,10 @@
 /******************** REAL FUNCTIONS ********************/
 
 // RTDL_NEXT = look in the symbol table of the *next* object file after this one
+int real_socket(int domain, int type, int protocol) {
+	return ((real_socket_t)dlsym(RTLD_NEXT, "socket"))(domain, type, protocol);
+}
+
 ssize_t real_write(int fd, const void* data, size_t size) {
 	return ((real_write_t)dlsym(RTLD_NEXT, "write"))(fd, data, size);
 }
@@ -103,4 +107,17 @@ int connection_read(int key,
 
 Buffer* get_buffer(Connection* connection, int which_buffer) {
 	return which_buffer ? connection->client_buffer : connection->server_buffer;
+}
+
+int socket_is_stream_and_domain(int domain, int type) {
+	/*
+	* The only point of this function is that we are allowed to include *
+	* <sys/socket.h> here and access the AF_LOCAL symbolic name, while we're not
+	* allowed in the server/client-overrides file. We could just hardcode the
+	* constant for AF_LOCAL in those files, but that wouldn't be sustainable.
+	*
+	* Note that we'll only want to use tssx for stream (TCP-like) oriented
+	* sockets, not datagram (UDP-like) sockets
+	*/
+	return domain == AF_LOCAL && type == SOCK_STREAM;
 }

@@ -1,6 +1,14 @@
 #include "tssx/overrides.h"
 #include "tssx/selective.h"
 
+int socket(int domain, int type, int protocol) {
+	if (socket_is_stream_and_domain(domain, type)) {
+		return bridge_generate_key(&bridge);
+	} else {
+		return socket(domain, type, protocol);
+	}
+}
+
 void connect(int client_socket, const sockaddr* address, size_t length) {
 	Connection connection;
 	int check;

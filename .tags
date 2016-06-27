@@ -123,35 +123,56 @@ get_socket_name	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tss
 accept	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/server-overrides.c	/^int accept(int server_socket, sockaddr* address, int* length) {$/;"	function	line:7	signature:(int server_socket, sockaddr* address, int* length)
 read	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/server-overrides.c	/^ssize_t read(int key, void* destination, size_t requested_bytes) {$/;"	function	line:42	signature:(int key, void* destination, size_t requested_bytes)
 write	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/server-overrides.c	/^ssize_t write(int key, void* source, size_t requested_bytes) {$/;"	function	line:53	signature:(int key, void* source, size_t requested_bytes)
+socket	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/client-overrides.c	/^int socket(int domain, int type, int protocol) {$/;"	function	line:4	signature:(int domain, int type, int protocol)
+connect	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/client-overrides.c	/^void connect(int client_socket, const sockaddr* address, size_t length) {$/;"	function	line:12	signature:(int client_socket, const sockaddr* address, size_t length)
+read	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/client-overrides.c	/^ssize_t read(int key, void* destination, size_t requested_bytes) {$/;"	function	line:42	signature:(int key, void* destination, size_t requested_bytes)
+write	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/client-overrides.c	/^ssize_t write(int key, void* source, size_t requested_bytes) {$/;"	function	line:53	signature:(int key, void* source, size_t requested_bytes)
 OVERRIDES_H	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^#define OVERRIDES_H$/;"	macro	line:2
 ERROR	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^#define ERROR /;"	macro	line:13
 SERVER_BUFFER	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^#define SERVER_BUFFER /;"	macro	line:14
 CLIENT_BUFFER	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^#define CLIENT_BUFFER /;"	macro	line:15
 HashTable	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef struct HashTable HashTable;$/;"	typedef	line:21	typeref:struct:HashTable
 sockaddr	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef struct sockaddr sockaddr;$/;"	typedef	line:22	typeref:struct:sockaddr
-real_write_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef ssize_t (*real_write_t)(int, const void*, size_t);$/;"	typedef	line:24
-real_read_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef ssize_t (*real_read_t)(int, void*, size_t);$/;"	typedef	line:25
-real_accept_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef int (*real_accept_t)(int, sockaddr*, int*);$/;"	typedef	line:26
-real_connect_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef void (*real_connect_t)(int, const sockaddr*, int);$/;"	typedef	line:27
-real_close_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef int (*real_close_t)(int);$/;"	typedef	line:28
-real_fork_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef pid_t (*real_fork_t)(void);$/;"	typedef	line:29
+real_socket_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef int (*real_socket_t)(int, int, int);$/;"	typedef	line:25
+real_write_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef ssize_t (*real_write_t)(int, const void*, size_t);$/;"	typedef	line:26
+real_read_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef ssize_t (*real_read_t)(int, void*, size_t);$/;"	typedef	line:27
+real_accept_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef int (*real_accept_t)(int, sockaddr*, int*);$/;"	typedef	line:28
+real_connect_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef void (*real_connect_t)(int, const sockaddr*, int);$/;"	typedef	line:29
+real_close_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef int (*real_close_t)(int);$/;"	typedef	line:30
+real_fork_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef pid_t (*real_fork_t)(void);$/;"	typedef	line:33
 _GNU_SOURCE	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^#define _GNU_SOURCE$/;"	macro	line:1	file:
-real_write	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^ssize_t real_write(int fd, const void* data, size_t size) {$/;"	function	line:17	signature:(int fd, const void* data, size_t size)
-real_read	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^ssize_t real_read(int fd, void* data, size_t size) {$/;"	function	line:21	signature:(int fd, void* data, size_t size)
-real_accept	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^int real_accept(int fd, sockaddr* address, int* length) {$/;"	function	line:25	signature:(int fd, sockaddr* address, int* length)
-real_connect	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^void real_connect(int fd, const sockaddr* address, int length) {$/;"	function	line:29	signature:(int fd, const sockaddr* address, int length)
-real_close	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^int real_close(int fd) {$/;"	function	line:33	signature:(int fd)
-real_fork	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^pid_t real_fork(void) {$/;"	function	line:37	signature:(void)
-fork	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^pid_t fork(void) {$/;"	function	line:43	signature:(void)
-close	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^int close(int key) {$/;"	function	line:53	signature:(int key)
-connection_write	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^int connection_write(int key,$/;"	function	line:68	signature:(int key, void* destination, int requested_bytes, int which_buffer)
-connection_read	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^int connection_read(int key,$/;"	function	line:86	signature:(int key, void* source, int requested_bytes, int which_buffer)
-get_buffer	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^Buffer* get_buffer(Connection* connection, int which_buffer) {$/;"	function	line:104	signature:(Connection* connection, int which_buffer)
-connect	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/client-overrides.c	/^void connect(int client_socket, const sockaddr* address, size_t length) {$/;"	function	line:4	signature:(int client_socket, const sockaddr* address, size_t length)
-read	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/client-overrides.c	/^ssize_t read(int key, void* destination, size_t requested_bytes) {$/;"	function	line:34	signature:(int key, void* destination, size_t requested_bytes)
-write	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/client-overrides.c	/^ssize_t write(int key, void* source, size_t requested_bytes) {$/;"	function	line:45	signature:(int key, void* source, size_t requested_bytes)
+real_socket	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^int real_socket(int domain, int type, int protocol) {$/;"	function	line:17	signature:(int domain, int type, int protocol)
+real_write	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^ssize_t real_write(int fd, const void* data, size_t size) {$/;"	function	line:21	signature:(int fd, const void* data, size_t size)
+real_read	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^ssize_t real_read(int fd, void* data, size_t size) {$/;"	function	line:25	signature:(int fd, void* data, size_t size)
+real_accept	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^int real_accept(int fd, sockaddr* address, int* length) {$/;"	function	line:29	signature:(int fd, sockaddr* address, int* length)
+real_connect	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^void real_connect(int fd, const sockaddr* address, int length) {$/;"	function	line:33	signature:(int fd, const sockaddr* address, int length)
+real_close	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^int real_close(int fd) {$/;"	function	line:37	signature:(int fd)
+real_fork	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^pid_t real_fork(void) {$/;"	function	line:41	signature:(void)
+fork	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^pid_t fork(void) {$/;"	function	line:47	signature:(void)
+close	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^int close(int key) {$/;"	function	line:57	signature:(int key)
+connection_write	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^int connection_write(int key,$/;"	function	line:72	signature:(int key, void* destination, int requested_bytes, int which_buffer)
+connection_read	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^int connection_read(int key,$/;"	function	line:90	signature:(int key, void* source, int requested_bytes, int which_buffer)
+get_buffer	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^Buffer* get_buffer(Connection* connection, int which_buffer) {$/;"	function	line:108	signature:(Connection* connection, int which_buffer)
+socket_is_stream_and_domain	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^int socket_is_stream_and_domain(int domain, int type) {$/;"	function	line:112	signature:(int domain, int type)
 SELECTIVE_H	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/selective.h	/^#define SELECTIVE_H$/;"	macro	line:2
 ERROR	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/selective.h	/^#define ERROR /;"	macro	line:4
+bridge	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^Bridge bridge = BRIDGE_INITIALIZER;$/;"	variable	line:9
+old_sigint_handler	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^static signal_handler_t old_sigint_handler = NULL;$/;"	variable	line:11	file:
+old_sigterm_handler	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^static signal_handler_t old_sigterm_handler = NULL;$/;"	variable	line:12	file:
+bridge_setup	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void bridge_setup(Bridge* bridge) {$/;"	function	line:16	signature:(Bridge* bridge)
+bridge_destroy	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void bridge_destroy(Bridge* bridge) {$/;"	function	line:27	signature:(Bridge* bridge)
+bridge_is_initialized	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^bool bridge_is_initialized(const Bridge* bridge) {$/;"	function	line:41	signature:(const Bridge* bridge)
+bridge_is_empty	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^bool bridge_is_empty(const Bridge* bridge) {$/;"	function	line:45	signature:(const Bridge* bridge)
+bridge_generate_key	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^key_t bridge_generate_key(Bridge* bridge) {$/;"	function	line:49	signature:(Bridge* bridge)
+bridge_insert	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^key_t bridge_insert(Bridge* bridge, Connection* connection) {$/;"	function	line:66	signature:(Bridge* bridge, Connection* connection)
+bridge_remove	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void bridge_remove(Bridge* bridge, key_t key) {$/;"	function	line:90	signature:(Bridge* bridge, key_t key)
+bridge_lookup	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^Connection* bridge_lookup(Bridge* bridge, key_t key) {$/;"	function	line:101	signature:(Bridge* bridge, key_t key)
+index_for	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^size_t index_for(key_t key) {$/;"	function	line:107	signature:(key_t key)
+_setup_exit_handling	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void _setup_exit_handling() {$/;"	function	line:113
+_setup_signal_handler	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void _setup_signal_handler(int signal_number) {$/;"	function	line:119	signature:(int signal_number)
+_bridge_signal_handler	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void _bridge_signal_handler(int signal_number) {$/;"	function	line:145	signature:(int signal_number)
+_bridge_signal_handler_for	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void _bridge_signal_handler_for(int signal_number,$/;"	function	line:153	signature:(int signal_number, signal_handler_t old_handler)
+_bridge_exit_handler	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void _bridge_exit_handler() {$/;"	function	line:164
 BRIDGE_H	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^#define BRIDGE_H$/;"	macro	line:2
 TSSX_KEY_OFFSET	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^#define TSSX_KEY_OFFSET /;"	macro	line:11
 BRIDGE_INITIALIZER	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^#define BRIDGE_INITIALIZER /;"	macro	line:13
@@ -162,20 +183,3 @@ free_list	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/incl
 occupied	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^	BitSet occupied;$/;"	member	line:23	struct:Bridge
 Bridge	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^} Bridge;$/;"	typedef	line:24	typeref:struct:Bridge
 signal_handler_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^typedef void (*signal_handler_t)(int);$/;"	typedef	line:46
-bridge	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^Bridge bridge = BRIDGE_INITIALIZER;$/;"	variable	line:9
-old_sigint_handler	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^static signal_handler_t old_sigint_handler = NULL;$/;"	variable	line:11	file:
-old_sigterm_handler	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^static signal_handler_t old_sigterm_handler = NULL;$/;"	variable	line:12	file:
-bridge_setup	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void bridge_setup(Bridge* bridge) {$/;"	function	line:16	signature:(Bridge* bridge)
-bridge_destroy	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void bridge_destroy(Bridge* bridge) {$/;"	function	line:27	signature:(Bridge* bridge)
-bridge_is_initialized	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^bool bridge_is_initialized(const Bridge* bridge) {$/;"	function	line:41	signature:(const Bridge* bridge)
-bridge_is_empty	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^bool bridge_is_empty(const Bridge* bridge) {$/;"	function	line:45	signature:(const Bridge* bridge)
-bridge_generate_key	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^key_t bridge_generate_key(const Bridge* bridge) {$/;"	function	line:49	signature:(const Bridge* bridge)
-bridge_insert	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^key_t bridge_insert(Bridge* bridge, Connection* connection) {$/;"	function	line:66	signature:(Bridge* bridge, Connection* connection)
-bridge_remove	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void bridge_remove(Bridge* bridge, key_t key) {$/;"	function	line:90	signature:(Bridge* bridge, key_t key)
-bridge_lookup	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^Connection* bridge_lookup(Bridge* bridge, key_t key) {$/;"	function	line:101	signature:(Bridge* bridge, key_t key)
-index_for	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^size_t index_for(key_t key) {$/;"	function	line:107	signature:(key_t key)
-_setup_exit_handling	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void _setup_exit_handling() {$/;"	function	line:113
-_setup_signal_handler	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void _setup_signal_handler(int signal_number) {$/;"	function	line:119	signature:(int signal_number)
-_bridge_signal_handler	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void _bridge_signal_handler(int signal_number) {$/;"	function	line:145	signature:(int signal_number)
-_bridge_signal_handler_for	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void _bridge_signal_handler_for(int signal_number,$/;"	function	line:153	signature:(int signal_number, signal_handler_t old_handler)
-_bridge_exit_handler	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void _bridge_exit_handler() {$/;"	function	line:164
