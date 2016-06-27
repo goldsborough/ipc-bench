@@ -28,7 +28,7 @@ typedef void (*real_connect_t)(int, const sockaddr*, int);
 typedef int (*real_close_t)(int);
 typedef pid_t (*real_fork_t)(void);
 
-/******************** INTERFACE ********************/
+/******************** REAL FUNCTIONS ********************/
 
 ssize_t real_write(int fd, const void* data, size_t size);
 ssize_t real_read(int fd, void* data, size_t size);
@@ -37,7 +37,11 @@ void real_connect(int fd, const sockaddr* address, int length);
 int real_close(int fd);
 pid_t real_fork(void);
 
+/******************** COMMON OVERRIDES ********************/
+
 pid_t fork(void);
+
+/******************** INTERFACE ********************/
 
 int connection_write(int key,
 										 void* destination,

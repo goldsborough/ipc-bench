@@ -13,6 +13,7 @@ int check_use_tssx(int socket_fd) {
 	int return_code;
 
 	if ((return_code = is_domain_socket(socket_fd)) != 1) {
+		// Either error or false (the socket is not a domain socket)
 		return return_code;
 	}
 
@@ -66,6 +67,7 @@ int is_domain_socket(int socket_fd) {
 		return ERROR;
 	}
 
+	// AF_LOCAL is an alias for AF_UNIX (i.e. they have the same value)
 	return address.sa_family == AF_LOCAL;
 }
 

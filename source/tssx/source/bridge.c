@@ -54,7 +54,7 @@ key_t bridge_insert(Bridge* bridge, Connection* connection) {
 	}
 
 	if (free_list_is_empty(&bridge->free_list)) {
-		key = bridge->table.size + KEY_OFFSET;
+		key = bridge->table.size + TSSX_KEY_OFFSET;
 		table_push_back(&bridge->table, connection);
 		bitset_push_one(&bridge->occupied);
 	} else {
@@ -85,7 +85,7 @@ Connection* bridge_lookup(Bridge* bridge, key_t key) {
 }
 
 size_t index_for(key_t key) {
-	return key - KEY_OFFSET;
+	return key - TSSX_KEY_OFFSET;
 }
 
 /******************** PRIVATE ********************/

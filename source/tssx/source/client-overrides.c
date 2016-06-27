@@ -52,17 +52,3 @@ ssize_t write(int key, void* source, size_t requested_bytes) {
 	);
 	// clang-format on
 }
-
-int close(int key) {
-	Connection* connection;
-
-	connection = bridge_lookup(&bridge, key);
-
-	// In case this connection did not use our tssx
-	if (connection != NULL) {
-		disconnect(connection);
-		bridge_remove(&bridge, key);
-	}
-
-	return real_close(key);
-}

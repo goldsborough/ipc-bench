@@ -4,19 +4,6 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.8	//
-bridge	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^Bridge bridge = BRIDGE_INITIALIZER;$/;"	variable	line:9
-old_sigint_handler	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^static signal_handler_t old_sigint_handler = NULL;$/;"	variable	line:11	file:
-old_sigterm_handler	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^static signal_handler_t old_sigterm_handler = NULL;$/;"	variable	line:12	file:
-bridge_setup	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void bridge_setup(Bridge* bridge) {$/;"	function	line:16	signature:(Bridge* bridge)
-bridge_destroy	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void bridge_destroy(Bridge* bridge) {$/;"	function	line:27	signature:(Bridge* bridge)
-bridge_is_initialized	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^bool bridge_is_initialized(const Bridge* bridge) {$/;"	function	line:41	signature:(const Bridge* bridge)
-bridge_is_empty	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^bool bridge_is_empty(const Bridge* bridge) {$/;"	function	line:45	signature:(const Bridge* bridge)
-bridge_insert	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^key_t bridge_insert(Bridge* bridge, Connection* connection) {$/;"	function	line:49	signature:(Bridge* bridge, Connection* connection)
-bridge_remove	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void bridge_remove(Bridge* bridge, key_t key) {$/;"	function	line:70	signature:(Bridge* bridge, key_t key)
-bridge_lookup	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^Connection* bridge_lookup(Bridge* bridge, key_t key) {$/;"	function	line:81	signature:(Bridge* bridge, key_t key)
-index_for	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^size_t index_for(key_t key) {$/;"	function	line:87	signature:(key_t key)
-_setup_exit_handling	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void _setup_exit_handling() {$/;"	function	line:93
-_setup_signal_handler	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void _setup_signal_handler(int signal_number) {$/;"	function	line:99	signature:(int signal_number)
-_bridge_signal_handler	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void _bridge_signal_handler(int signal_number) {$/;"	function	line:125	signature:(int signal_number)
-_bridge_signal_handler_for	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void _bridge_signal_handler_for(int signal_number,$/;"	function	line:133	signature:(int signal_number, signal_handler_t old_handler)
-_bridge_exit_handler	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void _bridge_exit_handler() {$/;"	function	line:144
+connect	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/client-overrides.c	/^void connect(int client_socket, const sockaddr* address, size_t length) {$/;"	function	line:4	signature:(int client_socket, const sockaddr* address, size_t length)
+read	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/client-overrides.c	/^ssize_t read(int key, void* destination, size_t requested_bytes) {$/;"	function	line:34	signature:(int key, void* destination, size_t requested_bytes)
+write	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/client-overrides.c	/^ssize_t write(int key, void* source, size_t requested_bytes) {$/;"	function	line:45	signature:(int key, void* source, size_t requested_bytes)

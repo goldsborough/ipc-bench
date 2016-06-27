@@ -60,16 +60,3 @@ ssize_t write(int key, void* source, size_t requested_bytes) {
 	);
 	// clang-format on
 }
-
-int close(int key) {
-	Connection* connection;
-
-	if (key >= KEY_OFFSET) {
-		connection = bridge_lookup(&bridge, key);
-		assert(connection != NULL);
-		disconnect(connection);
-		bridge_remove(&bridge, key);
-	}
-
-	return real_close(key);
-}

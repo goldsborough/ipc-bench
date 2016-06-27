@@ -7,8 +7,11 @@
 #include <sys/un.h>
 
 #include "bitset/bitset.h"
+#include "tssx/bridge.h"
 #include "tssx/buffer.h"
 #include "tssx/overrides.h"
+
+/******************** REAL FUNCTIONS ********************/
 
 // RTDL_NEXT = look in the symbol table of the *next* object file after this one
 ssize_t real_write(int fd, const void* data, size_t size) {
@@ -35,6 +38,8 @@ pid_t real_fork(void) {
 	return ((real_fork_t)dlsym(RTLD_NEXT, "fork"))();
 }
 
+/******************** COMMON OVERRIDES ********************/
+
 pid_t fork(void) {
 	for (size_t index = 0; index < bridge.table.size; ++index) {
 		if (bitset_test(&bridge.occupied, index)) {
@@ -44,6 +49,21 @@ pid_t fork(void) {
 
 	return real_fork();
 }
+
+int close(int key) {
+	Connection* connection;
+
+	if (key >= TSSX_KEY_OFFSET) {
+		connection = bridge_lookup(&bridge, key);
+		assert(connection != NULL);
+		disconnect(connection);
+		bridge_remove(&bridge, key);
+	}
+
+	return real_close(key);
+}
+
+/******************** INTERFACE ********************/
 
 int connection_write(int key,
 										 void* destination,
