@@ -46,12 +46,32 @@ bool bridge_is_empty(const Bridge* bridge) {
 	return vector_is_empty(&bridge->table);
 }
 
+key_t bridge_generate_key(const Bridge* bridge) {
+	key_t key;
+
+	if (free_list_is_empty(&bridge->free_list)) {
+		key = bridge->table.size + TSSX_KEY_OFFSET;
+
+		// We increment the size here because, in a sense, we're reserving
+		// this index for the socket. Also, the user could first create a
+		// bunch of sockets and then connect them only after, so this must be done
+		++bridge->table.size;
+	} else {
+		key = free_list_pop(&bridge->free_list);
+	}
+
+	return key;
+}
+
 key_t bridge_insert(Bridge* bridge, Connection* connection) {
 	key_t key;
 
 	if (!bridge_is_initialized(bridge)) {
 		bridge_setup(bridge);
 	}
+
+	// TODO: fix this here w.r.t. the key generation happening already earlier
+
 
 	if (free_list_is_empty(&bridge->free_list)) {
 		key = bridge->table.size + TSSX_KEY_OFFSET;

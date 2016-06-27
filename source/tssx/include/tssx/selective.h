@@ -2,6 +2,7 @@
 #define SELECTIVE_H
 
 #define ERROR -1
+#define
 
 struct StringSet;
 
