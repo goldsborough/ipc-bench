@@ -6,10 +6,10 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#include "bitset/bitset.h"
 #include "tssx/bridge.h"
 #include "tssx/buffer.h"
 #include "tssx/overrides.h"
+#include "tssx/session.h"
 
 /******************** REAL FUNCTIONS ********************/
 
@@ -45,23 +45,14 @@ pid_t real_fork(void) {
 /******************** COMMON OVERRIDES ********************/
 
 pid_t fork(void) {
-	for (size_t index = 0; index < bridge.table.size; ++index) {
-		if (bitset_test(&bridge.occupied, index)) {
-			connection_add_user(table_get(&bridge.table, index));
-		}
-	}
-
+	// Increments all reference counts
+	bridge_add_user(&bridge);
 	return real_fork();
 }
 
 int close(int key) {
-	Connection* connection;
-
 	if (key >= TSSX_KEY_OFFSET) {
-		connection = bridge_lookup(&bridge, key);
-		assert(connection != NULL);
-		disconnect(connection);
-		bridge_remove(&bridge, key);
+		bridge_free(&bridge, key);
 	}
 
 	return real_close(key);
@@ -70,39 +61,55 @@ int close(int key) {
 /******************** INTERFACE ********************/
 
 int connection_write(int key,
-										 void* destination,
+										 void* source,
 										 int requested_bytes,
 										 int which_buffer) {
-	Connection* connection;
+	Session* session;
 
-	connection = bridge_lookup(&bridge, key);
-	assert(connection != NULL);
-
-	// clang-format off
-	return buffer_write(
-		get_buffer(connection, which_buffer),
-		destination,
-		requested_bytes
-	);
-	// clang-format on
+	if (key < TSSX_KEY_OFFSET) {
+		return real_write(key, source, requested_bytes);
+	} else {
+		session = bridge_lookup(&bridge, key);
+		assert(session_is_valid(session));
+		// Check if the session is actually a TSSX session or a standard domain
+		// socket that we just had to put in here on client side
+		if (session->connection == NULL) {
+			return real_write(session->socket, source, requested_bytes);
+		} else {
+			// clang-format off
+			return buffer_write(
+        get_buffer(session->connection, which_buffer),
+        source,
+        requested_bytes
+      );
+			// clang-format on
+		}
+	}
 }
 
 int connection_read(int key,
-										void* source,
+										void* destination,
 										int requested_bytes,
 										int which_buffer) {
-	Connection* connection;
+	Session* session;
 
-	connection = bridge_lookup(&bridge, key);
-	assert(connection != NULL);
-
-	// clang-format off
-	return buffer_read(
-		get_buffer(connection, which_buffer),
-		source,
-		requested_bytes
-	);
-	// clang-format on
+	if (key < TSSX_KEY_OFFSET) {
+		return real_read(key, destination, requested_bytes);
+	} else {
+		session = bridge_lookup(&bridge, key);
+		assert(session_is_valid(session));
+		if (session->connection == NULL) {
+			return real_read(session->socket, destination, requested_bytes);
+		} else {
+			// clang-format off
+			return buffer_read(
+        get_buffer(session->connection, which_buffer),
+        destination,
+        requested_bytes
+      );
+			// clang-format on
+		}
+	}
 }
 
 Buffer* get_buffer(Connection* connection, int which_buffer) {

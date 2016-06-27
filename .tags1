@@ -4,13 +4,8 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.8	//
-BRIDGE_H	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^#define BRIDGE_H$/;"	macro	line:2
-TSSX_KEY_OFFSET	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^#define TSSX_KEY_OFFSET /;"	macro	line:11
-BRIDGE_INITIALIZER	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^#define BRIDGE_INITIALIZER /;"	macro	line:13
-key_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^typedef int key_t;$/;"	typedef	line:16
-Bridge	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^typedef struct Bridge {$/;"	struct	line:20
-table	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^	ConnectionTable table;$/;"	member	line:21	struct:Bridge
-free_list	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^	FreeList free_list;$/;"	member	line:22	struct:Bridge
-occupied	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^	BitSet occupied;$/;"	member	line:23	struct:Bridge
-Bridge	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^} Bridge;$/;"	typedef	line:24	typeref:struct:Bridge
-signal_handler_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^typedef void (*signal_handler_t)(int);$/;"	typedef	line:46
+socket	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/client-overrides.c	/^int socket(int domain, int type, int protocol) {$/;"	function	line:5	signature:(int domain, int type, int protocol)
+read_segment_id_from_server	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/client-overrides.c	/^int read_segment_id_from_server(int client_socket) {$/;"	function	line:19	signature:(int client_socket)
+connect	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/client-overrides.c	/^void connect(int key, const sockaddr* address, size_t length) {$/;"	function	line:38	signature:(int key, const sockaddr* address, size_t length)
+read	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/client-overrides.c	/^ssize_t read(int key, void* destination, size_t requested_bytes) {$/;"	function	line:66	signature:(int key, void* destination, size_t requested_bytes)
+write	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/client-overrides.c	/^ssize_t write(int key, void* source, size_t requested_bytes) {$/;"	function	line:77	signature:(int key, void* source, size_t requested_bytes)

@@ -5,6 +5,7 @@
 #include "common/utility.h"
 #include "tssx/bridge.h"
 #include "tssx/connection.h"
+#include "tssx/session.h"
 
 Bridge bridge = BRIDGE_INITIALIZER;
 
@@ -17,9 +18,8 @@ void bridge_setup(Bridge* bridge) {
 	assert(bridge != NULL);
 	assert(!bridge_is_initialized(bridge));
 
-	table_setup(&bridge->table);
+	session_table_setup(&bridge->session_table);
 	free_list_setup(&bridge->free_list);
-	bitset_setup(&bridge->occupied, 16);
 
 	_setup_exit_handling();
 }
@@ -27,35 +27,38 @@ void bridge_setup(Bridge* bridge) {
 void bridge_destroy(Bridge* bridge) {
 	assert(bridge != NULL);
 
-	for (size_t index = 0; index < bridge->table.size; ++index) {
-		if (bitset_test(&bridge->occupied, index)) {
-			disconnect(table_get(&bridge->table, index));
-		}
+	// Invalidate (disconnect) all sessions
+	VECTOR_FOR_EACH(&bridge->session_table, session) {
+		session_invalidate(&(ITERATOR_GET_AS(Session, &session)));
 	}
 
-	table_destroy(&bridge->table);
+	session_table_destroy(&bridge->session_table);
 	free_list_destroy(&bridge->free_list);
-	bitset_destroy(&bridge->occupied);
 }
 
 bool bridge_is_initialized(const Bridge* bridge) {
-	return vector_is_initialized(&bridge->table);
+	return vector_is_initialized(&bridge->session_table);
 }
 
 bool bridge_is_empty(const Bridge* bridge) {
-	return vector_is_empty(&bridge->table);
+	return vector_is_empty(&bridge->session_table);
+}
+
+void bridge_add_user(Bridge* bridge) {
+	VECTOR_FOR_EACH(&bridge->session_table, iterator) {
+		Session* session = (Session*)iterator_get(&iterator);
+		if (session->connection) {
+			connection_add_user(session->connection);
+		}
+	}
 }
 
 key_t bridge_generate_key(Bridge* bridge) {
 	key_t key;
 
 	if (free_list_is_empty(&bridge->free_list)) {
-		key = bridge->table.size + TSSX_KEY_OFFSET;
-
-		// We increment the size here because, in a sense, we're reserving
-		// this index for the socket. Also, the user could first create a
-		// bunch of sockets and then connect them only after, so this must be done
-		++bridge->table.size;
+		key = bridge->session_table.size + TSSX_KEY_OFFSET;
+		session_table_reserve_back(&bridge->session_table);
 	} else {
 		key = free_list_pop(&bridge->free_list);
 	}
@@ -63,45 +66,30 @@ key_t bridge_generate_key(Bridge* bridge) {
 	return key;
 }
 
-key_t bridge_insert(Bridge* bridge, Connection* connection) {
-	key_t key;
+void bridge_insert(Bridge* bridge, key_t key, Session* session) {
+	Session* current_session;
 
 	if (!bridge_is_initialized(bridge)) {
 		bridge_setup(bridge);
 	}
 
-	// TODO: fix this here w.r.t. the key generation happening already earlier
+	// First some sanity checks that this session we're assigning at is not valid
+	current_session = session_table_get(&bridge->session_table, index_for(key));
+	assert(session_is_invalid(current_session));
 
-
-	if (free_list_is_empty(&bridge->free_list)) {
-		key = bridge->table.size + TSSX_KEY_OFFSET;
-		table_push_back(&bridge->table, connection);
-		bitset_push_one(&bridge->occupied);
-	} else {
-		assert(!bitset_test(&bridge->occupied, index_for(key)));
-		key = free_list_pop(&bridge->free_list);
-		table_assign(&bridge->table, index_for(key), connection);
-		bitset_set(&bridge->occupied, index_for(key));
-	}
-
-	return key;
+	session_table_assign(&bridge->session_table, index_for(key), session);
 }
 
-void bridge_remove(Bridge* bridge, key_t key) {
-	size_t index;
+void bridge_free(Bridge* bridge, key_t key) {
+	Session* session;
 
-	assert(bitset_test(&bridge->occupied, index_for(key)));
-
-	index = index_for(key);
-	bitset_reset(&bridge->occupied, index);
-	free_list_push(&bridge->free_list, index);
-	table_safe_remove(&bridge->table, index);
+	session = session_table_get(&bridge->session_table, index_for(key));
+	session_invalidate(session);
+	free_list_push(&bridge->free_list, key);
 }
 
-Connection* bridge_lookup(Bridge* bridge, key_t key) {
-	// if (!bitset_test(&bridge->occupied, index_for(key))) return NULL;
-	assert(bitset_test(&bridge->occupied, index_for(key)));
-	return table_get(&bridge->table, index_for(key));
+Session* bridge_lookup(Bridge* bridge, key_t key) {
+	return session_table_get(&bridge->session_table, index_for(key));
 }
 
 size_t index_for(key_t key) {

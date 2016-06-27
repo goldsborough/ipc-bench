@@ -1,9 +1,8 @@
 #ifndef BRIDGE_H
 #define BRIDGE_H
 
-#include "bitset/bitset.h"
-#include "tssx/connection-table.h"
 #include "tssx/free-list.h"
+#include "tssx/session-table.h"
 
 /******************** DEFINITIONS ********************/
 
@@ -11,16 +10,17 @@
 #define TSSX_KEY_OFFSET (1000000)
 
 #define BRIDGE_INITIALIZER \
-	{ CONNECTION_TABLE_INITIALIZER, FREE_LIST_INITIALIZER, BITSET_INITIALIZER }
+	{ SESSION_TABLE_INITIALIZER, FREE_LIST_INITIALIZER }
 
 typedef int key_t;
+
+struct Session;
 
 /******************** STRUCTURES ********************/
 
 typedef struct Bridge {
-	ConnectionTable table;
+	SessionTable session_table;
 	FreeList free_list;
-	BitSet occupied;
 } Bridge;
 
 extern Bridge bridge;
@@ -35,9 +35,12 @@ bool bridge_is_empty(const Bridge* bridge);
 
 key_t bridge_generate_key(Bridge* bridge);
 
-key_t bridge_insert(Bridge* bridge, struct Connection* connection);
-void bridge_remove(Bridge* bridge, key_t key);
-struct Connection* bridge_lookup(Bridge* bridge, key_t key);
+void bridge_add_user(Bridge* bridge);
+
+void bridge_insert(Bridge* bridge, key_t key, struct Session* session);
+void bridge_free(Bridge* bridge, key_t key);
+
+struct Session* bridge_lookup(Bridge* bridge, key_t key);
 
 size_t index_for(key_t key);
 

@@ -18,6 +18,10 @@ void terminate(const char* message) {
 	exit(EXIT_FAILURE);
 }
 
+void print_error(const char* message) {
+	fputs(message, stderr);
+}
+
 int generate_key(const char* path) {
 	// Generate a random key from the given file path
 	// (inode etc.) plus the arbitrary character

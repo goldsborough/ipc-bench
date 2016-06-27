@@ -7,7 +7,6 @@
 #define FREE_LIST_INITIALIZER VECTOR_INITIALIZER
 
 struct Vector;
-
 typedef struct Vector FreeList;
 
 void free_list_setup(FreeList* list);

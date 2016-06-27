@@ -23,7 +23,8 @@ set(TSSX_COMMON_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/source/timeouts.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/string-set.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/selective.c
-	${CMAKE_CURRENT_SOURCE_DIR}/source/connection-table.c
+	${CMAKE_CURRENT_SOURCE_DIR}/source/session-table.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/session.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/free-list.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/bridge.c
 	)
@@ -44,7 +45,6 @@ set(TSSX_CLIENT_SOURCES
 ###########################################################
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/bitset)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 ###########################################################
@@ -61,7 +61,6 @@ add_library(tssx-client SHARED ${TSSX_CLIENT_SOURCES})
 set(TSSX_DEPENDENCIES
   ipc-bench-common
   vector
-  bitset
   dl
 )
 

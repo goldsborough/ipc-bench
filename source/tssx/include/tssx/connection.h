@@ -2,6 +2,7 @@
 #define CONNECTION_H
 
 #include <stdatomic.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 #include "tssx/timeouts.h"
@@ -47,8 +48,8 @@ extern ConnectionOptions DEFAULT_OPTIONS;
 
 /******************** INTERFACE ********************/
 
-void create_connection(Connection* connection, ConnectionOptions* options);
-void setup_connection(Connection* connection, ConnectionOptions* options);
+Connection* create_connection(ConnectionOptions* options);
+Connection* setup_connection(int segment_id, ConnectionOptions* options);
 
 void disconnect(Connection* connection);
 void connection_add_user(Connection* connection);

@@ -1,9 +1,11 @@
 #include <assert.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 #include "common/sockets.h"
+#include "common/utility.h"
 #include "tssx/buffer.h"
 #include "tssx/connection.h"
 #include "tssx/hashtable.h"
@@ -20,11 +22,16 @@ ConnectionOptions DEFAULT_OPTIONS = {
 
 /*************** PUBLIC **************/
 
-void create_connection(Connection* connection, ConnectionOptions* options) {
+Connection* create_connection(ConnectionOptions* options) {
+	Connection* connection;
 	void* shared_memory;
 
-	assert(connection != NULL);
 	assert(options != NULL);
+
+	if ((connection = malloc(sizeof *connection)) == NULL) {
+		print_error("Error allocating memory for connection");
+		return NULL;
+	}
 
 	connection->segment_id = create_segment(_options_segment_size(options));
 	shared_memory = attach_segment(connection->segment_id);
@@ -32,19 +39,30 @@ void create_connection(Connection* connection, ConnectionOptions* options) {
 	_init_open_count(connection, shared_memory);
 	_create_server_buffer(connection, shared_memory, options);
 	_create_client_buffer(connection, shared_memory, options);
+
+	return connection;
 }
 
-void setup_connection(Connection* connection, ConnectionOptions* options) {
+Connection* setup_connection(int segment_id, ConnectionOptions* options) {
+	Connection* connection;
 	void* shared_memory;
 
-	assert(connection != NULL);
 	assert(options != NULL);
 
+
+	if ((connection = malloc(sizeof *connection)) == NULL) {
+		print_error("Error allocating memory for connection");
+		return NULL;
+	}
+
+	connection->segment_id = segment_id;
 	shared_memory = attach_segment(connection->segment_id);
 
 	_init_and_increment_open_count(connection, shared_memory);
 	_create_server_buffer(connection, shared_memory, options);
 	_create_client_buffer(connection, shared_memory, options);
+
+	return connection;
 }
 
 void connection_add_user(Connection* connection) {
@@ -55,13 +73,11 @@ void connection_add_user(Connection* connection) {
 void disconnect(Connection* connection) {
 	assert(connection != NULL);
 
-	atomic_fetch_sub(connection->open_count, 1);
+	_detach_connection(connection);
 
+	atomic_fetch_sub(connection->open_count, 1);
 	if (atomic_load(connection->open_count) == 0) {
-		_detach_connection(connection);
 		_destroy_connection(connection);
-	} else {
-		_detach_connection(connection);
 	}
 }
 
@@ -107,6 +123,12 @@ void _init_and_increment_open_count(Connection* connection,
 
 void _detach_connection(Connection* connection) {
 	detach_segment(_segment_start(connection));
+
+	// Invalidate
+	connection->segment_id = -1;
+	connection->open_count = NULL;
+	connection->server_buffer = NULL;
+	connection->client_buffer = NULL;
 }
 
 void _destroy_connection(Connection* connection) {
