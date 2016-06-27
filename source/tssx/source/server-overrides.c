@@ -7,16 +7,16 @@
 int accept(int server_socket, sockaddr* address, int* length) {
 	Connection connection;
 	int client_socket;
-	int check;
+	int use_tssx;
 	int return_code;
 
 	if ((client_socket = real_accept(server_socket, address, length)) == ERROR) {
 		return ERROR;
 	}
 
-	if ((check = check_use_tssx(server_socket)) == ERROR) {
+	if ((use_tssx = check_use_tssx(server_socket)) == ERROR) {
 		return ERROR;
-	} else if (!check) {
+	} else if (!use_tssx) {
 		return client_socket;
 	}
 
@@ -30,8 +30,12 @@ int accept(int server_socket, sockaddr* address, int* length) {
 	);
 	// clang-format on
 
-	if (return_code == ERROR) return ERROR;
+	if (return_code == ERROR) {
+		disconnect(&connection);
+		return ERROR;
+	}
 
+	// Returns the key generated for this connection
 	return bridge_insert(&bridge, &connection);
 }
 
@@ -60,7 +64,7 @@ ssize_t write(int key, void* source, size_t requested_bytes) {
 int close(int key) {
 	Connection* connection;
 
-	if (key < 0) {
+	if (key >= KEY_OFFSET) {
 		connection = bridge_lookup(&bridge, key);
 		assert(connection != NULL);
 		disconnect(connection);

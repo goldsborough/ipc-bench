@@ -28,8 +28,6 @@ typedef void (*real_connect_t)(int, const sockaddr*, int);
 typedef int (*real_close_t)(int);
 typedef pid_t (*real_fork_t)(void);
 
-extern Bridge bridge;
-
 /******************** INTERFACE ********************/
 
 ssize_t real_write(int fd, const void* data, size_t size);

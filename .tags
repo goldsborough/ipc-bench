@@ -1,15 +1,3 @@
-_GNU_SOURCE	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^#define _GNU_SOURCE$/;"	macro	line:1	file:
-bridge	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^Bridge bridge = BRIDGE_INITIALIZER;$/;"	variable	line:13
-real_write	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^ssize_t real_write(int fd, const void* data, size_t size) {$/;"	function	line:16	signature:(int fd, const void* data, size_t size)
-real_read	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^ssize_t real_read(int fd, void* data, size_t size) {$/;"	function	line:20	signature:(int fd, void* data, size_t size)
-real_accept	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^int real_accept(int fd, sockaddr* address, int* length) {$/;"	function	line:24	signature:(int fd, sockaddr* address, int* length)
-real_connect	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^void real_connect(int fd, const sockaddr* address, int length) {$/;"	function	line:28	signature:(int fd, const sockaddr* address, int length)
-real_close	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^int real_close(int fd) {$/;"	function	line:32	signature:(int fd)
-real_fork	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^pid_t real_fork(void) {$/;"	function	line:36	signature:(void)
-fork	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^pid_t fork(void) {$/;"	function	line:40	signature:(void)
-connection_write	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^int connection_write(int key,$/;"	function	line:50	signature:(int key, void* destination, int requested_bytes, int which_buffer)
-connection_read	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^int connection_read(int key,$/;"	function	line:68	signature:(int key, void* source, int requested_bytes, int which_buffer)
-get_buffer	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^Buffer* get_buffer(Connection* connection, int which_buffer) {$/;"	function	line:86	signature:(Connection* connection, int which_buffer)
 DEFAULT_TIMEOUTS	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/timeouts.c	/^const Timeouts DEFAULT_TIMEOUTS = DEFAULT_TIMEOUTS_INITIALIZER;$/;"	variable	line:5
 TIMEOUTS_H	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/timeouts.h	/^#define TIMEOUTS_H$/;"	macro	line:2
 cycle_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/timeouts.h	/^typedef uint64_t cycle_t;$/;"	typedef	line:6
@@ -35,24 +23,155 @@ _destroy_connection	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source
 _segment_start	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/connection.c	/^void* _segment_start(Connection* connection) {$/;"	function	line:116	signature:(Connection* connection)
 _options_segment_size	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/connection.c	/^int _options_segment_size(ConnectionOptions* options) {$/;"	function	line:120	signature:(ConnectionOptions* options)
 _connection_segment_size	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/connection.c	/^int _connection_segment_size(Connection* connection) {$/;"	function	line:130	signature:(Connection* connection)
-table_setup	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/connection-table.c	/^void table_setup(ConnectionTable* table) {$/;"	function	line:6	signature:(ConnectionTable* table)
-table_destroy	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/connection-table.c	/^void table_destroy(ConnectionTable* table) {$/;"	function	line:12	signature:(ConnectionTable* table)
-table_assign	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/connection-table.c	/^void table_assign(ConnectionTable* table,$/;"	function	line:18	signature:(ConnectionTable* table, size_t index, Connection* connection)
-table_push_back	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/connection-table.c	/^void table_push_back(ConnectionTable* table, Connection* connection) {$/;"	function	line:26	signature:(ConnectionTable* table, Connection* connection)
-table_get	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/connection-table.c	/^Connection* table_get(ConnectionTable* table, size_t index) {$/;"	function	line:32	signature:(ConnectionTable* table, size_t index)
 FREE_LIST_H	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/free-list.h	/^#define FREE_LIST_H$/;"	macro	line:2
 FREE_LIST_INITIALIZER	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/free-list.h	/^#define FREE_LIST_INITIALIZER /;"	macro	line:7
 FreeList	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/free-list.h	/^typedef struct Vector FreeList;$/;"	typedef	line:11	typeref:struct:Vector
+SHM_FLAGS	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/shared_memory.c	/^#define SHM_FLAGS /;"	macro	line:11	file:
+create_segment	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/shared_memory.c	/^int create_segment(int total_size) {$/;"	function	line:13	signature:(int total_size)
+attach_segment	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/shared_memory.c	/^void* attach_segment(int segment_id) {$/;"	function	line:26	signature:(int segment_id)
+detach_segment	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/shared_memory.c	/^void detach_segment(void* shared_memory) {$/;"	function	line:36	signature:(void* shared_memory)
+destroy_segment	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/shared_memory.c	/^void destroy_segment(int segment_id) {$/;"	function	line:42	signature:(int segment_id)
+segment_size	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/shared_memory.c	/^int segment_size(Buffer* buffer) {$/;"	function	line:48	signature:(Buffer* buffer)
 free_list_setup	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/free-list.c	/^void free_list_setup(FreeList* list) {$/;"	function	line:6	signature:(FreeList* list)
 free_list_destroy	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/free-list.c	/^void free_list_destroy(FreeList* list) {$/;"	function	line:12	signature:(FreeList* list)
 free_list_push	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/free-list.c	/^void free_list_push(FreeList* list, key_t key) {$/;"	function	line:18	signature:(FreeList* list, key_t key)
 free_list_pop	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/free-list.c	/^key_t free_list_pop(FreeList* list) {$/;"	function	line:24	signature:(FreeList* list)
 free_list_is_empty	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/free-list.c	/^bool free_list_is_empty(FreeList* list) {$/;"	function	line:39	signature:(FreeList* list)
-bridge_setup	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void bridge_setup(Bridge* bridge) {$/;"	function	line:6	signature:(Bridge* bridge)
-bridge_destroy	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void bridge_destroy(Bridge* bridge) {$/;"	function	line:14	signature:(Bridge* bridge)
-bridge_is_initialized	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^bool bridge_is_initialized(const Bridge* bridge) {$/;"	function	line:22	signature:(const Bridge* bridge)
-bridge_is_empty	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^bool bridge_is_empty(const Bridge* bridge) {$/;"	function	line:26	signature:(const Bridge* bridge)
-bridge_insert	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^key_t bridge_insert(Bridge* bridge, Connection* connection) {$/;"	function	line:30	signature:(Bridge* bridge, Connection* connection)
-bridge_remove	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void bridge_remove(Bridge* bridge, key_t key) {$/;"	function	line:51	signature:(Bridge* bridge, key_t key)
-bridge_lookup	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^Connection* bridge_lookup(Bridge* bridge, key_t key) {$/;"	function	line:62	signature:(Bridge* bridge, key_t key)
-index_for	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^size_t index_for(key_t key) {$/;"	function	line:68	signature:(key_t key)
+SELECTIVE_H	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/selective.h	/^#define SELECTIVE_H$/;"	macro	line:2
+ERROR	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/selective.h	/^#define ERROR /;"	macro	line:4
+selective_set	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/selective.c	/^StringSet selective_set = SS_INITIALIZER;$/;"	variable	line:10
+check_use_tssx	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/selective.c	/^int check_use_tssx(int socket_fd) {$/;"	function	line:12	signature:(int socket_fd)
+initialize_selective_set	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/selective.c	/^void initialize_selective_set() {$/;"	function	line:27
+fetch_tssx_variable	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/selective.c	/^const char* fetch_tssx_variable() {$/;"	function	line:34
+parse_tssx_variable	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/selective.c	/^void parse_tssx_variable(const char* variable) {$/;"	function	line:38	signature:(const char* variable)
+in_selective_set	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/selective.c	/^int in_selective_set(int socket_fd) {$/;"	function	line:50	signature:(int socket_fd)
+is_domain_socket	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/selective.c	/^int is_domain_socket(int socket_fd) {$/;"	function	line:61	signature:(int socket_fd)
+get_socket_name	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/selective.c	/^int get_socket_name(int socket_fd, char* destination) {$/;"	function	line:72	signature:(int socket_fd, char* destination)
+accept	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/server-overrides.c	/^int accept(int server_socket, sockaddr* address, int* length) {$/;"	function	line:7	signature:(int server_socket, sockaddr* address, int* length)
+read	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/server-overrides.c	/^ssize_t read(int key, void* destination, size_t requested_bytes) {$/;"	function	line:42	signature:(int key, void* destination, size_t requested_bytes)
+write	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/server-overrides.c	/^ssize_t write(int key, void* source, size_t requested_bytes) {$/;"	function	line:53	signature:(int key, void* source, size_t requested_bytes)
+close	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/server-overrides.c	/^int close(int key) {$/;"	function	line:64	signature:(int key)
+__STDC_WANT_LIB_EXT1__	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^#define __STDC_WANT_LIB_EXT1__ /;"	macro	line:1	file:
+vector_setup	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^int vector_setup(Vector* vector, size_t capacity, size_t element_size) {$/;"	function	line:9	signature:(Vector* vector, size_t capacity, size_t element_size)
+vector_copy	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^int vector_copy(Vector* destination, Vector* source) {$/;"	function	line:22	signature:(Vector* destination, Vector* source)
+vector_copy_assign	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^int vector_copy_assign(Vector* destination, Vector* source) {$/;"	function	line:47	signature:(Vector* destination, Vector* source)
+vector_move	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^int vector_move(Vector* destination, Vector* source) {$/;"	function	line:63	signature:(Vector* destination, Vector* source)
+vector_move_assign	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^int vector_move_assign(Vector* destination, Vector* source) {$/;"	function	line:76	signature:(Vector* destination, Vector* source)
+vector_swap	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^int vector_swap(Vector* destination, Vector* source) {$/;"	function	line:81	signature:(Vector* destination, Vector* source)
+vector_destroy	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^int vector_destroy(Vector* vector) {$/;"	function	line:105	signature:(Vector* vector)
+vector_push_back	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^int vector_push_back(Vector* vector, void* element) {$/;"	function	line:117	signature:(Vector* vector, void* element)
+vector_push_front	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^int vector_push_front(Vector* vector, void* element) {$/;"	function	line:134	signature:(Vector* vector, void* element)
+vector_insert	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^int vector_insert(Vector* vector, size_t index, void* element) {$/;"	function	line:138	signature:(Vector* vector, size_t index, void* element)
+vector_assign	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^int vector_assign(Vector* vector, size_t index, void* element) {$/;"	function	line:169	signature:(Vector* vector, size_t index, void* element)
+vector_pop_back	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^int vector_pop_back(Vector* vector) {$/;"	function	line:185	signature:(Vector* vector)
+vector_pop_front	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^int vector_pop_front(Vector* vector) {$/;"	function	line:203	signature:(Vector* vector)
+vector_erase	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^int vector_erase(Vector* vector, size_t index) {$/;"	function	line:207	signature:(Vector* vector, size_t index)
+vector_clear	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^int vector_clear(Vector* vector) {$/;"	function	line:227	signature:(Vector* vector)
+vector_get	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^void* vector_get(Vector* vector, size_t index) {$/;"	function	line:232	signature:(Vector* vector, size_t index)
+vector_const_get	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^const void* vector_const_get(const Vector* vector, size_t index) {$/;"	function	line:243	signature:(const Vector* vector, size_t index)
+vector_front	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^void* vector_front(Vector* vector) {$/;"	function	line:254	signature:(Vector* vector)
+vector_back	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^void* vector_back(Vector* vector) {$/;"	function	line:258	signature:(Vector* vector)
+vector_is_initialized	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^bool vector_is_initialized(const Vector* vector) {$/;"	function	line:264	signature:(const Vector* vector)
+vector_byte_size	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^size_t vector_byte_size(const Vector* vector) {$/;"	function	line:268	signature:(const Vector* vector)
+vector_free_space	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^size_t vector_free_space(const Vector* vector) {$/;"	function	line:272	signature:(const Vector* vector)
+vector_is_empty	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^bool vector_is_empty(const Vector* vector) {$/;"	function	line:276	signature:(const Vector* vector)
+vector_resize	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^int vector_resize(Vector* vector, size_t new_size) {$/;"	function	line:281	signature:(Vector* vector, size_t new_size)
+vector_reserve	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^int vector_reserve(Vector* vector, size_t minimum_capacity) {$/;"	function	line:298	signature:(Vector* vector, size_t minimum_capacity)
+vector_shrink_to_fit	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^int vector_shrink_to_fit(Vector* vector) {$/;"	function	line:308	signature:(Vector* vector)
+vector_begin	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^Iterator vector_begin(Vector* vector) {$/;"	function	line:313	signature:(Vector* vector)
+vector_end	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^Iterator vector_end(Vector* vector) {$/;"	function	line:317	signature:(Vector* vector)
+vector_iterator	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^Iterator vector_iterator(Vector* vector, size_t index) {$/;"	function	line:321	signature:(Vector* vector, size_t index)
+iterator_get	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^void* iterator_get(Iterator* iterator) {$/;"	function	line:337	signature:(Iterator* iterator)
+iterator_increment	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^void iterator_increment(Iterator* iterator) {$/;"	function	line:341	signature:(Iterator* iterator)
+iterator_decrement	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^void iterator_decrement(Iterator* iterator) {$/;"	function	line:346	signature:(Iterator* iterator)
+iterator_next	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^void* iterator_next(Iterator* iterator) {$/;"	function	line:351	signature:(Iterator* iterator)
+iterator_previous	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^void* iterator_previous(Iterator* iterator) {$/;"	function	line:358	signature:(Iterator* iterator)
+iterator_equals	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^bool iterator_equals(Iterator* first, Iterator* second) {$/;"	function	line:365	signature:(Iterator* first, Iterator* second)
+iterator_is_before	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^bool iterator_is_before(Iterator* first, Iterator* second) {$/;"	function	line:370	signature:(Iterator* first, Iterator* second)
+iterator_is_after	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^bool iterator_is_after(Iterator* first, Iterator* second) {$/;"	function	line:375	signature:(Iterator* first, Iterator* second)
+_vector_should_grow	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^bool _vector_should_grow(Vector* vector) {$/;"	function	line:382	signature:(Vector* vector)
+_vector_should_shrink	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^bool _vector_should_shrink(Vector* vector) {$/;"	function	line:387	signature:(Vector* vector)
+_vector_free_bytes	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^size_t _vector_free_bytes(const Vector* vector) {$/;"	function	line:392	signature:(const Vector* vector)
+_vector_offset	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^void* _vector_offset(Vector* vector, size_t index) {$/;"	function	line:396	signature:(Vector* vector, size_t index)
+_vector_const_offset	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^const void* _vector_const_offset(const Vector* vector, size_t index) {$/;"	function	line:400	signature:(const Vector* vector, size_t index)
+_vector_assign	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^void _vector_assign(Vector* vector, size_t index, void* element) {$/;"	function	line:404	signature:(Vector* vector, size_t index, void* element)
+_vector_move_right	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^int _vector_move_right(Vector* vector, size_t index) {$/;"	function	line:410	signature:(Vector* vector, size_t index)
+_vector_move_left	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^void _vector_move_left(Vector* vector, size_t index) {$/;"	function	line:440	signature:(Vector* vector, size_t index)
+_vector_adjust_capacity	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^int _vector_adjust_capacity(Vector* vector) {$/;"	function	line:453	signature:(Vector* vector)
+_vector_reallocate	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^int _vector_reallocate(Vector* vector, size_t new_capacity) {$/;"	function	line:458	signature:(Vector* vector, size_t new_capacity)
+_vector_swap	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/lib/bitset/vector/vector.c	/^void _vector_swap(size_t* first, size_t* second) {$/;"	function	line:499	signature:(size_t* first, size_t* second)
+CONNECTION_H	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/connection.h	/^#define CONNECTION_H$/;"	macro	line:2
+DEFAULT_BUFFER_SIZE	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/connection.h	/^#define DEFAULT_BUFFER_SIZE /;"	macro	line:11
+CONNECTION_INITIALIZER	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/connection.h	/^#define CONNECTION_INITIALIZER /;"	macro	line:13
+atomic_count_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/connection.h	/^typedef atomic_uint_fast16_t atomic_count_t;$/;"	typedef	line:20
+Connection	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/connection.h	/^typedef struct Connection {$/;"	struct	line:22
+segment_id	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/connection.h	/^	int segment_id;$/;"	member	line:24	struct:Connection
+open_count	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/connection.h	/^	atomic_count_t* open_count;$/;"	member	line:27	struct:Connection
+server_buffer	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/connection.h	/^	struct Buffer* server_buffer;$/;"	member	line:30	struct:Connection	typeref:struct:Connection::Buffer
+client_buffer	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/connection.h	/^	struct Buffer* client_buffer;$/;"	member	line:33	struct:Connection	typeref:struct:Connection::Buffer
+Connection	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/connection.h	/^} Connection;$/;"	typedef	line:35	typeref:struct:Connection
+ConnectionOptions	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/connection.h	/^typedef struct ConnectionOptions {$/;"	struct	line:37
+server_buffer_size	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/connection.h	/^	int server_buffer_size;$/;"	member	line:38	struct:ConnectionOptions
+server_timeouts	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/connection.h	/^	Timeouts server_timeouts;$/;"	member	line:39	struct:ConnectionOptions
+client_buffer_size	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/connection.h	/^	int client_buffer_size;$/;"	member	line:41	struct:ConnectionOptions
+client_timeouts	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/connection.h	/^	Timeouts client_timeouts;$/;"	member	line:42	struct:ConnectionOptions
+ConnectionOptions	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/connection.h	/^} ConnectionOptions;$/;"	typedef	line:44	typeref:struct:ConnectionOptions
+CONNECTION_TABLE_H	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/connection-table.h	/^#define CONNECTION_TABLE_H$/;"	macro	line:2
+CONNECTION_TABLE_INITIALIZER	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/connection-table.h	/^#define CONNECTION_TABLE_INITIALIZER /;"	macro	line:8
+VECTOR_NO_SHRINK	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/connection-table.h	/^#define VECTOR_NO_SHRINK$/;"	macro	line:11
+ConnectionTable	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/connection-table.h	/^typedef struct Vector ConnectionTable;$/;"	typedef	line:16	typeref:struct:Vector
+OVERRIDES_H	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^#define OVERRIDES_H$/;"	macro	line:2
+ERROR	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^#define ERROR /;"	macro	line:13
+SERVER_BUFFER	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^#define SERVER_BUFFER /;"	macro	line:14
+CLIENT_BUFFER	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^#define CLIENT_BUFFER /;"	macro	line:15
+HashTable	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef struct HashTable HashTable;$/;"	typedef	line:21	typeref:struct:HashTable
+sockaddr	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef struct sockaddr sockaddr;$/;"	typedef	line:22	typeref:struct:sockaddr
+real_write_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef ssize_t (*real_write_t)(int, const void*, size_t);$/;"	typedef	line:24
+real_read_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef ssize_t (*real_read_t)(int, void*, size_t);$/;"	typedef	line:25
+real_accept_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef int (*real_accept_t)(int, sockaddr*, int*);$/;"	typedef	line:26
+real_connect_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef void (*real_connect_t)(int, const sockaddr*, int);$/;"	typedef	line:27
+real_close_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef int (*real_close_t)(int);$/;"	typedef	line:28
+real_fork_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/overrides.h	/^typedef pid_t (*real_fork_t)(void);$/;"	typedef	line:29
+_GNU_SOURCE	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^#define _GNU_SOURCE$/;"	macro	line:1	file:
+real_write	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^ssize_t real_write(int fd, const void* data, size_t size) {$/;"	function	line:14	signature:(int fd, const void* data, size_t size)
+real_read	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^ssize_t real_read(int fd, void* data, size_t size) {$/;"	function	line:18	signature:(int fd, void* data, size_t size)
+real_accept	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^int real_accept(int fd, sockaddr* address, int* length) {$/;"	function	line:22	signature:(int fd, sockaddr* address, int* length)
+real_connect	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^void real_connect(int fd, const sockaddr* address, int length) {$/;"	function	line:26	signature:(int fd, const sockaddr* address, int length)
+real_close	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^int real_close(int fd) {$/;"	function	line:30	signature:(int fd)
+real_fork	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^pid_t real_fork(void) {$/;"	function	line:34	signature:(void)
+fork	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^pid_t fork(void) {$/;"	function	line:38	signature:(void)
+connection_write	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^int connection_write(int key,$/;"	function	line:48	signature:(int key, void* destination, int requested_bytes, int which_buffer)
+connection_read	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^int connection_read(int key,$/;"	function	line:66	signature:(int key, void* source, int requested_bytes, int which_buffer)
+get_buffer	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/overrides.c	/^Buffer* get_buffer(Connection* connection, int which_buffer) {$/;"	function	line:84	signature:(Connection* connection, int which_buffer)
+table_setup	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/connection-table.c	/^void table_setup(ConnectionTable* table) {$/;"	function	line:8	signature:(ConnectionTable* table)
+table_destroy	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/connection-table.c	/^void table_destroy(ConnectionTable* table) {$/;"	function	line:14	signature:(ConnectionTable* table)
+table_assign	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/connection-table.c	/^void table_assign(ConnectionTable* table,$/;"	function	line:20	signature:(ConnectionTable* table, size_t index, Connection* connection)
+table_push_back	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/connection-table.c	/^void table_push_back(ConnectionTable* table, Connection* connection) {$/;"	function	line:28	signature:(ConnectionTable* table, Connection* connection)
+table_safe_remove	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/connection-table.c	/^void table_safe_remove(ConnectionTable* table, size_t index) {$/;"	function	line:34	signature:(ConnectionTable* table, size_t index)
+table_get	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/connection-table.c	/^Connection* table_get(ConnectionTable* table, size_t index) {$/;"	function	line:43	signature:(ConnectionTable* table, size_t index)
+BRIDGE_H	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^#define BRIDGE_H$/;"	macro	line:2
+KEY_OFFSET	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^#define KEY_OFFSET /;"	macro	line:11
+BRIDGE_INITIALIZER	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^#define BRIDGE_INITIALIZER /;"	macro	line:13
+key_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^typedef int key_t;$/;"	typedef	line:16
+Bridge	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^typedef struct Bridge {$/;"	struct	line:20
+table	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^	ConnectionTable table;$/;"	member	line:21	struct:Bridge
+free_list	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^	FreeList free_list;$/;"	member	line:22	struct:Bridge
+occupied	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^	BitSet occupied;$/;"	member	line:23	struct:Bridge
+Bridge	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^} Bridge;$/;"	typedef	line:24	typeref:struct:Bridge
+signal_handler_t	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/include/tssx/bridge.h	/^typedef void (*signal_handler_t)(int);$/;"	typedef	line:44
+bridge	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^Bridge bridge = BRIDGE_INITIALIZER;$/;"	variable	line:9
+old_sigint_handler	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^static signal_handler_t old_sigint_handler = NULL;$/;"	variable	line:11	file:
+old_sigterm_handler	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^static signal_handler_t old_sigterm_handler = NULL;$/;"	variable	line:12	file:
+bridge_setup	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void bridge_setup(Bridge* bridge) {$/;"	function	line:16	signature:(Bridge* bridge)
+bridge_destroy	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void bridge_destroy(Bridge* bridge) {$/;"	function	line:27	signature:(Bridge* bridge)
+bridge_is_initialized	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^bool bridge_is_initialized(const Bridge* bridge) {$/;"	function	line:41	signature:(const Bridge* bridge)
+bridge_is_empty	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^bool bridge_is_empty(const Bridge* bridge) {$/;"	function	line:45	signature:(const Bridge* bridge)
+bridge_insert	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^key_t bridge_insert(Bridge* bridge, Connection* connection) {$/;"	function	line:49	signature:(Bridge* bridge, Connection* connection)
+bridge_remove	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void bridge_remove(Bridge* bridge, key_t key) {$/;"	function	line:70	signature:(Bridge* bridge, key_t key)
+bridge_lookup	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^Connection* bridge_lookup(Bridge* bridge, key_t key) {$/;"	function	line:81	signature:(Bridge* bridge, key_t key)
+index_for	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^size_t index_for(key_t key) {$/;"	function	line:87	signature:(key_t key)
+_setup_exit_handling	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void _setup_exit_handling() {$/;"	function	line:93
+_setup_signal_handler	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void _setup_signal_handler(int signal_number) {$/;"	function	line:99	signature:(int signal_number)
+_bridge_signal_handler	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void _bridge_signal_handler(int signal_number) {$/;"	function	line:125	signature:(int signal_number)
+_bridge_signal_handler_for	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void _bridge_signal_handler_for(int signal_number,$/;"	function	line:133	signature:(int signal_number, signal_handler_t old_handler)
+_bridge_exit_handler	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void _bridge_exit_handler() {$/;"	function	line:144

@@ -1,5 +1,7 @@
-#include "tssx/connection-table.h"
+#include <assert.h>
+
 #include "common/utility.h"
+#include "tssx/connection-table.h"
 #include "tssx/connection.h"
 #include "vector/vector.h"
 
@@ -26,6 +28,15 @@ void table_assign(ConnectionTable* table,
 void table_push_back(ConnectionTable* table, Connection* connection) {
 	if (vector_push_back(table, connection) == VECTOR_ERROR) {
 		terminate("Error pushing back in connection-table\n");
+	}
+}
+
+void table_safe_remove(ConnectionTable* table, size_t index) {
+	Connection empty_connection = CONNECTION_INITIALIZER;
+	assert(table != NULL);
+
+	if (vector_assign(table, index, &empty_connection) == VECTOR_ERROR) {
+		terminate("Error assigning connection-table entry to safe value");
 	}
 }
 

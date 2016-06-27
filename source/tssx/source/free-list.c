@@ -16,7 +16,7 @@ void free_list_destroy(FreeList* list) {
 }
 
 void free_list_push(FreeList* list, key_t key) {
-	if (vector_push_back(list, key) == VECTOR_ERROR) {
+	if (vector_push_back(list, &key) == VECTOR_ERROR) {
 		terminate("Error pushing into free-list\n");
 	}
 }

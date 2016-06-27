@@ -2,10 +2,18 @@
 #define CONNECTION_H
 
 #include <stdatomic.h>
+#include <stdlib.h>
 
 #include "tssx/timeouts.h"
 
+/******************** DEFINITIONS ********************/
+
 #define DEFAULT_BUFFER_SIZE 1000000
+
+#define CONNECTION_INITIALIZER \
+	{ 0, NULL, NULL, NULL }
+
+/******************** STRUCTURES ********************/
 
 struct Buffer;
 
@@ -37,7 +45,7 @@ typedef struct ConnectionOptions {
 
 extern ConnectionOptions DEFAULT_OPTIONS;
 
-/*************** PUBLIC **************/
+/******************** INTERFACE ********************/
 
 void create_connection(Connection* connection, ConnectionOptions* options);
 void setup_connection(Connection* connection, ConnectionOptions* options);
@@ -45,7 +53,7 @@ void setup_connection(Connection* connection, ConnectionOptions* options);
 void disconnect(Connection* connection);
 void connection_add_user(Connection* connection);
 
-/*************** PRIVATE **************/
+/******************** PRIVATE ********************/
 
 void _server_options_from_socket(ConnectionOptions* options, int socket_fd);
 void _client_options_from_socket(ConnectionOptions* options, int socket_fd);
@@ -61,7 +69,7 @@ void _init_open_count(Connection* connection, void* shared_memory);
 void _init_and_increment_open_count(Connection* connection,
 																		void* shared_memory);
 
-/*************** UTILITY **************/
+/******************** UTILITY ********************/
 
 void _detach_connection(Connection* connection);
 void _destroy_connection(Connection* connection);

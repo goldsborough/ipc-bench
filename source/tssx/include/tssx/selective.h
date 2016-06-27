@@ -4,9 +4,8 @@
 #define ERROR -1
 
 struct StringSet;
-typedef struct StringSet StringSet;
 
-extern StringSet selective_set;
+extern struct StringSet selective_set;
 
 int check_use_tssx(int socket_fd);
 
