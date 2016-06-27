@@ -1,0 +1,14 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+bridge_setup	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void bridge_setup(Bridge* bridge) {$/;"	function	line:6	signature:(Bridge* bridge)
+bridge_destroy	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void bridge_destroy(Bridge* bridge) {$/;"	function	line:14	signature:(Bridge* bridge)
+bridge_is_initialized	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^bool bridge_is_initialized(const Bridge* bridge) {$/;"	function	line:22	signature:(const Bridge* bridge)
+bridge_is_empty	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^bool bridge_is_empty(const Bridge* bridge) {$/;"	function	line:26	signature:(const Bridge* bridge)
+bridge_insert	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^key_t bridge_insert(Bridge* bridge, Connection* connection) {$/;"	function	line:30	signature:(Bridge* bridge, Connection* connection)
+bridge_remove	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^void bridge_remove(Bridge* bridge, key_t key) {$/;"	function	line:51	signature:(Bridge* bridge, key_t key)
+bridge_lookup	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^Connection* bridge_lookup(Bridge* bridge, key_t key) {$/;"	function	line:62	signature:(Bridge* bridge, key_t key)
+index_for	/Users/petergoldsborough/Documents/Work/tum/ipc-bench/source/tssx/source/bridge.c	/^size_t index_for(key_t key) {$/;"	function	line:68	signature:(key_t key)

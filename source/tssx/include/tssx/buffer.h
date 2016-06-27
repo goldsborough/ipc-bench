@@ -1,8 +1,8 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
-#include <stdint.h>
 #include <stdatomic.h>
+#include <stdint.h>
 
 #include "tssx/timeouts.h"
 
@@ -12,8 +12,6 @@
 #define LEVEL_ZERO 0
 #define LEVEL_ONE 1
 #define LEVEL_TWO 2
-
-typedef uint64_t cycle_t;
 
 typedef struct Buffer {
 	// The current size of the buffer (number of bytes used)
@@ -33,8 +31,9 @@ typedef struct Buffer {
 
 } Buffer;
 
-Buffer*
-create_buffer(void* shared_memory, int requested_capacity, const Timeouts* timeouts);
+Buffer* create_buffer(void* shared_memory,
+											int requested_capacity,
+											const Timeouts* timeouts);
 
 int buffer_write(Buffer* buffer, void* data, int data_size);
 int buffer_read(Buffer* buffer, void* data, int data_size);

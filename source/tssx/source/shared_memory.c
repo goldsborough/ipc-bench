@@ -10,11 +10,8 @@
 
 #define SHM_FLAGS IPC_CREAT | IPC_EXCL | 0666
 
-int create_segment(int buffer_size) {
+int create_segment(int total_size) {
 	int id;
-	int total_size;
-
-	total_size = 2 * (sizeof(Buffer) + buffer_size);
 
 	// Generate a random key until it is not taken yet
 	while ((id = shmget(rand(), total_size, SHM_FLAGS)) == -1) {

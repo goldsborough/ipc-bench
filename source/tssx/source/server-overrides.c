@@ -14,14 +14,13 @@ int accept(int server_socket, sockaddr* address, int* length) {
 		return ERROR;
 	}
 
-	// if ((check = check_use_tssx(server_socket)) == ERROR) {
-	// 	return ERROR;
-	// } else if (!check) {
-	// 	return client_socket;
-	// }
+	if ((check = check_use_tssx(server_socket)) == ERROR) {
+		return ERROR;
+	} else if (!check) {
+		return client_socket;
+	}
 
-	connection.segment_id =
-			create_segment(options_segment_size(&DEFAULT_OPTIONS));
+	create_connection(&connection, &DEFAULT_OPTIONS);
 
 	// clang-format off
 	return_code = real_write(
@@ -33,16 +32,13 @@ int accept(int server_socket, sockaddr* address, int* length) {
 
 	if (return_code == ERROR) return ERROR;
 
-	setup_connection(&connection, &DEFAULT_OPTIONS);
-	bridge_insert(&bridge, &connection);
-
-	return client_socket;
+	return bridge_insert(&bridge, &connection);
 }
 
-ssize_t read(int socket_fd, void* destination, size_t requested_bytes) {
+ssize_t read(int key, void* destination, size_t requested_bytes) {
 	// clang-format off
 	return connection_read(
-		socket_fd,
+		key,
 		destination,
 		requested_bytes,
 		CLIENT_BUFFER
@@ -50,10 +46,10 @@ ssize_t read(int socket_fd, void* destination, size_t requested_bytes) {
 	// clang-format on
 }
 
-ssize_t write(int socket_fd, void* source, size_t requested_bytes) {
+ssize_t write(int key, void* source, size_t requested_bytes) {
 	// clang-format off
 	return connection_write(
-		socket_fd,
+		key,
 		source,
 		requested_bytes,
 		SERVER_BUFFER
@@ -61,18 +57,15 @@ ssize_t write(int socket_fd, void* source, size_t requested_bytes) {
 	// clang-format on
 }
 
-int close(int socket_fd) {
+int close(int key) {
 	Connection* connection;
 
-	connection = ht_get(&connection_map, socket_fd);
-
-	// Not all socket FDs will be associated with a connection
-	// for example the server socket is not (only the server-client
-	// communication socket)
-	if (connection != NULL) {
-		destroy_connection(connection);
-		ht_remove(&connection_map, socket_fd);
+	if (key < 0) {
+		connection = bridge_lookup(&bridge, key);
+		assert(connection != NULL);
+		disconnect(connection);
+		bridge_remove(&bridge, key);
 	}
 
-	return real_close(socket_fd);
+	return real_close(key);
 }

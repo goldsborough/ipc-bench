@@ -17,10 +17,8 @@ set(TSSX_COMMON_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/source/timeouts.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/string-set.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/selective.c
-	${CMAKE_CURRENT_SOURCE_DIR}/source/vector.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/connection-table.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/free-list.c
-	${CMAKE_CURRENT_SOURCE_DIR}/source/bitset.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/bridge.c
 	)
 
@@ -36,6 +34,14 @@ set(TSSX_CLIENT_SOURCES
 )
 
 ###########################################################
+## LIBRARIES
+###########################################################
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/bitset)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib)
+
+###########################################################
 ## TARGETS
 ###########################################################
 
@@ -46,12 +52,15 @@ add_library(tssx-client SHARED ${TSSX_CLIENT_SOURCES})
 ## COMPILER FLAGS
 ###########################################################
 
-# Necessary for the preload magic
-target_link_libraries(tssx-server dl ipc-bench-common)
-target_link_libraries(tssx-client dl ipc-bench-common)
+set(TSSX_DEPENDENCIES
+  ipc-bench-common
+  vector
+  bitset
+  dl
+)
 
-target_compile_options(tssx-server PUBLIC -std=c11)
-target_compile_options(tssx-client PUBLIC -std=c11)
+target_link_libraries(tssx-server ${TSSX_DEPENDENCIES})
+target_link_libraries(tssx-client ${TSSX_DEPENDENCIES})
 
 ###########################################################
 ## CONFIGURATION FOR TRY

@@ -8,11 +8,11 @@ void connect(int client_socket, const sockaddr* address, size_t length) {
 
 	real_connect(client_socket, address, length);
 
-	// if ((check = check_use_tssx(client_socket)) == ERROR) {
-	// 	throw("Could not check if socket uses TSSX");
-	// } else if (!check) {
-	// 	return;
-	// }
+	if ((check = check_use_tssx(client_socket)) == ERROR) {
+		throw("Could not check if socket uses TSSX");
+	} else if (!check) {
+		return;
+	}
 
 	// clang-format off
 	return_code = real_read(
@@ -27,13 +27,14 @@ void connect(int client_socket, const sockaddr* address, size_t length) {
 	}
 
 	setup_connection(&connection, &DEFAULT_OPTIONS);
-	ht_insert(&connection_map, client_socket, &connection);
+
+	bridge_insert(&bridge, &connection);
 }
 
-ssize_t read(int socket_fd, void* destination, size_t requested_bytes) {
+ssize_t read(int key, void* destination, size_t requested_bytes) {
 	// clang-format off
 	return connection_read(
-		socket_fd,
+		key,
 		destination,
 		requested_bytes,
 		SERVER_BUFFER
@@ -41,10 +42,10 @@ ssize_t read(int socket_fd, void* destination, size_t requested_bytes) {
 	// clang-format on
 }
 
-ssize_t write(int socket_fd, void* source, size_t requested_bytes) {
+ssize_t write(int key, void* source, size_t requested_bytes) {
 	// clang-format off
 	return connection_write(
-		socket_fd,
+		key,
 		source,
 		requested_bytes,
 		CLIENT_BUFFER
@@ -52,16 +53,16 @@ ssize_t write(int socket_fd, void* source, size_t requested_bytes) {
 	// clang-format on
 }
 
-int close(int socket_fd) {
+int close(int key) {
 	Connection* connection;
 
-	connection = ht_get(&connection_map, socket_fd);
+	connection = bridge_lookup(&bridge, key);
 
 	// In case this connection did not use our tssx
 	if (connection != NULL) {
 		disconnect(connection);
-		ht_remove(&connection_map, socket_fd);
+		bridge_remove(&bridge, key);
 	}
 
-	return real_close(socket_fd);
+	return real_close(key);
 }

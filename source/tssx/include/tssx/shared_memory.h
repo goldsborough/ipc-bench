@@ -4,7 +4,7 @@
 struct Buffer;
 
 // Returns the ID
-int create_segment(int buffer_size);
+int create_segment(int total_size);
 
 // Returns the shared memory
 void* attach_segment(int segment_id);

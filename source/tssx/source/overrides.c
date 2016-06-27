@@ -6,10 +6,11 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
+#include "bitset/bitset.h"
 #include "tssx/buffer.h"
 #include "tssx/overrides.h"
 
-Bridge bridge;
+Bridge bridge = BRIDGE_INITIALIZER;
 
 // RTDL_NEXT = look in the symbol table of the *next* object file after this one
 ssize_t real_write(int fd, const void* data, size_t size) {
@@ -32,16 +33,27 @@ int real_close(int fd) {
 	return ((real_close_t)dlsym(RTLD_NEXT, "close"))(fd);
 }
 
-HashTable connection_map = HT_INITIALIZER;
+pid_t real_fork(void) {
+	return ((real_fork_t)dlsym(RTLD_NEXT, "fork"))();
+}
 
+pid_t fork(void) {
+	for (size_t index = 0; index < bridge.table.size; ++index) {
+		if (bitset_test(&bridge.occupied, index)) {
+			connection_add_user(table_get(&bridge.table, index));
+		}
+	}
 
-int connection_write(int socket_fd,
+	return real_fork();
+}
+
+int connection_write(int key,
 										 void* destination,
 										 int requested_bytes,
 										 int which_buffer) {
 	Connection* connection;
 
-	connection = ht_get(&connection_map, socket_fd);
+	connection = bridge_lookup(&bridge, key);
 	assert(connection != NULL);
 
 	// clang-format off
@@ -53,13 +65,13 @@ int connection_write(int socket_fd,
 	// clang-format on
 }
 
-int connection_read(int socket_fd,
+int connection_read(int key,
 										void* source,
 										int requested_bytes,
 										int which_buffer) {
 	Connection* connection;
 
-	connection = ht_get(&connection_map, socket_fd);
+	connection = bridge_lookup(&bridge, key);
 	assert(connection != NULL);
 
 	// clang-format off

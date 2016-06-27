@@ -3,18 +3,21 @@
 
 #include <stddef.h>
 
+#define CONNECTION_TABLE_INITIALIZER VECTOR_INITIALIZER
+
 struct Vector;
 struct Connection;
 
-typedef struct Connection Connection;
 typedef struct Vector ConnectionTable;
 
 void table_setup(ConnectionTable* table);
 void table_destroy(ConnectionTable* table);
 
-void table_assign(ConnectionTable* table, size_t index, Connection* connection);
-void table_push_back(ConnectionTable* table, Connection* connection);
+void table_assign(ConnectionTable* table,
+									size_t index,
+									struct Connection* connection);
+void table_push_back(ConnectionTable* table, struct Connection* connection);
 
-Connection* table_get(ConnectionTable* table, size_t index);
+struct Connection* table_get(ConnectionTable* table, size_t index);
 
 #endif /* CONNECTION_TABLE_H */

@@ -51,7 +51,6 @@ timeval get_socket_timeout(int socket_fd, int which) {
 
 double get_socket_timeout_seconds(int socket_fd, int which) {
 	timeval timeout = get_socket_timeout(socket_fd, which);
-
 	return timeout.tv_sec + (timeout.tv_usec / 1e6);
 }
 

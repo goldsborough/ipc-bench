@@ -18,6 +18,22 @@ ConnectionOptions DEFAULT_OPTIONS = {
 };
 // clang-format on
 
+/*************** PUBLIC **************/
+
+void create_connection(Connection* connection, ConnectionOptions* options) {
+	void* shared_memory;
+
+	assert(connection != NULL);
+	assert(options != NULL);
+
+	connection->segment_id = create_segment(_options_segment_size(options));
+	shared_memory = attach_segment(connection->segment_id);
+
+	_init_open_count(connection, shared_memory);
+	_create_server_buffer(connection, shared_memory, options);
+	_create_client_buffer(connection, shared_memory, options);
+}
+
 void setup_connection(Connection* connection, ConnectionOptions* options) {
 	void* shared_memory;
 
@@ -26,54 +42,35 @@ void setup_connection(Connection* connection, ConnectionOptions* options) {
 
 	shared_memory = attach_segment(connection->segment_id);
 
-	create_server_buffer(connection, shared_memory, options);
-	create_client_buffer(connection, shared_memory, options);
+	_init_and_increment_open_count(connection, shared_memory);
+	_create_server_buffer(connection, shared_memory, options);
+	_create_client_buffer(connection, shared_memory, options);
 }
 
-void server_options_from_socket(ConnectionOptions* options, int socket_fd) {
-	options->server_buffer_size = get_socket_buffer_size(socket_fd, SEND);
-	options->client_buffer_size = get_socket_buffer_size(socket_fd, RECEIVE);
-
-	// clang-format off
-	options->server_timeouts = create_timeouts(
-		get_socket_timeout_seconds(socket_fd, SEND)
-	);
-	options->client_timeouts = create_timeouts(
-		get_socket_timeout_seconds(socket_fd, RECEIVE)
-	);
-	// clang-format on
-}
-void client_options_from_socket(ConnectionOptions* options, int socket_fd) {
-	options->server_buffer_size = get_socket_buffer_size(socket_fd, RECEIVE);
-	options->client_buffer_size = get_socket_buffer_size(socket_fd, SEND);
-
-	// clang-format off
-	options->server_timeouts = create_timeouts(
-		get_socket_timeout_seconds(socket_fd, RECEIVE)
-	);
-	options->client_timeouts = create_timeouts(
-		get_socket_timeout_seconds(socket_fd, SEND)
-	);
-	// clang-format on
-}
-
-void destroy_connection(Connection* connection) {
+void connection_add_user(Connection* connection) {
 	assert(connection != NULL);
-
-	disconnect(connection);
-	destroy_segment(connection->segment_id);
+	atomic_fetch_add(connection->open_count, 1);
 }
 
 void disconnect(Connection* connection) {
 	assert(connection != NULL);
 
-	// The segment starts at the server_buffer pointer
-	detach_segment(connection->server_buffer);
+	atomic_fetch_sub(connection->open_count, 1);
+
+	if (atomic_load(connection->open_count) == 0) {
+		_detach_connection(connection);
+		_destroy_connection(connection);
+	} else {
+		_detach_connection(connection);
+	}
 }
 
-void create_server_buffer(Connection* connection,
-													void* shared_memory,
-													ConnectionOptions* options) {
+/*************** UTILITY **************/
+
+void _create_server_buffer(Connection* connection,
+													 void* shared_memory,
+													 ConnectionOptions* options) {
+	shared_memory += sizeof(atomic_count_t);
 	// clang-format off
 	connection->server_buffer = create_buffer(
 			shared_memory,
@@ -83,9 +80,10 @@ void create_server_buffer(Connection* connection,
 	// clang-format on
 }
 
-void create_client_buffer(Connection* connection,
-													void* shared_memory,
-													ConnectionOptions* options) {
+void _create_client_buffer(Connection* connection,
+													 void* shared_memory,
+													 ConnectionOptions* options) {
+	shared_memory += sizeof(atomic_count_t);
 	shared_memory += segment_size(connection->server_buffer);
 	// clang-format off
 	connection->client_buffer = create_buffer(
@@ -96,19 +94,43 @@ void create_client_buffer(Connection* connection,
 	// clang-format on
 }
 
+void _init_open_count(Connection* connection, void* shared_memory) {
+	connection->open_count = (atomic_count_t*)shared_memory;
+	atomic_init(connection->open_count, 1);
+}
 
-int options_segment_size(ConnectionOptions* options) {
+void _init_and_increment_open_count(Connection* connection,
+																		void* shared_memory) {
+	connection->open_count = (atomic_count_t*)shared_memory;
+	atomic_fetch_add(connection->open_count, 1);
+}
+
+void _detach_connection(Connection* connection) {
+	detach_segment(_segment_start(connection));
+}
+
+void _destroy_connection(Connection* connection) {
+	destroy_segment(connection->segment_id);
+}
+
+void* _segment_start(Connection* connection) {
+	return (void*)connection->open_count;
+}
+
+int _options_segment_size(ConnectionOptions* options) {
 	int segment_size;
 
+	segment_size += sizeof(atomic_count_t);
 	segment_size += sizeof(Buffer) + options->server_buffer_size;
 	segment_size += sizeof(Buffer) + options->client_buffer_size;
 
 	return segment_size;
 }
 
-int connection_segment_size(Connection* connection) {
+int _connection_segment_size(Connection* connection) {
 	int segment_size;
 
+	segment_size += sizeof(atomic_count_t);
 	segment_size += sizeof(Buffer) + connection->server_buffer->size;
 	segment_size += sizeof(Buffer) + connection->client_buffer->size;
 
