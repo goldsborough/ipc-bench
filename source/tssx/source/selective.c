@@ -11,14 +11,13 @@
 
 StringSet selective_set = SS_INITIALIZER;
 
-int check_use_tssx(int socket_fd, bool check_socket_type) {
+int server_check_use_tssx(int socket_fd) {
 	int return_code;
 
-	if (check_socket_type) {
-		if ((return_code = is_domain_and_stream_socket(socket_fd)) != 1) {
-			// Either error or false (the socket is not a domain socket)
-			return return_code;
-		}
+	// Haven't checked this yet for the server's sockets
+	if ((return_code = is_domain_and_stream_socket(socket_fd)) != 1) {
+		// Either error or false (the socket is not a domain socket)
+		return return_code;
 	}
 
 	if (!ss_is_initialized(&selective_set)) {
@@ -27,6 +26,21 @@ int check_use_tssx(int socket_fd, bool check_socket_type) {
 
 	// Empty means all sockets should use TSSX
 	return ss_is_empty(&selective_set) || in_selective_set(socket_fd);
+}
+
+int client_check_use_tssx(int socket_fd, const struct sockaddr* address) {
+	struct sockaddr_un* domain_address;
+
+	if (!ss_is_initialized(&selective_set)) {
+		initialize_selective_set();
+	}
+
+	domain_address = (struct sockaddr_un*)address;
+
+	if (ss_is_empty(&selective_set)) return true;
+	if (ss_contains(&selective_set, domain_address->sun_path)) return true;
+
+	return false;
 }
 
 void initialize_selective_set() {
@@ -60,6 +74,8 @@ int in_selective_set(int socket_fd) {
 		fprintf(stderr, "Error getting socket path");
 		return ERROR;
 	}
+
+	// address.sun_path[length - sizeof(address.sun_family) - 1] = '\0';
 
 	return ss_contains(&selective_set, address.sun_path);
 }

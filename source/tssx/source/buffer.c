@@ -4,17 +4,16 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include <xmmintrin.h>
 #include <x86intrin.h>
+#include <xmmintrin.h>
 
 #include "common/utility.h"
 #include "tssx/buffer.h"
 #include "tssx/timeouts.h"
 
-Buffer*
-create_buffer(void* shared_memory,
-							int requested_capacity,
-							const Timeouts* timeouts) {
+Buffer* create_buffer(void* shared_memory,
+											int requested_capacity,
+											const Timeouts* timeouts) {
 	Buffer* buffer = (Buffer*)shared_memory;
 
 	buffer->capacity = requested_capacity;
@@ -27,6 +26,8 @@ create_buffer(void* shared_memory,
 
 int buffer_write(Buffer* buffer, void* data, int data_size) {
 	int right_space = 0;
+
+	printf("Writing %d\n", data_size);
 
 	if (buffer == NULL) return ERROR;
 	if (data == NULL) return ERROR;
@@ -56,6 +57,8 @@ int buffer_write(Buffer* buffer, void* data, int data_size) {
 
 int buffer_read(Buffer* buffer, void* data, int data_size) {
 	int right_space = 0;
+
+	printf("Reading %d\n", data_size);
 
 	if (buffer == NULL) return ERROR;
 	if (data == NULL) return ERROR;
@@ -237,14 +240,14 @@ int _block(Buffer* buffer, int requested_size, Condition condition) {
 
 	while (!condition(buffer, requested_size)) {
 		switch (_escalation_level(buffer, start_time)) {
-		case LEVEL_ZERO: //_pause(); break;
+			case LEVEL_ZERO://_pause(); break;
 			case LEVEL_ONE: sched_yield(); break;
 			case LEVEL_TWO: usleep(1); break;
 			case TIMEOUT: return -1;
-			}
+		}
 	}
 
-//	printf("Blocked: %llu\n", _now() - start_time);
+	//	printf("Blocked: %llu\n", _now() - start_time);
 
 	return 0;
 }

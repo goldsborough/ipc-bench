@@ -9,7 +9,7 @@
 #include "tssx/buffer.h"
 #include "tssx/connection.h"
 #include "tssx/hashtable.h"
-#include "tssx/shared_memory.h"
+#include "tssx/shared-memory.h"
 
 // clang-format off
 ConnectionOptions DEFAULT_OPTIONS = {
@@ -73,11 +73,15 @@ void connection_add_user(Connection* connection) {
 void disconnect(Connection* connection) {
 	assert(connection != NULL);
 
-	_detach_connection(connection);
-
 	atomic_fetch_sub(connection->open_count, 1);
+
+	// Do not refactor the detach step above this!
+	// If we detach the segment first, we won't be able
+	// to access the open count any more ;)
 	if (atomic_load(connection->open_count) == 0) {
 		_destroy_connection(connection);
+	} else {
+		_detach_connection(connection);
 	}
 }
 
@@ -132,7 +136,11 @@ void _detach_connection(Connection* connection) {
 }
 
 void _destroy_connection(Connection* connection) {
-	destroy_segment(connection->segment_id);
+	// Must graph this first
+	int segment_id = connection->segment_id;
+
+	_detach_connection(connection);
+	destroy_segment(segment_id);
 }
 
 void* _segment_start(Connection* connection) {
@@ -140,7 +148,7 @@ void* _segment_start(Connection* connection) {
 }
 
 int _options_segment_size(ConnectionOptions* options) {
-	int segment_size;
+	int segment_size = 0;
 
 	segment_size += sizeof(atomic_count_t);
 	segment_size += sizeof(Buffer) + options->server_buffer_size;
@@ -150,7 +158,7 @@ int _options_segment_size(ConnectionOptions* options) {
 }
 
 int _connection_segment_size(Connection* connection) {
-	int segment_size;
+	int segment_size = 0;
 
 	segment_size += sizeof(atomic_count_t);
 	segment_size += sizeof(Buffer) + connection->server_buffer->size;

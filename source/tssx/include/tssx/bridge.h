@@ -34,6 +34,7 @@ bool bridge_is_initialized(const Bridge* bridge);
 bool bridge_is_empty(const Bridge* bridge);
 
 key_t bridge_generate_key(Bridge* bridge);
+int bridge_deduce_file_descriptor(Bridge* bridge, int key);
 
 void bridge_add_user(Bridge* bridge);
 

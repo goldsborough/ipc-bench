@@ -49,7 +49,7 @@ int setup_tssx(int client_socket) {
 }
 
 
-int accept(int server_socket, sockaddr* address, int* length) {
+int accept(int server_socket, sockaddr* address, socklen_t* length) {
 	int client_socket;
 	int use_tssx;
 
@@ -57,7 +57,7 @@ int accept(int server_socket, sockaddr* address, int* length) {
 		return ERROR;
 	}
 
-	if ((use_tssx = check_use_tssx(server_socket, true)) == ERROR) {
+	if ((use_tssx = server_check_use_tssx(server_socket)) == ERROR) {
 		return ERROR;
 	} else if (!use_tssx) {
 		return client_socket;

@@ -27,7 +27,7 @@ void communicate(int connection, Arguments* args) {
 	Benchmarks bench;
 	int message;
 	void* buffer;
-	clock_t start;
+	// clock_t start;
 
 	buffer = malloc(args->size);
 	setup_benchmarks(&bench);
@@ -151,7 +151,14 @@ int connect_to_client() {
 	client_socket = accept_client(server_socket);
 
 	// Don't need the server socket anymore (only have one connection)
-	close(server_socket);
+	// close(client_socket);
+
+	if (fork() != (pid_t)0) {
+		// Don't need the server socket anymore (only have one connection)
+		close(client_socket);
+		close(server_socket);
+		exit(EXIT_SUCCESS);
+	}
 
 	return client_socket;
 }

@@ -19,7 +19,7 @@ set(TSSX_COMMON_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/source/connection.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/hashtable.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/overrides.c
-	${CMAKE_CURRENT_SOURCE_DIR}/source/shared_memory.c
+	${CMAKE_CURRENT_SOURCE_DIR}/source/shared-memory.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/timeouts.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/string-set.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/selective.c

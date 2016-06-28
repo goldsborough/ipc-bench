@@ -28,8 +28,11 @@ void bridge_destroy(Bridge* bridge) {
 	assert(bridge != NULL);
 
 	// Invalidate (disconnect) all sessions
-	VECTOR_FOR_EACH(&bridge->session_table, session) {
-		session_invalidate(&(ITERATOR_GET_AS(Session, &session)));
+	VECTOR_FOR_EACH(&bridge->session_table, iterator) {
+		Session* session = (Session*)iterator_get(&iterator);
+		if (session_is_valid(session)) {
+			session_invalidate(session);
+		}
 	}
 
 	session_table_destroy(&bridge->session_table);
@@ -44,6 +47,14 @@ bool bridge_is_empty(const Bridge* bridge) {
 	return vector_is_empty(&bridge->session_table);
 }
 
+int bridge_deduce_file_descriptor(Bridge* bridge, int key) {
+	if (key < TSSX_KEY_OFFSET) {
+		return key;
+	} else {
+		return bridge_lookup(bridge, key)->socket;
+	}
+}
+
 void bridge_add_user(Bridge* bridge) {
 	VECTOR_FOR_EACH(&bridge->session_table, iterator) {
 		Session* session = (Session*)iterator_get(&iterator);
@@ -55,6 +66,10 @@ void bridge_add_user(Bridge* bridge) {
 
 key_t bridge_generate_key(Bridge* bridge) {
 	key_t key;
+
+	if (!bridge_is_initialized(bridge)) {
+		bridge_setup(bridge);
+	}
 
 	if (free_list_is_empty(&bridge->free_list)) {
 		key = bridge->session_table.size + TSSX_KEY_OFFSET;
@@ -68,10 +83,7 @@ key_t bridge_generate_key(Bridge* bridge) {
 
 void bridge_insert(Bridge* bridge, key_t key, Session* session) {
 	Session* current_session;
-
-	if (!bridge_is_initialized(bridge)) {
-		bridge_setup(bridge);
-	}
+	assert(bridge_is_initialized(bridge));
 
 	// First some sanity checks that this session we're assigning at is not valid
 	current_session = session_table_get(&bridge->session_table, index_for(key));

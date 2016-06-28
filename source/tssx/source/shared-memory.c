@@ -6,7 +6,7 @@
 
 #include "common/utility.h"
 #include "tssx/buffer.h"
-#include "tssx/shared_memory.h"
+#include "tssx/shared-memory.h"
 
 #define SHM_FLAGS IPC_CREAT | IPC_EXCL | 0666
 
@@ -15,7 +15,7 @@ int create_segment(int total_size) {
 
 	// Generate a random key until it is not taken yet
 	while ((id = shmget(rand(), total_size, SHM_FLAGS)) == -1) {
-		if (errno != EEXIST) {
+		if (errno != EEXIST && errno != EINVAL && errno != EACCES) {
 			throw("Error creating segment");
 		}
 	}

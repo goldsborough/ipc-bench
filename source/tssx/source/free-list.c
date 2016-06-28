@@ -23,7 +23,6 @@ void free_list_push(FreeList* list, key_t key) {
 
 key_t free_list_pop(FreeList* list) {
 	key_t* pointer;
-	key_t key;
 
 	if ((pointer = (key_t*)vector_back(list)) == NULL) {
 		terminate("Error retrieving back of free-list\n");
@@ -33,7 +32,7 @@ key_t free_list_pop(FreeList* list) {
 		terminate("Error popping back of free-list\n");
 	}
 
-	return key;
+	return *pointer;
 }
 
 bool free_list_is_empty(FreeList* list) {
