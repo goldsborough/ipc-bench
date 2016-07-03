@@ -32,6 +32,8 @@ void bridge_destroy(Bridge* bridge) {
 
 	if (!bridge_is_initialized(bridge)) return;
 
+	assert(vector_is_initialized(&bridge->session_table));
+
 	// Invalidate (disconnect) all sessions
 	VECTOR_FOR_EACH(&bridge->session_table, iterator) {
 		Session* session = (Session*)iterator_get(&iterator);
@@ -61,6 +63,7 @@ int bridge_deduce_file_descriptor(Bridge* bridge, int key) {
 }
 
 void bridge_add_user(Bridge* bridge) {
+	assert(bridge_is_initialized(bridge));
 	VECTOR_FOR_EACH(&bridge->session_table, iterator) {
 		Session* session = (Session*)iterator_get(&iterator);
 		if (session->connection) {
@@ -99,6 +102,7 @@ void bridge_insert(Bridge* bridge, key_t key, Session* session) {
 
 void bridge_free(Bridge* bridge, key_t key) {
 	Session* session;
+	assert(bridge_is_initialized(bridge));
 
 	session = session_table_get(&bridge->session_table, index_for(key));
 	session_invalidate(session);
@@ -106,6 +110,7 @@ void bridge_free(Bridge* bridge, key_t key) {
 }
 
 Session* bridge_lookup(Bridge* bridge, key_t key) {
+	assert(bridge_is_initialized(bridge));
 	return session_table_get(&bridge->session_table, index_for(key));
 }
 

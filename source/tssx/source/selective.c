@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -48,6 +49,12 @@ void initialize_selective_set() {
 	if ((variable = fetch_tssx_variable()) != NULL) {
 		parse_tssx_variable(variable);
 	}
+
+#ifdef DEBUG
+	if (variable == NULL) {
+		fprintf(stderr, "Enabling TSSX for \033[92mall\033[0m sockets ...\n");
+	}
+#endif
 }
 
 const char* fetch_tssx_variable() {
@@ -75,7 +82,15 @@ int in_selective_set(int socket_fd) {
 		return ERROR;
 	}
 
-	// address.sun_path[length - sizeof(address.sun_family) - 1] = '\0';
+// address.sun_path[length - sizeof(address.sun_family) - 1] = '\0';
+
+#ifdef DEBUG
+	if (ss_contains(&selective_set, address.sun_path)) {
+		fprintf(stderr, "Enabling TSSX for '%s' ...\n", address.sun_path);
+	} else {
+		fprintf(stderr, "Disabling TSSX for '%s' ...\n", address.sun_path);
+	}
+#endif
 
 	return ss_contains(&selective_set, address.sun_path);
 }

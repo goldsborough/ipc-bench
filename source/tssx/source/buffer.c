@@ -3,10 +3,10 @@
 #include <errno.h>
 #include <sched.h>
 #include <string.h>
-#include <x86intrin.h>
-#include <xmmintrin.h>
 #include <time.h>
 #include <unistd.h>
+#include <x86intrin.h>
+#include <xmmintrin.h>
 
 #include "common/utility.h"
 #include "tssx/buffer.h"
@@ -27,8 +27,6 @@ Buffer* create_buffer(void* shared_memory,
 
 int buffer_write(Buffer* buffer, void* data, int data_size) {
 	int right_space = 0;
-
-	printf("Writing %d\n", data_size);
 
 	if (buffer == NULL) return ERROR;
 	if (data == NULL) return ERROR;
@@ -58,8 +56,6 @@ int buffer_write(Buffer* buffer, void* data, int data_size) {
 
 int buffer_read(Buffer* buffer, void* data, int data_size) {
 	int right_space = 0;
-
-	printf("Reading %d\n", data_size);
 
 	if (buffer == NULL) return ERROR;
 	if (data == NULL) return ERROR;

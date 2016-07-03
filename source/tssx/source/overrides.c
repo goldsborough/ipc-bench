@@ -102,9 +102,11 @@ int setsockopt(int key,
   // clang-fomat pm
 }
 
-pid_t fork(void) {
-	// Increments all reference counts
-	bridge_add_user(&bridge);
+pid_t fork() {
+	if (bridge_is_initialized(&bridge)) {
+    // Increments all reference counts
+  	bridge_add_user(&bridge);
+  }
 	return real_fork();
 }
 
@@ -134,7 +136,6 @@ int connection_write(int key,
 		if (session->connection == NULL) {
 			return real_write(session->socket, source, requested_bytes);
 		} else {
-      printf("write TSSX\n");
 			// clang-format off
 			return buffer_write(
         get_buffer(session->connection, which_buffer),
@@ -160,7 +161,6 @@ int connection_read(int key,
 		if (session->connection == NULL) {
 			return real_read(session->socket, destination, requested_bytes);
 		} else {
-			printf("read TSSX\n");
 			// clang-format off
 			return buffer_read(
         get_buffer(session->connection, which_buffer),
