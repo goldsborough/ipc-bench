@@ -25,7 +25,9 @@ void communicate(int connection, Arguments* args) {
 
 	// Benchmarks can start
 	// client_once(NOTIFY);
-	write(connection, buffer, 1);
+	if (write(connection, buffer, 1) < 1) {
+	  throw("Error writing first byte to server");
+	}
 
 	for (; args->count > 0; --args->count) {
 		// Dummy operation

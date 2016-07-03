@@ -1,8 +1,10 @@
+#define _XOPEN_SOURCE 500
+
 #include <errno.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include <sys/ipc.h>
 #include <sys/shm.h>
+#include <sys/ipc.h>
 
 #include "common/utility.h"
 #include "tssx/buffer.h"

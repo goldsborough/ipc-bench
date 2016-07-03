@@ -29,9 +29,10 @@ int generate_key(const char* path) {
 }
 
 void nsleep(int nanoseconds) {
-	struct timespec remaining;
 	struct timespec time = {0, nanoseconds};
-	nanosleep(&time, &remaining);
+	if (nanosleep(&time, NULL) == -1) {
+	  throw("Sleep was interrupted");
+	}
 }
 
 void pin_thread(int where) {

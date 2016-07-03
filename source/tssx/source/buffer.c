@@ -1,11 +1,12 @@
+#define _XOPEN_SOURCE 500
 #include <assert.h>
 #include <errno.h>
 #include <sched.h>
 #include <string.h>
-#include <time.h>
-#include <unistd.h>
 #include <x86intrin.h>
 #include <xmmintrin.h>
+#include <time.h>
+#include <unistd.h>
 
 #include "common/utility.h"
 #include "tssx/buffer.h"
@@ -233,14 +234,12 @@ int _escalation_level(Buffer* buffer, cycle_t start_time) {
 	}
 }
 
-#include <stdio.h>
-
 int _block(Buffer* buffer, int requested_size, Condition condition) {
 	cycle_t start_time = _now();
 
 	while (!condition(buffer, requested_size)) {
 		switch (_escalation_level(buffer, start_time)) {
-			case LEVEL_ZERO://_pause(); break;
+			case LEVEL_ZERO: _pause(); break;
 			case LEVEL_ONE: sched_yield(); break;
 			case LEVEL_TWO: usleep(1); break;
 			case TIMEOUT: return -1;

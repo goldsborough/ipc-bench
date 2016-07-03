@@ -15,7 +15,7 @@ bench_t now() {
 	struct timespec ts;
 	timespec_get(&ts, TIME_UTC);
 
-	return ts.tvector_sec * 1e9 + ts.tvector_nsec;
+	return ts.tv_sec * 1e9 + ts.tv_nsec;
 
 #endif
 }

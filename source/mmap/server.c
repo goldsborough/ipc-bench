@@ -10,7 +10,9 @@
 
 void make_space(int file_descriptor, int bytes) {
 	lseek(file_descriptor, bytes + 1, SEEK_SET);
-	write(file_descriptor, "", 1);
+	if (write(file_descriptor, "", 1) < 1) {
+	  throw("Error writing a single goddman byte to file. A single byte!!!!!");
+	}
 	lseek(file_descriptor, 0, SEEK_SET);
 }
 

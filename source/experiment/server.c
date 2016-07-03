@@ -34,7 +34,9 @@ void communicate(int connection, Arguments* args) {
 
 	// Synchronize for the benchmarks
 	// server_once(WAIT);
-	read(connection, buffer, 1);
+	if (read(connection, buffer, 1) < 1) {
+	  throw("Error reading first byte from client");
+	}
 
 	for (message = 0; message < args->count; ++message) {
 		bench.single_start = now();

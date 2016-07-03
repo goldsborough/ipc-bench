@@ -46,6 +46,10 @@ timeval get_socket_timeout(int socket_fd, int which) {
 	);
 	// clang-format on
 
+	if (return_code == -1) {
+	  throw("Error getting socket timeout");
+	}
+
 	return timeout;
 }
 
