@@ -18,7 +18,5 @@ int main(int argc, const char* argv[]) {
 		sum += _now() - start;
 	}
 
-	printf("%lu\n", sum / n);
-
 	free(memory);
 }

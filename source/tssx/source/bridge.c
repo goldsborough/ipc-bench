@@ -13,6 +13,7 @@ Bridge bridge = BRIDGE_INITIALIZER;
 
 static signal_handler_t old_sigint_handler = NULL;
 static signal_handler_t old_sigterm_handler = NULL;
+static signal_handler_t old_sigabrt_handler = NULL;
 
 /******************** INTERFACE ********************/
 
@@ -28,6 +29,8 @@ void bridge_setup(Bridge* bridge) {
 
 void bridge_destroy(Bridge* bridge) {
 	assert(bridge != NULL);
+
+	if (!bridge_is_initialized(bridge)) return;
 
 	// Invalidate (disconnect) all sessions
 	VECTOR_FOR_EACH(&bridge->session_table, iterator) {
@@ -116,13 +119,22 @@ size_t index_for(key_t key) {
 void _setup_exit_handling() {
 	_setup_signal_handler(SIGINT);
 	_setup_signal_handler(SIGTERM);
+	_setup_signal_handler(SIGABRT);
+
+	// With atexit we can register up to 32 functions that are
+	// called at *normal* program termination. *Normal* means
+	// either return from main or a call to exit().
 	atexit(_bridge_exit_handler);
 }
 
 void _setup_signal_handler(int signal_number) {
 	struct sigaction signal_action, old_action;
 
-	assert(signal_number == SIGINT || signal_number == SIGTERM);
+	// clang-format off
+	assert(signal_number == SIGTERM ||
+         signal_number == SIGINT  ||
+				 signal_number == SIGABRT);
+	// clang-format on
 
 	// Set our function as the signal handling function
 	signal_action.sa_handler = _bridge_signal_handler;
@@ -140,8 +152,10 @@ void _setup_signal_handler(int signal_number) {
 
 	if (signal_number == SIGINT) {
 		old_sigint_handler = old_action.sa_handler;
-	} else {
+	} else if (signal_number == SIGTERM) {
 		old_sigterm_handler = old_action.sa_handler;
+	} else {
+		old_sigabrt_handler = old_action.sa_handler;
 	}
 }
 
@@ -150,27 +164,42 @@ void _bridge_signal_handler(int signal_number) {
 		_bridge_signal_handler_for(SIGINT, old_sigint_handler);
 	} else if (signal_number == SIGTERM) {
 		_bridge_signal_handler_for(SIGTERM, old_sigterm_handler);
+	} else if (signal_number == SIGABRT) {
+		_bridge_signal_handler_for(SIGABRT, old_sigabrt_handler);
 	}
 }
 
 void _bridge_signal_handler_for(int signal_number,
 																signal_handler_t old_handler) {
-	bridge_destroy(&bridge);
+	// There are five cases interesting here:
+	// 1) The user has no handler set. Then we decide to exit (and destroy the
+	// bridge) by calling exit().
+	// 2) The user has a handler set and ignores the signal. Then we ignore it too
+	// and everything can go on normally.
+	// 3) The user has a handler set and calls exit() at the end. Then our bridge
+	// will be destroyed via the function we registered with atexit() (all good).
+	// 4) The signal is SIGABRT (abort) and the user has a handler set and exits
+	// the program via exit(). Then our handler will be called and we're good.
+	// 5) The signal is SIGABRT (abort) and the user has a handler set and returns
+	// from his handler. According to the man pages, when a signal handler for
+	// SIGABRT returns, it replaces the current handler with the default handler
+	// (which does a core dump) and re-raises the SIGABRT signal. So when we
+	// call the user's handler for SIGABRT and he returns, we kill the bridge
+	// because we know (and hopefully the user knew) that the process will be
+	// terminated anyway.
 
-	if (old_sigint_handler != NULL) {
-		old_sigint_handler(signal_number);
+	// Note: PostGres seems to ignore SIGINT at one point. SQLite exit()s after
+	// three SIGINTs are sent (maybe to prevent accidental ^C from killing it...)
+
+	if (old_handler != NULL) {
+		old_handler(signal_number);
+	} else {
+		exit(-1);
 	}
 
-	// It might be that the old signal handler did something that
-	// does not terminate the process. Maybe the user decided to
-	// just ignore all SIGINT signals. However, if he does, the user
-	// program might be able to go on, but we definitely can't because
-	// we already destroyed our bridge (all the connection segments).
-	// Also, we *have* to destroy the bridge before calling the old handler
-	// because if the user does in fact exit (which is most likely), then
-	// we want the bridge destroyed first. So we have no choice but to terminate
-	// the program irrespective of the user's handler's decision.
-	exit(EXIT_FAILURE);
+	if (signal_number == SIGABRT) {
+		bridge_destroy(&bridge);
+	}
 }
 
 void _bridge_exit_handler() {

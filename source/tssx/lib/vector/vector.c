@@ -321,10 +321,10 @@ Iterator vector_end(Vector* vector) {
 Iterator vector_iterator(Vector* vector, size_t index) {
 	Iterator iterator = {NULL, 0};
 
-	assert(vector != NULL);
+	assert(vector_is_initialized(vector));
 	assert(index <= vector->size);
 
-	if (vector == NULL) return iterator;
+	if (!vector_is_initialized(vector)) return iterator;
 	if (index > vector->size) return iterator;
 	if (vector->element_size == 0) return iterator;
 
