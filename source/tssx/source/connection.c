@@ -49,7 +49,6 @@ Connection* setup_connection(int segment_id, ConnectionOptions* options) {
 
 	assert(options != NULL);
 
-
 	if ((connection = malloc(sizeof *connection)) == NULL) {
 		print_error("Error allocating memory for connection");
 		return NULL;
@@ -136,7 +135,7 @@ void _detach_connection(Connection* connection) {
 }
 
 void _destroy_connection(Connection* connection) {
-	// Must graph this first
+	// Must grab this first
 	int segment_id = connection->segment_id;
 
 	_detach_connection(connection);

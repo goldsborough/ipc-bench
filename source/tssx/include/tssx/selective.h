@@ -1,8 +1,6 @@
 #ifndef SELECTIVE_H
 #define SELECTIVE_H
 
-#include <stdbool.h>
-
 #define ERROR -1
 
 struct StringSet;

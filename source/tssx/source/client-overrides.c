@@ -11,7 +11,7 @@ int socket(int domain, int type, int protocol) {
 		bridge_insert(&bridge, key, &session);
 		return key;
 	} else {
-		// For internet sockets and such
+		// For internet sockets, UDP sockets etc.
 		return socket_fd;
 	}
 }

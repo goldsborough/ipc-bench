@@ -96,4 +96,5 @@ build/
 
 # Other
 output/
-*.result.tags*
+*.result
+.tags*

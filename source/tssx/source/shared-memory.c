@@ -18,6 +18,7 @@ int create_segment(int total_size) {
 		if (errno != EEXIST && errno != EINVAL && errno != EACCES) {
 			throw("Error creating segment");
 		}
+		// else just keep generating new keys (this one was taken)
 	}
 
 	return id;

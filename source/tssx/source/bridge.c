@@ -105,6 +105,7 @@ Session* bridge_lookup(Bridge* bridge, key_t key) {
 }
 
 size_t index_for(key_t key) {
+	assert(key >= TSSX_KEY_OFFSET);
 	return key - TSSX_KEY_OFFSET;
 }
 
@@ -156,9 +157,18 @@ void _bridge_signal_handler_for(int signal_number,
 
 	if (old_sigint_handler != NULL) {
 		old_sigint_handler(signal_number);
-	} else {
-		exit(EXIT_FAILURE);
 	}
+
+	// It might be that the old signal handler did something that
+	// does not terminate the process. Maybe the user decided to
+	// just ignore all SIGINT signals. However, if he does, the user
+	// program might be able to go on, but we definitely can't because
+	// we already destroyed our bridge (all the connection segments).
+	// Also, we *have* to destroy the bridge before calling the old handler
+	// because if the user does in fact exit (which is most likely), then
+	// we want the bridge destroyed first. So we have no choice but to terminate
+	// the program irrespective of the user's handler's decision.
+	exit(EXIT_FAILURE);
 }
 
 void _bridge_exit_handler() {

@@ -6,8 +6,7 @@
 
 /******************** DEFINITIONS ********************/
 
-// By how much to shift keys negatively
-#define TSSX_KEY_OFFSET (1000000)
+#define TSSX_KEY_OFFSET 1000000
 
 #define BRIDGE_INITIALIZER \
 	{ SESSION_TABLE_INITIALIZER, FREE_LIST_INITIALIZER }

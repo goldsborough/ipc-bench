@@ -20,6 +20,8 @@ bool session_has_connection(Session* session) {
 
 void session_invalidate(Session* session) {
 	assert(session_is_valid(session));
+
+	// Invalidate socket descriptor
 	session->socket = -1;
 
 	if (session->connection) {
