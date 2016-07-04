@@ -9,7 +9,7 @@
 
 typedef struct timeval timeval;
 
-int get_socket_buffer_size(int socket_fd, int which) {
+int socket_buffer_size(int socket_fd, Direction direction) {
 	int return_code;
 	int buffer_size;
 	socklen_t value_size = sizeof buffer_size;
@@ -18,7 +18,7 @@ int get_socket_buffer_size(int socket_fd, int which) {
 	return_code = getsockopt(
 		socket_fd,
 		SOL_SOCKET,
-		(which == SEND) ? SO_SNDBUF : SO_RCVBUF,
+		(direction == SEND) ? SO_SNDBUF : SO_RCVBUF,
 		&buffer_size,
 		&value_size
 	);
@@ -31,7 +31,7 @@ int get_socket_buffer_size(int socket_fd, int which) {
 	return buffer_size;
 }
 
-timeval get_socket_timeout(int socket_fd, int which) {
+timeval socket_timeout(int socket_fd, Direction direction) {
 	int return_code;
 	timeval timeout;
 	socklen_t value_size = sizeof timeout;
@@ -40,7 +40,7 @@ timeval get_socket_timeout(int socket_fd, int which) {
 	return_code = getsockopt(
 		socket_fd,
 		SOL_SOCKET,
-		(which == SEND) ? SO_SNDTIMEO : SO_RCVTIMEO,
+		(direction == SEND) ? SO_SNDTIMEO : SO_RCVTIMEO,
 		&timeout,
 		&value_size
 	);
@@ -53,12 +53,12 @@ timeval get_socket_timeout(int socket_fd, int which) {
 	return timeout;
 }
 
-double get_socket_timeout_seconds(int socket_fd, int which) {
-	timeval timeout = get_socket_timeout(socket_fd, which);
+double socket_timeout_seconds(int socket_fd, Direction direction) {
+	timeval timeout = socket_timeout(socket_fd, direction);
 	return timeout.tv_sec + (timeout.tv_usec / 1e6);
 }
 
-void set_socket_buffer_size(int socket_fd, int which) {
+void set_socket_buffer_size(int socket_fd, Direction direction) {
 	int buffer_size = BUFFER_SIZE;
 
 	// set/getsockopt is the one-stop-shop for all socket options.
@@ -75,7 +75,7 @@ void set_socket_buffer_size(int socket_fd, int which) {
 	int return_code = setsockopt(
 		socket_fd,
 		SOL_SOCKET,
-		(which == SEND) ? SO_SNDBUF : SO_RCVBUF,
+		(direction == SEND) ? SO_SNDBUF : SO_RCVBUF,
 		&buffer_size,
 		sizeof buffer_size
 	);
@@ -100,12 +100,12 @@ void set_socket_both_buffer_sizes(int socket_fd) {
 	// clang-format on
 }
 
-void set_socket_timeout(int socket_fd, timeval* timeout, int which) {
+void set_socket_timeout(int socket_fd, timeval* timeout, Direction direction) {
 	// clang-format off
 	int return_code = setsockopt(
 		socket_fd,
 		SOL_SOCKET,
-		(which == SEND) ? SO_SNDTIMEO : SO_RCVTIMEO,
+		(direction == SEND) ? SO_SNDTIMEO : SO_RCVTIMEO,
 		timeout,
 		sizeof *timeout
 	);
@@ -154,4 +154,26 @@ int receive(int connection, void* buffer, int size, int busy_waiting) {
 	}
 
 	return 0;
+}
+
+void set_socket_non_blocking(int socket_fd) {
+	int flags;
+
+	if ((flags = fcntl(socket_fd, F_GETFL)) == -1) {
+		throw("Error retrieving flags from socket to unblock");
+	}
+
+	flags |= O_NONBLOCK;
+
+	if ((flags = fcntl(socket_fd, F_SETFL, flags)) == -1) {
+		throw("Error setting flags from socket to unblock");
+	}
+}
+
+bool socket_is_non_blocking(int socket_fd) {
+	int flags;
+	if ((flags = fcntl(socket_fd, F_GETFL)) == -1) {
+		throw("Error retrieving non-blocking property from socket");
+	}
+	return flags & O_NONBLOCK;
 }

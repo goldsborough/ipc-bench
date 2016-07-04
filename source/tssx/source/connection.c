@@ -7,22 +7,16 @@
 #include "common/sockets.h"
 #include "common/utility.h"
 #include "tssx/buffer.h"
+#include "tssx/connection-options.h"
 #include "tssx/connection.h"
 #include "tssx/hashtable.h"
 #include "tssx/shared-memory.h"
 
-// clang-format off
-ConnectionOptions DEFAULT_OPTIONS = {
-	DEFAULT_BUFFER_SIZE,
-	DEFAULT_TIMEOUTS_INITIALIZER,
-	DEFAULT_BUFFER_SIZE,
-	DEFAULT_TIMEOUTS_INITIALIZER
-};
-// clang-format on
+Connection META_STABLE_CONNECTION_OBJECT = {-42, NULL, NULL, NULL};
 
 /*************** PUBLIC **************/
 
-Connection* create_connection(ConnectionOptions* options) {
+Connection* create_connection(const ConnectionOptions* options) {
 	Connection* connection;
 	void* shared_memory;
 
@@ -33,7 +27,7 @@ Connection* create_connection(ConnectionOptions* options) {
 		return NULL;
 	}
 
-	connection->segment_id = create_segment(_options_segment_size(options));
+	connection->segment_id = create_segment(options_segment_size(options));
 	shared_memory = attach_segment(connection->segment_id);
 
 	_init_open_count(connection, shared_memory);
@@ -43,7 +37,7 @@ Connection* create_connection(ConnectionOptions* options) {
 	return connection;
 }
 
-Connection* setup_connection(int segment_id, ConnectionOptions* options) {
+Connection* setup_connection(int segment_id, const ConnectionOptions* options) {
 	Connection* connection;
 	void* shared_memory;
 
@@ -88,7 +82,7 @@ void disconnect(Connection* connection) {
 
 void _create_server_buffer(Connection* connection,
 													 void* shared_memory,
-													 ConnectionOptions* options) {
+													 const ConnectionOptions* options) {
 	shared_memory += sizeof(atomic_count_t);
 	// clang-format off
 	connection->server_buffer = create_buffer(
@@ -101,7 +95,7 @@ void _create_server_buffer(Connection* connection,
 
 void _create_client_buffer(Connection* connection,
 													 void* shared_memory,
-													 ConnectionOptions* options) {
+													 const ConnectionOptions* options) {
 	shared_memory += sizeof(atomic_count_t);
 	shared_memory += segment_size(connection->server_buffer);
 	// clang-format off
@@ -146,22 +140,12 @@ void* _segment_start(Connection* connection) {
 	return (void*)connection->open_count;
 }
 
-int _options_segment_size(ConnectionOptions* options) {
-	int segment_size = 0;
-
-	segment_size += sizeof(atomic_count_t);
-	segment_size += sizeof(Buffer) + options->server_buffer_size;
-	segment_size += sizeof(Buffer) + options->client_buffer_size;
-
-	return segment_size;
-}
-
 int _connection_segment_size(Connection* connection) {
 	int segment_size = 0;
 
 	segment_size += sizeof(atomic_count_t);
-	segment_size += sizeof(Buffer) + connection->server_buffer->size;
-	segment_size += sizeof(Buffer) + connection->client_buffer->size;
+	segment_size += sizeof(Buffer) + connection->server_buffer->capacity;
+	segment_size += sizeof(Buffer) + connection->client_buffer->capacity;
 
 	return segment_size;
 }

@@ -2,53 +2,10 @@
 #include <stdio.h>
 #include <sys/un.h>
 
-#include "tssx/overrides.h"
-#include "tssx/selective.h"
-#include "tssx/session.h"
+#include "tssx/common-overrides.h"
+#include "tssx/server-overrides.h"
 
-int send_segment_id_to_client(int client_socket, Session* session) {
-	int return_code;
-
-	// clang-format off
-	return_code = real_write(
-		client_socket,
-		&session->connection->segment_id,
-		sizeof session->connection->segment_id
-	);
-	// clang-format on
-
-	if (return_code == ERROR) {
-		fprintf(stderr, "Error sending segment ID to client");
-		disconnect(session->connection);
-		return ERROR;
-	}
-
-	return return_code;
-}
-
-int setup_tssx(int client_socket) {
-	Session session;
-	key_t key;
-
-	session.socket = client_socket;
-	session.connection = create_connection(&DEFAULT_OPTIONS);
-
-	if (session.connection == NULL) {
-		print_error("Error allocating connection resources");
-		return ERROR;
-	}
-
-	if (send_segment_id_to_client(client_socket, &session) == ERROR) {
-		return ERROR;
-	}
-
-	// Returns the key generated for this connection
-	key = bridge_generate_key(&bridge);
-	bridge_insert(&bridge, key, &session);
-
-	return key;
-}
-
+/******************** OVERRIDES ********************/
 
 int accept(int server_socket, sockaddr* address, socklen_t* length) {
 	int client_socket;
@@ -87,4 +44,62 @@ ssize_t write(int key, void* source, size_t requested_bytes) {
 		SERVER_BUFFER
 	);
 	// clang-format on
+}
+
+/******************** HELPERS ********************/
+
+int send_segment_id_to_client(int client_socket, Session* session) {
+	int return_code;
+
+	// clang-format off
+	return_code = real_write(
+		client_socket,
+		&session->connection->segment_id,
+		sizeof session->connection->segment_id
+	);
+	// clang-format on
+
+	if (return_code == ERROR) {
+		fprintf(stderr, "Error sending segment ID to client");
+		disconnect(session->connection);
+		return ERROR;
+	}
+
+	return return_code;
+}
+
+int setup_tssx(int client_socket) {
+	Session session;
+	ConnectionOptions options;
+	key_t key;
+
+	session.socket = client_socket;
+	options = options_from_socket(client_socket, SERVER);
+	session.connection = create_connection(&options);
+
+	if (session.connection == NULL) {
+		print_error("Error allocating connection resources");
+		return ERROR;
+	}
+
+	if (send_segment_id_to_client(client_socket, &session) == ERROR) {
+		return ERROR;
+	}
+
+	// Returns the key generated for this connection
+	key = bridge_generate_key(&bridge);
+	bridge_insert(&bridge, key, &session);
+
+	return key;
+}
+
+void set_non_blocking(Connection* connection, bool non_blocking) {
+	connection->server_buffer->timeouts.non_blocking[WRITE] = non_blocking;
+	connection->client_buffer->timeouts.non_blocking[READ] = non_blocking;
+}
+
+bool get_non_blocking(Connection* connection) {
+	assert(connection->server_buffer->timeouts.non_blocking[WRITE] ==
+				 connection->client_buffer->timeouts.non_blocking[READ]);
+	return connection->server_buffer->timeouts.non_blocking[WRITE];
 }

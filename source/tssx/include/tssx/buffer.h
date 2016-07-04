@@ -57,7 +57,7 @@ void buffer_set_timeout(Buffer* buffer,
 												Operation operation,
 												cycle_t new_timeout);
 bool buffer_has_timeout(Buffer* buffer, Operation operation);
-#endif /* TSSX_SUPPORT_BUFFER_TIMEOUTS */
+#endif
 
 size_t buffer_free_space(Buffer* buffer);
 

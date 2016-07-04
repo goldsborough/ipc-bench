@@ -105,6 +105,9 @@ void bridge_free(Bridge* bridge, key_t key) {
 	assert(bridge_is_initialized(bridge));
 
 	session = session_table_get(&bridge->session_table, index_for(key));
+
+	assert(session_is_valid(session));
+
 	session_invalidate(session);
 	free_list_push(&bridge->free_list, key);
 }
@@ -116,6 +119,7 @@ Session* bridge_lookup(Bridge* bridge, key_t key) {
 
 size_t index_for(key_t key) {
 	assert(key >= TSSX_KEY_OFFSET);
+	assert(key - TSSX_KEY_OFFSET < bridge.session_table.size);
 	return key - TSSX_KEY_OFFSET;
 }
 

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 #include <sys/un.h>
 #include <unistd.h>
 
@@ -35,7 +36,7 @@ void communicate(int connection, Arguments* args) {
 	// Synchronize for the benchmarks
 	// server_once(WAIT);
 	if (read(connection, buffer, 1) < 1) {
-	  throw("Error reading first byte from client");
+		throw("Error reading first byte from client");
 	}
 
 	for (message = 0; message < args->count; ++message) {

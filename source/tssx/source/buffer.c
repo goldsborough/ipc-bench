@@ -8,6 +8,10 @@
 #include <x86intrin.h>
 #include <xmmintrin.h>
 
+#ifdef DEBUG
+#include <stdio.h>
+#endif
+
 #include "common/utility.h"
 #include "tssx/buffer.h"
 #include "tssx/timeouts.h"
@@ -31,7 +35,7 @@ size_t buffer_write(Buffer* buffer, void* data, size_t data_size) {
 	if (data == NULL) return BUFFER_ERROR;
 	if (data_size == 0) return 0;
 
-	if (_block(buffer, data_size, WRITE) == TIMEOUT) return BUFFER_ERROR;
+	if (_block(buffer, data_size, WRITE) != BUFFER_SUCCESS) return BUFFER_ERROR;
 
 	// The == is when the buffer is empty
 	if (buffer->write >= buffer->read) {
@@ -61,7 +65,7 @@ size_t buffer_read(Buffer* buffer, void* data, size_t data_size) {
 	if (data == NULL) return BUFFER_ERROR;
 	if (data_size == 0) return 0;
 
-	if (_block(buffer, data_size, READ) == TIMEOUT) return BUFFER_ERROR;
+	if (_block(buffer, data_size, READ) != BUFFER_SUCCESS) return BUFFER_ERROR;
 
 	if (buffer->read >= buffer->write) {
 		right_space = buffer->capacity - buffer->read;
@@ -127,21 +131,13 @@ bool buffer_is_empty(Buffer* buffer) {
 void buffer_set_timeout(Buffer* buffer,
 												Operation operation,
 												cycle_t new_timeout) {
-	if (operation == READ) {
-		buffer->timeouts.read_timeout = new_timeout;
-	} else {
-		buffer->timeouts.write_timeout = new_timeout;
-	}
+	buffer->timeouts.timeout[operation] = new_timeout;
 }
 
 bool buffer_has_timeout(Buffer* buffer, Operation operation) {
-	if (operation == READ) {
-		return buffer->timeouts.read_timeout != 0;
-	} else {
-		return buffer->timeouts.write_timeout != 0;
-	}
+	return buffer->timeouts.timeout[operation] != 0;
 }
-#endif /* TSSX_SUPPORT_BUFFER_TIMEOUTS */
+#endif
 
 size_t buffer_free_space(Buffer* buffer) {
 	return buffer->capacity - atomic_load(&buffer->size);
@@ -198,13 +194,9 @@ void _reduce_data(void** data, size_t* data_size, size_t delta) {
 #ifdef TSSX_SUPPORT_BUFFER_TIMEOUTS
 bool _timeout_elapsed(Buffer* buffer, cycle_t elapsed, Operation operation) {
 	if (!buffer_has_timeout(buffer, operation)) return false;
-	if (operation == READ) {
-		return elapsed > buffer->timeouts.read_timeout;
-	} else {
-		return elapsed > buffer->timeouts.write_timeout;
-	}
+	return elapsed > buffer->timeouts.timeout[operation];
 }
-#endif /* TSSX_SUPPORT_BUFFER_TIMEOUTS */
+#endif
 
 bool _level_elapsed(Buffer* buffer, size_t level, cycle_t elapsed) {
 	return elapsed > buffer->timeouts.levels[level];
@@ -221,12 +213,12 @@ cycle_t _now() {
 int _escalation_level(Buffer* buffer, cycle_t start_time, Operation operation) {
 	cycle_t elapsed = _now() - start_time;
 
-	// #ifdef TSSX_SUPPORT_BUFFER_TIMEOUTS
-	// 	if (_timeout_elapsed(buffer, elapsed, operation)) {
-	// 		errno = EWOULDBLOCK;
-	// 		return TIMEOUT;
-	// 	}
-	// #endif /* TSSX_SUPPORT_BUFFER_TIMEOUTS */
+#ifdef TSSX_SUPPORT_BUFFER_TIMEOUTS
+	if (_timeout_elapsed(buffer, elapsed, operation)) {
+		errno = EWOULDBLOCK;
+		return TIMEOUT;
+	}
+#endif
 
 	if (!_level_elapsed(buffer, LEVEL_ZERO, elapsed)) {
 		return LEVEL_ZERO;
@@ -246,8 +238,15 @@ bool _ready_for(Buffer* buffer, Operation operation, size_t requested_size) {
 }
 
 int _block(Buffer* buffer, size_t requested_size, Operation operation) {
-	cycle_t start_time = _now();
+	cycle_t start_time;
 
+	if (buffer->timeouts.non_blocking[operation]) {
+		printf("Blocking: not even once\n");
+		errno = EWOULDBLOCK;
+		return BUFFER_ERROR;
+	}
+
+	start_time = _now();
 	while (!_ready_for(buffer, operation, requested_size)) {
 		switch (_escalation_level(buffer, start_time, operation)) {
 			case LEVEL_ZERO: _pause(); break;
@@ -255,7 +254,7 @@ int _block(Buffer* buffer, size_t requested_size, Operation operation) {
 			case LEVEL_TWO: usleep(1); break;
 #ifdef TSSX_SUPPORT_BUFFER_TIMEOUTS
 			case TIMEOUT: return TIMEOUT;
-#endif /* TSSX_SUPPORT_BUFFER_TIMEOUTS */
+#endif
 		}
 	}
 

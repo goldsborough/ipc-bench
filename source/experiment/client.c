@@ -26,7 +26,7 @@ void communicate(int connection, Arguments* args) {
 	// Benchmarks can start
 	// client_once(NOTIFY);
 	if (write(connection, buffer, 1) < 1) {
-	  throw("Error writing first byte to server");
+		throw("Error writing first byte to server");
 	}
 
 	for (; args->count > 0; --args->count) {
@@ -90,6 +90,8 @@ void connect_socket(int connection) {
 	if (return_code == -1) {
 		throw("Error connecting to server");
 	}
+
+	set_socket_non_blocking(connection);
 }
 
 int connect_to_server() {
