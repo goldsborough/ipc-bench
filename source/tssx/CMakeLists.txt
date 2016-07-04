@@ -64,6 +64,7 @@ set(TSSX_DEPENDENCIES
   dl
 )
 
+# target_link_libraries(tssx-server-ex ${TSSX_DEPENDENCIES})
 target_link_libraries(tssx-server ${TSSX_DEPENDENCIES})
 target_link_libraries(tssx-client ${TSSX_DEPENDENCIES})
 

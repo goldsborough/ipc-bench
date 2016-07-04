@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdio.h>
 #include <sys/un.h>
 
 #include "tssx/overrides.h"

@@ -2,83 +2,90 @@
 #define BUFFER_H
 
 #include <stdatomic.h>
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include "tssx/timeouts.h"
 
-#define ERROR -1
+/******************** DEFINITIONS ********************/
 
-#define TIMEOUT -1
-#define LEVEL_ZERO 0
-#define LEVEL_ONE 1
-#define LEVEL_TWO 2
+#define BUFFER_ERROR -1
+#define BUFFER_SUCCESS 0
+
+/******************** STRUCTURES ********************/
+
+typedef enum { READ, WRITE } Operation;
 
 typedef struct Buffer {
 	// The current size of the buffer (number of bytes used)
 	atomic_int size;
 
 	// The length of the memory segment in bytes
-	int capacity;
+	size_t capacity;
 
 	// Collection of timeout values
 	Timeouts timeouts;
 
 	// The read index
-	int read;
+	size_t read;
 
 	// The write index
-	int write;
+	size_t write;
 
 } Buffer;
 
+/******************** INTERFACE ********************/
+
 Buffer* create_buffer(void* shared_memory,
-											int requested_capacity,
+											size_t requested_capacity,
 											const Timeouts* timeouts);
 
-int buffer_write(Buffer* buffer, void* data, int data_size);
-int buffer_read(Buffer* buffer, void* data, int data_size);
+size_t buffer_write(Buffer* buffer, void* data, size_t data_size);
+size_t buffer_read(Buffer* buffer, void* data, size_t data_size);
 
-int buffer_peek(Buffer* buffer, void* data, int data_size);
-int buffer_skip(Buffer* buffer, int how_many);
+size_t buffer_peek(Buffer* buffer, void* data, size_t data_size);
+size_t buffer_skip(Buffer* buffer, size_t number_of_bytes);
 
 void buffer_clear(Buffer* buffer);
 
-int buffer_is_full(Buffer* buffer);
-int buffer_is_empty(Buffer* buffer);
-int buffer_has_timeout(Buffer* buffer);
+bool buffer_is_full(Buffer* buffer);
+bool buffer_is_empty(Buffer* buffer);
 
-int buffer_free_space(Buffer* buffer);
+#ifdef TSSX_SUPPORT_BUFFER_TIMEOUTS
+void buffer_set_timeout(Buffer* buffer,
+												Operation operation,
+												cycle_t new_timeout);
+bool buffer_has_timeout(Buffer* buffer, Operation operation);
+#endif /* TSSX_SUPPORT_BUFFER_TIMEOUTS */
 
-/******* PRIVATE *******/
+size_t buffer_free_space(Buffer* buffer);
 
-typedef int (*Condition)(Buffer*, int);
+/******************** PRIVATE ********************/
+
+typedef bool (*Condition)(Buffer*, size_t);
 
 void* _start_pointer(Buffer* buffer);
 void* _end_pointer(Buffer* buffer);
 void* _read_pointer(Buffer* buffer);
 void* _write_pointer(Buffer* buffer);
 
-void* _pointer_to(Buffer* buffer, int index);
-int _index_at(Buffer* buffer, void* pointer);
+void* _pointer_to(Buffer* buffer, size_t index);
+ptrdiff_t _index_at(Buffer* buffer, void* pointer);
 
-void _wrap_read(Buffer* buffer, void** data, int* data_size, int delta);
-void _wrap_write(Buffer* buffer, void** data, int* data_size, int delta);
-void _reduce_data(void** data, int* data_size, int delta);
+void _wrap_read(Buffer* buffer, void** data, size_t* data_size, size_t delta);
+void _wrap_write(Buffer* buffer, void** data, size_t* data_size, size_t delta);
+void _reduce_data(void** data, size_t* data_size, size_t delta);
 
-void _check_write_error(int return_code);
-void _check_read_error(int return_code);
-
-int _writeable(Buffer* buffer, int requested_size);
-int _readable(Buffer* buffer, int requested_size);
-
-int _timeout_elapsed(Buffer* buffer, cycle_t elapsed);
-int _level_elapsed(Buffer* buffer, int level, cycle_t elapsed);
+bool _timeout_elapsed(Buffer* buffer, cycle_t elapsed, Operation operation);
+bool _level_elapsed(Buffer* buffer, size_t level, cycle_t elapsed);
 
 void _pause();
 cycle_t _now();
 
-int _escalation_level(Buffer* buffer, cycle_t start_time);
+int _escalation_level(Buffer* buffer, cycle_t start_time, Operation operation);
 
-int _block(Buffer* buffer, int requested_size, Condition predicate);
+bool _ready_for(Buffer* buffer, Operation operation, size_t requested_size);
+int _block(Buffer* buffer, size_t requested_size, Operation operation);
 
 #endif /* BUFFER_H */
