@@ -2,6 +2,7 @@
 #define BRIDGE_H
 
 #include "tssx/free-list.h"
+#include "tssx/reverse-map.h"
 #include "tssx/session-table.h"
 
 /******************** DEFINITIONS ********************/
@@ -11,7 +12,9 @@
 #define BRIDGE_INITIALIZER \
 	{ SESSION_TABLE_INITIALIZER, FREE_LIST_INITIALIZER }
 
-typedef int key_t;
+
+// Included from reverse-map to avoid duplicate definitions
+// typedef int key_t;
 
 struct Session;
 
@@ -20,6 +23,7 @@ struct Session;
 typedef struct Bridge {
 	SessionTable session_table;
 	FreeList free_list;
+	ReverseMap reverse;
 } Bridge;
 
 extern Bridge bridge;
@@ -41,6 +45,7 @@ void bridge_insert(Bridge* bridge, key_t key, struct Session* session);
 void bridge_free(Bridge* bridge, key_t key);
 
 struct Session* bridge_lookup(Bridge* bridge, key_t key);
+key_t bridge_reverse_lookup(Bridge* bridge, int socket_fd);
 
 size_t index_for(key_t key);
 

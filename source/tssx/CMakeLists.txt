@@ -29,6 +29,7 @@ set(TSSX_COMMON_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/source/session.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/free-list.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/bridge.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/reverse-map.c
 	)
 
 set(TSSX_SERVER_SOURCES
