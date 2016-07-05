@@ -4,6 +4,8 @@
 #include <sys/select.h>
 #include <sys/types.h>
 
+#include "definitions.h"
+
 /*
 * The point of this is to hide the implementation of the underlying
 * reverse-map container via functions. If we just used the array *currently*
@@ -21,8 +23,6 @@
 
 #define REVERSE_MAP_SIZE FD_SETSIZE
 #define INVALID_KEY 0
-
-typedef int key_t;
 
 typedef key_t ReverseMap[REVERSE_MAP_SIZE];
 

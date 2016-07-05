@@ -10,10 +10,13 @@ typedef struct sockaddr sockaddr;
 typedef unsigned int socklen_t;
 
 typedef int (*real_socket_t)(int, int, int);
-typedef ssize_t (*real_write_t)(int, const void*, size_t);
-typedef ssize_t (*real_read_t)(int, void*, size_t);
+
 typedef int (*real_accept_t)(int, sockaddr*, socklen_t*);
 typedef int (*real_connect_t)(int, const sockaddr*, socklen_t);
+
+typedef ssize_t (*real_write_t)(int, const void*, size_t);
+typedef ssize_t (*real_read_t)(int, void*, size_t);
+
 typedef int (*real_close_t)(int);
 
 // clang-format off

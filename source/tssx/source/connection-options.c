@@ -13,18 +13,14 @@ const ConnectionOptions DEFAULT_OPTIONS =
 		DEFAULT_CONNECTION_OPTIONS_INITIALIZER;
 
 ConnectionOptions options_from_socket(int socket_fd, Side side) {
+	ConnectionOptions options = DEFAULT_CONNECTION_OPTIONS_INITIALIZER;
 	bool non_blocking;
 	int server_action;
 	int client_action;
-	ConnectionOptions options;
 
 	// Not using the socket buffer size because it's way too small (16 KB)
 	options.server_buffer_size = DEFAULT_BUFFER_SIZE;
 	options.client_buffer_size = DEFAULT_BUFFER_SIZE;
-
-#ifdef DEBUG
-	printf("Enabling non-blocking for socket %d", socket_fd);
-#endif
 
 	non_blocking = socket_is_non_blocking(socket_fd);
 	server_action = (side == SERVER) ? WRITE : READ;

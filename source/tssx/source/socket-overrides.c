@@ -35,6 +35,10 @@ int real_connect(int fd, const sockaddr* address, socklen_t length) {
 	return ((real_connect_t)dlsym(RTLD_NEXT, "connect"))(fd, address, length);
 }
 
+int real_close(int fd) {
+	return ((real_close_t)dlsym(RTLD_NEXT, "close"))(fd);
+}
+
 int real_getsockopt(int fd,
 										int level,
 										int option_name,
@@ -57,10 +61,6 @@ int real_setsockopt(int fd,
 	return ((real_setsockopt_t)dlsym(RTLD_NEXT, "setsockopt"))
       (fd, level, option_name, option_value, option_len);
 	// clang-format on
-}
-
-int real_close(int fd) {
-	return ((real_close_t)dlsym(RTLD_NEXT, "close"))(fd);
 }
 
 /******************** COMMON OVERRIDES ********************/

@@ -1,5 +1,6 @@
 #include "tssx/client-overrides.h"
 #include "tssx/common-overrides.h"
+#include "tssx/poll-overrides.h"
 
 int socket(int domain, int type, int protocol) {
 	int socket_fd = real_socket(domain, type, protocol);
@@ -56,18 +57,7 @@ ssize_t write(int key, void* source, size_t requested_bytes) {
 	// clang-format on
 }
 
-void set_non_blocking(Connection* connection, bool non_blocking) {
-	connection->server_buffer->timeouts.non_blocking[READ] = non_blocking;
-	connection->client_buffer->timeouts.non_blocking[WRITE] = non_blocking;
-}
-
 /******************** HELPERS ********************/
-
-bool get_non_blocking(Connection* connection) {
-	assert(connection->server_buffer->timeouts.non_blocking[READ] ==
-				 connection->client_buffer->timeouts.non_blocking[WRITE]);
-	return connection->client_buffer->timeouts.non_blocking[WRITE];
-}
 
 int read_segment_id_from_server(int client_socket) {
 	int return_code;
@@ -109,4 +99,25 @@ int setup_tssx(Session* session, const sockaddr* address) {
 	session->connection = setup_connection(segment_id, &options);
 
 	return SUCCESS;
+}
+
+/******************** "POLYMORPHIC" FUNCTIONS ********************/
+
+void set_non_blocking(Connection* connection, bool non_blocking) {
+	connection->server_buffer->timeouts.non_blocking[READ] = non_blocking;
+	connection->client_buffer->timeouts.non_blocking[WRITE] = non_blocking;
+}
+
+bool get_non_blocking(Connection* connection) {
+	assert(connection->server_buffer->timeouts.non_blocking[READ] ==
+				 connection->client_buffer->timeouts.non_blocking[WRITE]);
+	return connection->client_buffer->timeouts.non_blocking[WRITE];
+}
+
+bool ready_for(Connection* connection, Operation operation) {
+	if (operation == READ) {
+		return !buffer_is_empty(connection->server_buffer);
+	} else {
+		return !buffer_is_full(connection->client_buffer);
+	}
 }

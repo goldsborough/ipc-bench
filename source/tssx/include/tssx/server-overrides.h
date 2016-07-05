@@ -5,7 +5,7 @@
 
 struct Session;
 
-/******************** HELPERS ********************/
+/******************** FORWARD DECLARATIONS ********************/
 
 int send_segment_id_to_client(int client_socket, struct Session* session);
 int setup_tssx(int client_socket);

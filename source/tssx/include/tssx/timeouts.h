@@ -5,9 +5,9 @@
 #include <stdint.h>
 #include <time.h>
 
-/******************** DEFINITIONS ********************/
+#include "definitions.h"
 
-typedef uint64_t cycle_t;
+/******************** DEFINITIONS ********************/
 
 #define INFINITE 0
 

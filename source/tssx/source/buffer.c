@@ -241,7 +241,6 @@ int _block(Buffer* buffer, size_t requested_size, Operation operation) {
 	cycle_t start_time;
 
 	if (buffer->timeouts.non_blocking[operation]) {
-		printf("Blocking: not even once\n");
 		errno = EWOULDBLOCK;
 		return BUFFER_ERROR;
 	}

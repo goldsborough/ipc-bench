@@ -91,7 +91,7 @@ void connect_socket(int connection) {
 		throw("Error connecting to server");
 	}
 
-	set_socket_non_blocking(connection);
+	// set_socket_non_blocking(connection);
 }
 
 int connect_to_server() {

@@ -1,9 +1,6 @@
-#include <assert.h>
-#include <stdio.h>
-#include <sys/un.h>
-
-#include "tssx/common-overrides.h"
 #include "tssx/server-overrides.h"
+#include "tssx/common-overrides.h"
+#include "tssx/poll-overrides.h"
 
 /******************** OVERRIDES ********************/
 
@@ -93,6 +90,8 @@ int setup_tssx(int client_socket) {
 	return key;
 }
 
+/******************** "POLYMORPHIC" FUNCTIONS ********************/
+
 void set_non_blocking(Connection* connection, bool non_blocking) {
 	connection->server_buffer->timeouts.non_blocking[WRITE] = non_blocking;
 	connection->client_buffer->timeouts.non_blocking[READ] = non_blocking;
@@ -102,4 +101,12 @@ bool get_non_blocking(Connection* connection) {
 	assert(connection->server_buffer->timeouts.non_blocking[WRITE] ==
 				 connection->client_buffer->timeouts.non_blocking[READ]);
 	return connection->server_buffer->timeouts.non_blocking[WRITE];
+}
+
+bool ready_for(Connection* connection, Operation operation) {
+	if (operation == READ) {
+		return !buffer_is_empty(connection->client_buffer);
+	} else {
+		return !buffer_is_full(connection->server_buffer);
+	}
 }
