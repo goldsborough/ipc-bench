@@ -21,9 +21,7 @@ int connect(int key, const sockaddr* address, socklen_t length) {
 
 	if (key < TSSX_KEY_OFFSET) {
 		// In this case the key is actually the socket FD
-		if (real_connect(key, address, length) == -1) {
-			return ERROR;
-		}
+		return real_connect(key, address, length);
 	}
 
 	// Lookup the session and stored socket FD
