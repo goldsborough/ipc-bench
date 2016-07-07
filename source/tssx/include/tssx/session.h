@@ -1,5 +1,5 @@
-#ifndef SESSION_TABLE_H
-#define SESSION_TABLE_H
+#ifndef SESSION_H
+#define SESSION_H
 
 #include <stdbool.h>
 
@@ -25,4 +25,4 @@ bool session_is_invalid(Session* session);
 bool session_is_valid(Session* session);
 bool session_has_connection(Session* session);
 
-#endif /* SESSION_TABLE_H */
+#endif /* SESSION_H */

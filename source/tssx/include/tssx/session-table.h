@@ -1,5 +1,5 @@
-#ifndef SESSION_H
-#define SESSION_H
+#ifndef SESSION_TABLE_H
+#define SESSION_TABLE_H
 
 #include <stddef.h>
 
@@ -29,4 +29,4 @@ void session_table_push_back(SessionTable* table, struct Session* session);
 
 struct Session* session_table_get(SessionTable* table, size_t index);
 
-#endif /* SESSION_H */
+#endif /* SESSION_TABLE_H */
