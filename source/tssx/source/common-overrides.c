@@ -140,20 +140,14 @@ int fcntl_set(int fd, int command, int flags) {
 			return ERROR;
 		}
 
+      // We always forward "set operations" to the underlying socket
+      // This way we can just read them back, when the tssx connection is created
+      return real_fcntl_set_flags(session->socket, command, flags);
+
+      // If we have already created a valid tssx connection, we set the options there
 		if (session->connection == NULL) {
-			// Means we have this entry but no associated connection (for sockets we
-			// had to insert on client side)
-			return real_fcntl_set_flags(session->socket, command, flags);
-		} else if (session->connection == META_STABLE_CONNECTION) {
-			// Nothing we can do in this intermediate state
-			// Theoretically: if it really becomes necessary, we could store the flag
-			// at an intermediary location (for every socket ...) and then query the
-			// flags that were set in this intermediary period (between socket() and
-			// connect())
-			return ERROR;
-		} else {
-			bool non_blocking = flags & O_NONBLOCK;
-			set_non_blocking(session->connection, non_blocking);
+         bool non_blocking = flags & O_NONBLOCK;
+         set_non_blocking(session->connection, non_blocking);
 		}
 	}
 
@@ -172,19 +166,9 @@ int fcntl_get(int fd, int command) {
 			return ERROR;
 		}
 
-		if (session->connection == NULL) {
-			// Means we have this entry but no associated connection (for sockets we
-			// had to insert on client side)
-			return real_fcntl_get_flags(session->socket, command);
-		} else if (session->connection == META_STABLE_CONNECTION) {
-			// Nothing we can do in the meta-stable-state right now (see above)
-			errno = EINVAL;
-			return ERROR;
-		} else if (command == F_GETFL) {
-			return get_non_blocking(session->connection) ? O_NONBLOCK : 0;
-		} else {
-			// Nothing to do for F_GETFD (only manages O_CLOEXEC flag)
-			return ERROR;
-		}
+      // All get operations can simply be forwarded to the
+      // underlying socket, because all set operations were
+      // forwarded as well.
+      return real_fcntl_get_flags(session->socket, command);
 	}
 }

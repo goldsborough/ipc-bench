@@ -6,7 +6,7 @@ int socket(int domain, int type, int protocol) {
 	int socket_fd = real_socket(domain, type, protocol);
 	if (socket_is_stream_and_domain(domain, type)) {
 		// Note: this is no matter if we select the socket to use TSSX or not!
-		Session session = {socket_fd, META_STABLE_CONNECTION};
+		Session session = {socket_fd, NULL};
 		key_t key = bridge_generate_key(&bridge);
 		bridge_insert(&bridge, key, &session);
 		return key;
@@ -85,7 +85,7 @@ int setup_tssx(Session* session, const sockaddr* address) {
 		print_error("Could not check if socket uses TSSX");
 		return ERROR;
 	} else if (!use_tssx) {
-		assert(session->connection == META_STABLE_CONNECTION);
+		assert(session->connection == NULL);
 		session->connection = NULL;
 		return SUCCESS;
 	}

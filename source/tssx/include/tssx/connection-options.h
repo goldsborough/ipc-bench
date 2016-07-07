@@ -16,7 +16,8 @@
 	DEFAULT_BUFFER_SIZE, \
 	DEFAULT_TIMEOUTS_INITIALIZER, \
 	DEFAULT_BUFFER_SIZE, \
-	DEFAULT_TIMEOUTS_INITIALIZER \
+	DEFAULT_TIMEOUTS_INITIALIZER, \
+   true \
 }
 // clang-format on
 
@@ -30,6 +31,9 @@ typedef struct ConnectionOptions {
 
 	size_t client_buffer_size;
 	Timeouts client_timeouts;
+
+	// Is the connection blocking ?
+	bool isBlocking;
 
 } ConnectionOptions;
 

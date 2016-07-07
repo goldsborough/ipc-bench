@@ -12,8 +12,6 @@
 #include "tssx/hashtable.h"
 #include "tssx/shared-memory.h"
 
-Connection META_STABLE_CONNECTION_OBJECT = {-42, NULL, NULL, NULL};
-
 /*************** PUBLIC **************/
 
 Connection* create_connection(const ConnectionOptions* options) {

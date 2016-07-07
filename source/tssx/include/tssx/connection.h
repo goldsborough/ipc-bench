@@ -31,9 +31,6 @@ typedef struct Connection {
 
 } Connection;
 
-extern Connection META_STABLE_CONNECTION_OBJECT;
-#define META_STABLE_CONNECTION &META_STABLE_CONNECTION_OBJECT
-
 /******************** INTERFACE ********************/
 
 Connection* create_connection(const struct ConnectionOptions* options);
