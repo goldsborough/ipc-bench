@@ -26,7 +26,7 @@ int server_check_use_tssx(int socket_fd) {
 	}
 
 	// Empty means all sockets should use TSSX
-	return ss_is_empty(&selective_set) || in_selective_set(socket_fd);
+	return in_selective_set(socket_fd);
 }
 
 int client_check_use_tssx(int socket_fd, const struct sockaddr* address) {
@@ -38,7 +38,6 @@ int client_check_use_tssx(int socket_fd, const struct sockaddr* address) {
 
 	domain_address = (struct sockaddr_un*)address;
 
-	if (ss_is_empty(&selective_set)) return true;
 	if (ss_contains(&selective_set, domain_address->sun_path)) return true;
 
 	return false;
@@ -67,7 +66,9 @@ void parse_tssx_variable(const char* variable) {
 
 	const char* path;
 	for (path = strtok(buffer, " "); path; path = strtok(NULL, " ")) {
-		assert(ss_insert(&selective_set, path));
+		bool b = ss_insert(&selective_set, path);
+		assert(b);
+		(void) b;
 	}
 
 	free(buffer);
