@@ -45,7 +45,7 @@ void communicate(int connection, Arguments* args) {
 		// printf("Server start\n");
 		// clock_t start = t_now();
 
-		if (read(connection, buffer, args->size) == -1) {
+		if (read(connection, buffer, args->size) != args->size) {
 			throw("Error reading on server-side");
 		}
 
@@ -57,7 +57,7 @@ void communicate(int connection, Arguments* args) {
 		// printf("Server write done %llu\n", t_now() - start);
 		// start = t_now();
 
-		if (write(connection, buffer, args->size) == -1) {
+		if (write(connection, buffer, args->size) != args->size) {
 			throw("Error sending on server-side");
 		}
 

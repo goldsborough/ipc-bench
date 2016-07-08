@@ -35,7 +35,17 @@ size_t buffer_write(Buffer* buffer, const void* data, size_t data_size) {
 	if (data == NULL) return BUFFER_ERROR;
 	if (data_size == 0) return 0;
 
-	if (_block(buffer, data_size, WRITE) != BUFFER_SUCCESS) return BUFFER_ERROR;
+   // Block or return, depending on blocking configuration for the socket
+   // After the branch there is enough space to do the operation
+   if(buffer->timeouts.non_blocking[WRITE]) {
+      if(!_ready_for(buffer,WRITE,data_size)) {
+         return 0;
+      }
+   } else {
+      if (_block(buffer, data_size, WRITE) != BUFFER_SUCCESS) {
+         return BUFFER_ERROR;
+      }
+   }
 
 	// The == is when the buffer is empty
 	if (buffer->write >= buffer->read) {
@@ -46,6 +56,8 @@ size_t buffer_write(Buffer* buffer, const void* data, size_t data_size) {
 			// Write first portion, up to the end of the buffer
 			memcpy(_write_pointer(buffer), data, right_space);
 			_wrap_write(buffer, &data, &data_size, right_space);
+		} else {
+			right_space = 0;
 		}
 	}
 
@@ -65,7 +77,17 @@ size_t buffer_read(Buffer* buffer, void* data, size_t data_size) {
 	if (data == NULL) return BUFFER_ERROR;
 	if (data_size == 0) return 0;
 
-	if (_block(buffer, data_size, READ) != BUFFER_SUCCESS) return BUFFER_ERROR;
+   // Block or return, depending on blocking configuration for the socket
+   // After the branch there is enough space to do the operation
+   if(buffer->timeouts.non_blocking[READ]) {
+      if(!_ready_for(buffer,READ,data_size)) {
+         return 0;
+      }
+   } else {
+      if (_block(buffer, data_size, READ) != BUFFER_SUCCESS) {
+         return BUFFER_ERROR;
+      }
+   }
 
 	if (buffer->read >= buffer->write) {
 		right_space = buffer->capacity - buffer->read;
@@ -74,6 +96,8 @@ size_t buffer_read(Buffer* buffer, void* data, size_t data_size) {
 			// Read first portion, then wrap around and write the rest below
 			memcpy(data, _read_pointer(buffer), right_space);
 			_wrap_read(buffer, &data, &data_size, right_space);
+		} else {
+			right_space = 0;
 		}
 	}
 
@@ -239,11 +263,6 @@ bool _ready_for(Buffer* buffer, Operation operation, size_t requested_size) {
 
 int _block(Buffer* buffer, size_t requested_size, Operation operation) {
 	cycle_t start_time;
-
-	if (buffer->timeouts.non_blocking[operation]) {
-		errno = EWOULDBLOCK;
-		return BUFFER_ERROR;
-	}
 
 	start_time = _now();
 	while (!_ready_for(buffer, operation, requested_size)) {
