@@ -54,9 +54,9 @@ pid_t fork() {
 
 /******************** INTERFACE ********************/
 
-int connection_write(int key,
-										 void* source,
-										 int requested_bytes,
+ssize_t connection_write(int key,
+										 const  void* source,
+										 size_t requested_bytes,
 										 int which_buffer) {
 	Session* session;
 
@@ -81,9 +81,9 @@ int connection_write(int key,
 	}
 }
 
-int connection_read(int key,
+ssize_t connection_read(int key,
 										void* destination,
-										int requested_bytes,
+										size_t requested_bytes,
 										int which_buffer) {
 	Session* session;
 

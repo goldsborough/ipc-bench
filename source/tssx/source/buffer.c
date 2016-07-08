@@ -28,7 +28,7 @@ Buffer* create_buffer(void* shared_memory,
 	return buffer;
 }
 
-size_t buffer_write(Buffer* buffer, void* data, size_t data_size) {
+size_t buffer_write(Buffer* buffer, const void* data, size_t data_size) {
 	size_t right_space = 0;
 
 	if (buffer == NULL) return BUFFER_ERROR;
@@ -177,16 +177,16 @@ ptrdiff_t _index_at(Buffer* buffer, void* pointer) {
 void _wrap_read(Buffer* buffer, void** data, size_t* data_size, size_t delta) {
 	buffer->read = 0;
 	atomic_fetch_sub(&buffer->size, delta);
-	_reduce_data(data, data_size, delta);
+	_reduce_data((const void**)data, data_size, delta); // TODO: Is this cast ok ???
 }
 
-void _wrap_write(Buffer* buffer, void** data, size_t* data_size, size_t delta) {
+void _wrap_write(Buffer* buffer, const void** data, size_t* data_size, size_t delta) {
 	buffer->write = 0;
 	atomic_fetch_add(&buffer->size, delta);
 	_reduce_data(data, data_size, delta);
 }
 
-void _reduce_data(void** data, size_t* data_size, size_t delta) {
+void _reduce_data(const void** data, size_t* data_size, size_t delta) {
 	*data_size -= delta;
 	*data += delta;
 }

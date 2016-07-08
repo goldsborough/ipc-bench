@@ -41,7 +41,7 @@ Buffer* create_buffer(void* shared_memory,
 											size_t requested_capacity,
 											const Timeouts* timeouts);
 
-size_t buffer_write(Buffer* buffer, void* data, size_t data_size);
+size_t buffer_write(Buffer* buffer, const void* data, size_t data_size);
 size_t buffer_read(Buffer* buffer, void* data, size_t data_size);
 
 size_t buffer_peek(Buffer* buffer, void* data, size_t data_size);
@@ -74,8 +74,8 @@ void* _pointer_to(Buffer* buffer, size_t index);
 ptrdiff_t _index_at(Buffer* buffer, void* pointer);
 
 void _wrap_read(Buffer* buffer, void** data, size_t* data_size, size_t delta);
-void _wrap_write(Buffer* buffer, void** data, size_t* data_size, size_t delta);
-void _reduce_data(void** data, size_t* data_size, size_t delta);
+void _wrap_write(Buffer* buffer, const void** data, size_t* data_size, size_t delta);
+void _reduce_data(const void** data, size_t* data_size, size_t delta);
 
 bool _timeout_elapsed(Buffer* buffer, cycle_t elapsed, Operation operation);
 bool _level_elapsed(Buffer* buffer, size_t level, cycle_t elapsed);

@@ -32,7 +32,7 @@ ssize_t read(int key, void* destination, size_t requested_bytes) {
 	// clang-format on
 }
 
-ssize_t write(int key, void* source, size_t requested_bytes) {
+ssize_t write(int key, const void* source, size_t requested_bytes) {
 	// clang-format off
 	return connection_write(
 		key,
