@@ -63,6 +63,16 @@ int real_setsockopt(int fd,
 	// clang-format on
 }
 
+int real_getsockname(int sockfd,
+							struct sockaddr *addr,
+							socklen_t *addrlen) {
+	// Some nice lisp here
+	// clang-format off
+	return ((real_getsockname_t)dlsym(RTLD_NEXT, "getsockname"))
+			(sockfd, addr, addrlen);
+	// clang-format on
+}
+
 /******************** COMMON OVERRIDES ********************/
 
 int getsockopt(int key,
@@ -79,6 +89,18 @@ int getsockopt(int key,
       option_len
   );
   // clang-fomat pm
+}
+
+int getsockname(int sockfd,
+					struct sockaddr *addr,
+					socklen_t *addrlen) {
+	// clang-format off
+	return real_getsockname(
+			bridge_deduce_file_descriptor(&bridge, sockfd),
+			addr,
+			addrlen
+	);
+	// clang-fomat pm
 }
 
 int setsockopt(int key,

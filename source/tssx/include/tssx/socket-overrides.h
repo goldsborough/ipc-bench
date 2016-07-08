@@ -24,6 +24,7 @@ typedef int (*real_getsockopt_t)
             (int, int, int, void* restrict, socklen_t* restrict);
 // clang-format on
 typedef int (*real_setsockopt_t)(int, int, int, const void*, socklen_t);
+typedef int (*real_getsockname_t)(int, struct sockaddr *, socklen_t *);
 
 /******************** REAL FUNCTIONS ********************/
 
