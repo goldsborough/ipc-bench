@@ -2,6 +2,9 @@
 #include "tssx/common-overrides.h"
 #include "tssx/poll-overrides.h"
 
+#include <sys/socket.h>
+#include <sys/types.h>
+
 /******************** OVERRIDES ********************/
 
 int accept(int server_socket, sockaddr* address, socklen_t* length) {
@@ -41,6 +44,54 @@ ssize_t write(int key, const void* source, size_t requested_bytes) {
 		SERVER_BUFFER
 	);
 	// clang-format on
+}
+
+
+ssize_t send(int sockfd, const void *buf, size_t len, int flags) {
+	// For now: We forward the call to write for a certain set of
+	// flags, which we chose to ignore. By putting them here explicitly,
+	// we make sure that we only ignore flags, which are not important.
+	// For production, we might wanna handle these flags
+	if(flags == 0 || flags == MSG_NOSIGNAL) {
+		return write(sockfd, buf, len);
+	}
+	throw("send not implemented\n");
+	return -1;
+}
+
+ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
+					const struct sockaddr *dest_addr, socklen_t addrlen) {
+	throw("sendto not implemented\n");
+	return -1;
+}
+
+ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags)
+{
+	throw("sendmsg not implemented\n");
+	return -1;
+}
+
+ssize_t recv(int sockfd, void *buf, size_t len, int flags)
+{
+	// Forwarding: see explanation in send function
+	if(flags == 0) {
+		return read(sockfd, buf, len);
+	}
+	throw("recv not implemented\n");
+	return -1;
+}
+
+ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
+					  struct sockaddr *src_addr, socklen_t *addrlen)
+{
+	throw("recvfrom not implemented\n");
+	return -1;
+}
+
+ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags)
+{
+	throw("recvmsg not implemented\n");
+	return -1;
 }
 
 /******************** HELPERS ********************/
