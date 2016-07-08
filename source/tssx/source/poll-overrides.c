@@ -4,39 +4,57 @@
 #include <dlfcn.h>
 #include <pthread.h>
 #include <sys/time.h>
+#include <common/common.h>
 
 #include "tssx/bridge.h"
-#include "tssx/poll-override.h"
+#include "tssx/poll-overrides.h"
 #include "tssx/session.h"
 #include "vector/vector.h"
 
 /******************** REAL FUNCTION ********************/
 
 int real_poll(pollfd fds[], nfds_t nfds, int timeout) {
-	return ((real_poll_t)dlsym(RTLD_next, "poll"))(fds, nfds, timeout);
+	return ((real_poll_t)dlsym(RTLD_NEXT, "poll"))(fds, nfds, timeout);
 }
 
 /******************** COMMON OVERRIDES ********************/
 
 int poll(pollfd fds[], nfds_t number, int timeout) {
 	Vector tssx_fds, other_fds;
-	ready_count_t ready_count = 0;
+	int ready_count = 0;
 
 	partition(&tssx_fds, &other_fds, fds, number);
 
-	// new threads
-	// should take a struct {vector, timeout, &ready_count}
-	// then just operate on the atomic ready count
-	tssx_poll(&tssx_fds, timeout);
-	other_poll(&other_fds, timeout);
+	if(tssx_fds.size == 0) {
+		// We are only dealing with normal fds -> simply forward
+		ready_count = real_poll(fds, number, timeout);
+	} else if(other_fds.size == 0) {
+		// We are only dealing with tssx connections -> check these without spawning threads
+		ready_count = tssx_poll(&tssx_fds, timeout);
+	} else {
+		// TODO: Otherwise: we are dealing with peter's wip code ;p
+		throw("not implemented");
 
-	// join tssx_poll
-	// join other_poll
-	// if ready_count still 0 => timeout on both (return timeout)
-	// else return sum of return values
+		ready_count_t threaded_ready_count = 0;
+
+		// new threads
+		// should take a struct {vector, timeout, &threaded_ready_count}
+		// then just operate on the atomic ready count
+		threaded_ready_count += tssx_poll(&tssx_fds, timeout);
+		threaded_ready_count += other_poll(&other_fds, timeout);
+
+		// join tssx_poll
+		// join other_poll
+		// if ready_count still 0 => timeout on both (return timeout)
+		// else return sum of return values
+
+		ready_count = atomic_load(&threaded_ready_count);
+	}
 
 	vector_destroy(&tssx_fds);
 	vector_destroy(&other_fds);
+
+	return ready_count;
 }
 
 /******************** HELPERS ********************/
@@ -50,29 +68,21 @@ void partition(Vector* tssx_fds,
 	vector_setup(tssx_fds, 32, sizeof(PollEntry));
 	vector_setup(other_fds, 32, sizeof(pollfd));
 
-	for (nfds_t index = 0; index < number; ++index) {
-		if (fds[index] < TSSX_KEY_OFFSET) {
-			vector_push_back(other_fds, fds[index]);
-		} else {
-			PollEntry entry = create_entry(&fds[index]);
-			vector_push_back(tssx_fd, &entry);
+	for (nfds_t index = 0; index<number; ++index) {
+		if (fds[index].fd>=TSSX_KEY_OFFSET) {
+			Session *session = bridge_lookup(&bridge, fds[index].fd);
+			assert(session_is_valid(session));
+			if (session->connection != NULL) {
+				PollEntry entry;
+				entry.connection = session->connection;
+				entry.poll_pointer = &fds[index];
+				vector_push_back(tssx_fds, &entry);
+				continue;
+			}
 		}
+
+		vector_push_back(other_fds, &fds[index]);
 	}
-}
-
-PollEntry create_entry(pollfd* poll_pointer) {
-	PollEntry entry;
-
-	key_t key = bridge_reverse_lookup(&bridge, poll_pointer->fd);
-	Session* session = bridge_lookup(&bridge, key);
-
-	assert(session_is_valid(session));
-	assert(session.connection != NULL);
-
-	entry.connection = session.connection;
-	entry.poll_pointer = poll_pointer;
-
-	return entry;
 }
 
 int other_poll(Vector* other_fds, int timeout) {
@@ -82,29 +92,30 @@ int other_poll(Vector* other_fds, int timeout) {
 
 	ready_count = real_poll(raw, size, timeout);
 
-	pthread_exit();
+	pthread_exit(0);
+	return ready_count;
 }
 
-int tssx_poll(Vector* tssx_fds, size_t timeout) {
+int tssx_poll(Vector* tssx_fds, int timeout) {
 	size_t start = now();
 	int ready_count = 0;
 
 	while (!timeout_elapsed(start, timeout)) {
 		VECTOR_FOR_EACH(tssx_fds, iterator) {
-			Entry* entry = (Entry*)iterator_get(&iterator);
+			PollEntry* entry = (PollEntry*)iterator_get(&iterator);
 			if (check_ready(entry, READ) || check_ready(entry, WRITE)) {
 				++ready_count;
 			}
 		}
-		if (ready_count > 0 || condvar is set) break;
+		if (ready_count > 0) break; // TODO "condvar is set" ????
 	}
 
-	exit ready_count
+	return ready_count;
 }
 
 bool check_ready(PollEntry* entry, Operation operation) {
 	if (waiting_for(entry, operation)) {
-		if (ready_for(entry->connection, operation)) {
+		if (ready_for(entry, operation)) {
 			tell_that_ready_for(entry, operation);
 			return true;
 		}
@@ -123,7 +134,7 @@ bool tell_that_ready_for(PollEntry* entry, Operation operation) {
 
 size_t now() {
 	size_t milliseconds;
-	timeval current_time;
+	struct timeval current_time;
 
 	if (gettimeofday(&current_time, NULL) == -1) {
 		throw("Error getting time");

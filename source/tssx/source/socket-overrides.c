@@ -124,5 +124,5 @@ int close(int key) {
 		bridge_free(&bridge, key);
 	}
 
-	return real_close(key);
+	return real_close(bridge_deduce_file_descriptor(&bridge, key));
 }
