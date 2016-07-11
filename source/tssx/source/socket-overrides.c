@@ -124,9 +124,10 @@ int setsockopt(int key,
 }
 
 int close(int key) {
+	int fd = bridge_deduce_file_descriptor(&bridge, key); // We need to do this before bridge_free, because bridge_free invalidates the fields in the bridge entry. i.e.: it sets fd to -1 and we would call close(-1)
 	if (key >= TSSX_KEY_OFFSET) {
 		bridge_free(&bridge, key);
 	}
 
-	return real_close(bridge_deduce_file_descriptor(&bridge, key));
+	return real_close(fd);
 }
