@@ -50,7 +50,7 @@ int tssx_poll(struct Vector* tssx_fds, int timeout);
 
 bool check_ready(PollEntry* entry, Operation operation);
 bool waiting_for(PollEntry* entry, Operation operation);
-bool ready_for(PollEntry* entry, Operation operation);
+bool ready_for(struct Connection* entry, Operation operation);
 bool tell_that_ready_for(PollEntry* entry, Operation operation);
 
 size_t now();

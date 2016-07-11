@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <sys/time.h>
 #include <common/common.h>
+#include <stdlib.h>
 
 #include "tssx/bridge.h"
 #include "tssx/poll-overrides.h"
@@ -19,18 +20,29 @@ int real_poll(pollfd fds[], nfds_t nfds, int timeout) {
 
 /******************** COMMON OVERRIDES ********************/
 
-int poll(pollfd fds[], nfds_t number, int timeout) {
+int poll(pollfd fds[], nfds_t nfds, int timeout) {
 	Vector tssx_fds, other_fds;
 	int ready_count = 0;
 
-	partition(&tssx_fds, &other_fds, fds, number);
+	// HACK: just translate fds
+//	for (int i = 0; i<nfds; ++i) {
+//		fds[i].fd = bridge_deduce_file_descriptor(&bridge, fds[i].fd);
+//	}
+
+	printf("pre partition\n");
+	partition(&tssx_fds, &other_fds, fds, nfds);
+	printf("post partition\n");
+	printf("tssx_fds.size = %i\n", (int)tssx_fds.size);
+	printf("other_fds.size = %i\n", (int)other_fds.size);
 
 	if(tssx_fds.size == 0) {
 		// We are only dealing with normal fds -> simply forward
-		ready_count = real_poll(fds, number, timeout);
+		ready_count = real_poll(fds, nfds, timeout);
 	} else if(other_fds.size == 0) {
+		printf("tssx poll\n");
 		// We are only dealing with tssx connections -> check these without spawning threads
 		ready_count = tssx_poll(&tssx_fds, timeout);
+		printf("after after\n");
 	} else {
 		// TODO: Otherwise: we are dealing with peter's wip code ;p
 		throw("not implemented");
@@ -54,6 +66,7 @@ int poll(pollfd fds[], nfds_t number, int timeout) {
 	vector_destroy(&tssx_fds);
 	vector_destroy(&other_fds);
 
+	printf("end poll\n");
 	return ready_count;
 }
 
@@ -103,9 +116,11 @@ int tssx_poll(Vector* tssx_fds, int timeout) {
 	while (!timeout_elapsed(start, timeout)) {
 		VECTOR_FOR_EACH(tssx_fds, iterator) {
 			PollEntry* entry = (PollEntry*)iterator_get(&iterator);
+			printf("pre check\n");
 			if (check_ready(entry, READ) || check_ready(entry, WRITE)) {
 				++ready_count;
 			}
+			printf("post check\n");
 		}
 		if (ready_count > 0) break; // TODO "condvar is set" ????
 	}
@@ -115,7 +130,7 @@ int tssx_poll(Vector* tssx_fds, int timeout) {
 
 bool check_ready(PollEntry* entry, Operation operation) {
 	if (waiting_for(entry, operation)) {
-		if (ready_for(entry, operation)) {
+		if (ready_for(entry->connection, operation)) {
 			tell_that_ready_for(entry, operation);
 			return true;
 		}

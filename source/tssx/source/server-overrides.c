@@ -8,6 +8,8 @@
 /******************** OVERRIDES ********************/
 
 int accept(int server_socket, sockaddr* address, socklen_t* length) {
+	printf("accept %i\n", server_socket);
+
 	int client_socket;
 	int use_tssx;
 
@@ -18,9 +20,11 @@ int accept(int server_socket, sockaddr* address, socklen_t* length) {
 	if ((use_tssx = server_check_use_tssx(server_socket)) == ERROR) {
 		return ERROR;
 	} else if (!use_tssx) {
+		printf("not using tssx for %i\n", client_socket);
 		return client_socket;
 	}
 
+	printf("using tssx *ahhhhhhhh* %i\n", client_socket);
 	return setup_tssx(client_socket);
 }
 

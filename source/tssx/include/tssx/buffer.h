@@ -88,4 +88,8 @@ int _escalation_level(Buffer* buffer, cycle_t start_time, Operation operation);
 bool _ready_for(Buffer* buffer, Operation operation, size_t requested_size);
 int _block(Buffer* buffer, size_t requested_size, Operation operation);
 
+size_t _determine_available_space(Buffer* buffer, Operation operation);
+size_t _block_for_available_space(Buffer *buffer, Operation operation);
+size_t _get_available_space(Buffer *buffer, Operation operation);
+
 #endif /* BUFFER_H */

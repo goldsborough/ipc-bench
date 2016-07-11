@@ -4,10 +4,14 @@
 
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <fcntl.h>
 
 int socket(int domain, int type, int protocol) {
 	int socket_fd = real_socket(domain, type, protocol);
+	printf("socket %i\n", socket_fd);
+
 	if (socket_is_stream_and_domain(domain, type)) {
+		printf("preparing bridge entry %i\n", socket_fd);
 		// Note: this is no matter if we select the socket to use TSSX or not!
 		Session session = {socket_fd, NULL};
 		key_t key = bridge_generate_key(&bridge);
@@ -21,6 +25,7 @@ int socket(int domain, int type, int protocol) {
 
 int connect(int key, const sockaddr* address, socklen_t length) {
 	Session* session;
+	printf("connect %i\n", key);
 
 	if (key < TSSX_KEY_OFFSET) {
 		// In this case the key is actually the socket FD
@@ -111,6 +116,8 @@ int read_segment_id_from_server(int client_socket) {
 	int return_code;
 	int segment_id;
 
+	fcntl(client_socket, F_SETFL, O_RDONLY); // HACK HACK HACK
+
 	// clang-format off
 	return_code = real_read(
 		client_socket,
@@ -118,6 +125,8 @@ int read_segment_id_from_server(int client_socket) {
 		sizeof segment_id
 	);
 	// clang-format on
+
+	fcntl(client_socket, F_SETFL, O_RDWR|O_NONBLOCK); // HACK HACK HACK
 
 	if (return_code == -1) {
 		throw("Error receiving segment ID on client side");
@@ -141,6 +150,7 @@ int setup_tssx(Session* session, const sockaddr* address) {
 	}
 
 	// This is for TSSX connections
+	printf("setting up tssx *ahhhhhh*\n");
 	segment_id = read_segment_id_from_server(session->socket);
 	printf("%d\n", session->socket);
 	options = options_from_socket(session->socket, CLIENT);

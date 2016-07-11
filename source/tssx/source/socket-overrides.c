@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <stdio.h>
 
 #include "tssx/bridge.h"
 #include "tssx/connection.h"
@@ -80,6 +81,7 @@ int getsockopt(int key,
 							 int option_name,
 							 void* restrict option_value,
 							 socklen_t* restrict option_len) {
+	printf("getsockopt\n");
 	// clang-format off
 	return real_getsockopt(
 			bridge_deduce_file_descriptor(&bridge, key),
@@ -94,6 +96,7 @@ int getsockopt(int key,
 int getsockname(int sockfd,
 					struct sockaddr *addr,
 					socklen_t *addrlen) {
+	printf("getsockname\n");
 	// clang-format off
 	return real_getsockname(
 			bridge_deduce_file_descriptor(&bridge, sockfd),
@@ -108,6 +111,7 @@ int setsockopt(int key,
 							 int option_name,
 							 const void* option_value,
 							 socklen_t option_len) {
+	printf("setsockopt\n");
   // clang-format off
   return real_setsockopt(
      bridge_deduce_file_descriptor(&bridge, key),

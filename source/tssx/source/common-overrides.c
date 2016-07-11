@@ -45,6 +45,7 @@ int fcntl(int fd, int command, ...) {
 }
 
 pid_t fork() {
+	printf("fork\n");
 	if (bridge_is_initialized(&bridge)) {
 		// Increments all reference counts
 		bridge_add_user(&bridge);
@@ -70,13 +71,29 @@ ssize_t connection_write(int key,
 		if (session->connection == NULL) {
 			return real_write(session->socket, source, requested_bytes);
 		} else {
-			// clang-format off
 			return buffer_write(
-        get_buffer(session->connection, which_buffer),
-        source,
-        requested_bytes
-      );
+					get_buffer(session->connection, which_buffer),
+					source,
+					requested_bytes
+			);
+
+			printf("writing: '%.*s' (%i)\n", (int)requested_bytes, (char*)source, (int)requested_bytes);
+
+			// clang-format off
+			ssize_t res = buffer_write(
+					get_buffer(session->connection, which_buffer),
+					source,
+					requested_bytes
+			);
 			// clang-format on
+
+			printf("tssx wrote: %li\n", res);
+
+			res = real_write(session->socket, source, requested_bytes);
+
+			printf("domain wrote: %li\n", res);
+
+			return res;
 		}
 	}
 }
@@ -95,13 +112,37 @@ ssize_t connection_read(int key,
 		if (session->connection == NULL) {
 			return real_read(session->socket, destination, requested_bytes);
 		} else {
-			// clang-format off
 			return buffer_read(
-        get_buffer(session->connection, which_buffer),
-        destination,
-        requested_bytes
-      );
+					get_buffer(session->connection, which_buffer),
+					destination,
+					requested_bytes
+			);
+
+			printf("reading ...\n");
+
+			ssize_t res = real_read(session->socket, destination, requested_bytes);
+
+			printf("domain: %i\n", (int)res);
+			if(res > 0)
+				printf("content: '%.*s'\n", (int)res, (char*)destination);
+			else
+				printf("read nothing\n");
+
+			// clang-format off
+			res = buffer_read(
+					get_buffer(session->connection, which_buffer),
+					destination,
+					requested_bytes
+			);
 			// clang-format on
+
+			printf("tssx:\n");
+			if(res > 0)
+				printf("content: '%.*s'\n", (int)res, (char*)destination);
+			else
+				printf("read nothing\n");
+
+			return res;
 		}
 	}
 }
