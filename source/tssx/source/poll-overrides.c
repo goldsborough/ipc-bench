@@ -18,7 +18,29 @@ int real_poll(pollfd fds[], nfds_t nfds, int timeout) {
 	return ((real_poll_t)dlsym(RTLD_NEXT, "poll"))(fds, nfds, timeout);
 }
 
+int real_select(int nfds, fd_set *readfds, fd_set *writefds,
+			  fd_set *exceptfds, struct timeval *timeout) {
+	return ((real_select_t)dlsym(RTLD_NEXT, "select"))(nfds, readfds, writefds, exceptfds, timeout);
+}
+
 /******************** COMMON OVERRIDES ********************/
+
+int select(int nfds, fd_set *readfds, fd_set *writefds,
+			  fd_set *exceptfds, struct timeval *timeout)
+{
+//   for (int i = 0; i<nfds; ++i) {
+//      printf("fd=%i: %i\n", i, FD_ISSET(i, readfds));
+//   }
+   if (nfds == 501) {
+      pollfd fds[1];
+      fds[0].fd = 500;
+      fds[0].events = POLLIN;
+      int res = poll(fds, 1, timeout == NULL ? 0 : (int)timeout->tv_sec * 1000);
+      return res;
+   }
+
+	return real_select(nfds, readfds, writefds, exceptfds, timeout);
+}
 
 int poll(pollfd fds[], nfds_t nfds, int timeout) {
 	Vector tssx_fds, other_fds;
@@ -29,20 +51,14 @@ int poll(pollfd fds[], nfds_t nfds, int timeout) {
 //		fds[i].fd = bridge_deduce_file_descriptor(&bridge, fds[i].fd);
 //	}
 
-	printf("pre partition\n");
 	partition(&tssx_fds, &other_fds, fds, nfds);
-	printf("post partition\n");
-	printf("tssx_fds.size = %i\n", (int)tssx_fds.size);
-	printf("other_fds.size = %i\n", (int)other_fds.size);
 
 	if(tssx_fds.size == 0) {
 		// We are only dealing with normal fds -> simply forward
 		ready_count = real_poll(fds, nfds, timeout);
 	} else if(other_fds.size == 0) {
-		printf("tssx poll\n");
 		// We are only dealing with tssx connections -> check these without spawning threads
 		ready_count = tssx_poll(&tssx_fds, timeout);
-		printf("after after\n");
 	} else {
 		// TODO: Otherwise: we are dealing with peter's wip code ;p
 		throw("not implemented");
@@ -66,7 +82,6 @@ int poll(pollfd fds[], nfds_t nfds, int timeout) {
 	vector_destroy(&tssx_fds);
 	vector_destroy(&other_fds);
 
-	printf("end poll\n");
 	return ready_count;
 }
 
@@ -116,11 +131,9 @@ int tssx_poll(Vector* tssx_fds, int timeout) {
 	while (!timeout_elapsed(start, timeout)) {
 		VECTOR_FOR_EACH(tssx_fds, iterator) {
 			PollEntry* entry = (PollEntry*)iterator_get(&iterator);
-			printf("pre check\n");
 			if (check_ready(entry, READ) || check_ready(entry, WRITE)) {
 				++ready_count;
 			}
-			printf("post check\n");
 		}
 		if (ready_count > 0) break; // TODO "condvar is set" ????
 	}

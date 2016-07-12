@@ -12,6 +12,9 @@
 
 typedef int (*real_poll_t)(struct pollfd[], nfds_t, int);
 
+typedef int (*real_select_t)(int , fd_set *, fd_set *,
+									  fd_set *, struct timeval *);
+
 typedef struct pollfd pollfd;
 typedef enum Operation { READ, WRITE } Operation;
 
@@ -29,9 +32,16 @@ typedef struct PollEntry {
 
 int real_poll(pollfd fds[], nfds_t nfds, int timeout);
 
+
+int real_select(int nfds, fd_set *readfds, fd_set *writefds,
+			  fd_set *exceptfds, struct timeval *timeout);
+
 /******************** OVERRIDES ********************/
 
 int poll(pollfd fds[], nfds_t number, int timeout);
+
+int select(int nfds, fd_set *readfds, fd_set *writefds,
+			  fd_set *exceptfds, struct timeval *timeout);
 
 /******************** HELPERS ********************/
 
