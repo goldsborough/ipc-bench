@@ -71,12 +71,8 @@ void _parse_tssx_variable(const char* variable) {
 int _in_selective_set(struct sockaddr_storage* address, size_t length) {
 	struct sockaddr_un* domain_address = (struct sockaddr_un*)address;
 
-	printf("Path 1: %s\n", domain_address->sun_path);
-
 	// Seems this really is necessary
 	_insert_null_terminator(domain_address, length);
-
-	printf("Path 2: %s\n", domain_address->sun_path);
 
 #ifdef DEBUG
 	if (ss_contains(&selective_set, domain_address->sun_path)) {
