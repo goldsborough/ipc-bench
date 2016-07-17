@@ -1,8 +1,8 @@
-#include <sys/shm.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <sys/sem.h>
+#include <sys/shm.h>
+#include <unistd.h>
 
 union semaphore_union {
 	int value;
@@ -26,7 +26,7 @@ int semaphore_deallocate(key_t key) {
 
 int semaphore_initialize(int semaphore_id) {
 	union semaphore_union initializer;
-	unsigned short values [1] = {1};
+	unsigned short values[1] = {1};
 	initializer.array = values;
 	return semctl(semaphore_id, 0, SETALL, intializer);
 }

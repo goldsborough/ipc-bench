@@ -12,8 +12,8 @@
 
 typedef int (*real_poll_t)(struct pollfd[], nfds_t, int);
 
-typedef int (*real_select_t)(int , fd_set *, fd_set *,
-									  fd_set *, struct timeval *);
+typedef int (*real_select_t)(
+		int, fd_set *, fd_set *, fd_set *, struct timeval *);
 
 typedef struct pollfd pollfd;
 typedef enum Operation { READ, WRITE } Operation;
@@ -24,8 +24,8 @@ struct Connection;
 struct Vector;
 
 typedef struct PollEntry {
-	struct Connection* connection;
-	pollfd* poll_pointer;
+	struct Connection *connection;
+	pollfd *poll_pointer;
 } PollEntry;
 
 /******************** REAL FUNCTION ********************/
@@ -33,35 +33,41 @@ typedef struct PollEntry {
 int real_poll(pollfd fds[], nfds_t nfds, int timeout);
 
 
-int real_select(int nfds, fd_set *readfds, fd_set *writefds,
-			  fd_set *exceptfds, struct timeval *timeout);
+int real_select(int nfds,
+								fd_set *readfds,
+								fd_set *writefds,
+								fd_set *exceptfds,
+								struct timeval *timeout);
 
 /******************** OVERRIDES ********************/
 
 int poll(pollfd fds[], nfds_t number, int timeout);
 
-int select(int nfds, fd_set *readfds, fd_set *writefds,
-			  fd_set *exceptfds, struct timeval *timeout);
+int select(int nfds,
+					 fd_set *readfds,
+					 fd_set *writefds,
+					 fd_set *exceptfds,
+					 struct timeval *timeout);
 
 /******************** HELPERS ********************/
 
 // should _
 extern const short operation_map[2];
 
-void partition(struct Vector* tssx_fds,
-							 struct Vector* other_fds,
+void partition(struct Vector *tssx_fds,
+							 struct Vector *other_fds,
 							 pollfd fds[],
 							 nfds_t number);
 
-PollEntry create_entry(pollfd* poll_pointer);
+PollEntry create_entry(pollfd *poll_pointer);
 
-int other_poll(struct Vector* other_fds, int timeout);
-int tssx_poll(struct Vector* tssx_fds, int timeout);
+int other_poll(struct Vector *other_fds, int timeout);
+int tssx_poll(struct Vector *tssx_fds, int timeout);
 
-bool check_ready(PollEntry* entry, Operation operation);
-bool waiting_for(PollEntry* entry, Operation operation);
-bool ready_for(struct Connection* entry, Operation operation);
-bool tell_that_ready_for(PollEntry* entry, Operation operation);
+bool check_ready(PollEntry *entry, Operation operation);
+bool waiting_for(PollEntry *entry, Operation operation);
+bool ready_for(struct Connection *entry, Operation operation);
+bool tell_that_ready_for(PollEntry *entry, Operation operation);
 
 size_t now();
 bool timeout_elapsed(size_t start, size_t timeout);

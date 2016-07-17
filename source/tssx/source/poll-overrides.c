@@ -1,11 +1,11 @@
 #define _GNU_SOURCE
 
 #include <assert.h>
+#include <common/common.h>
 #include <dlfcn.h>
 #include <pthread.h>
-#include <sys/time.h>
-#include <common/common.h>
 #include <stdlib.h>
+#include <sys/time.h>
 
 #include "tssx/bridge.h"
 #include "tssx/poll-overrides.h"
@@ -18,26 +18,35 @@ int real_poll(pollfd fds[], nfds_t nfds, int timeout) {
 	return ((real_poll_t)dlsym(RTLD_NEXT, "poll"))(fds, nfds, timeout);
 }
 
-int real_select(int nfds, fd_set *readfds, fd_set *writefds,
-			  fd_set *exceptfds, struct timeval *timeout) {
-	return ((real_select_t)dlsym(RTLD_NEXT, "select"))(nfds, readfds, writefds, exceptfds, timeout);
+int real_select(int nfds,
+								fd_set* readfds,
+								fd_set* writefds,
+								fd_set* exceptfds,
+								struct timeval* timeout) {
+	return ((real_select_t)dlsym(RTLD_NEXT, "select"))(nfds,
+																										 readfds,
+																										 writefds,
+																										 exceptfds,
+																										 timeout);
 }
 
 /******************** COMMON OVERRIDES ********************/
 
-int select(int nfds, fd_set *readfds, fd_set *writefds,
-			  fd_set *exceptfds, struct timeval *timeout)
-{
-//   for (int i = 0; i<nfds; ++i) {
-//      printf("fd=%i: %i\n", i, FD_ISSET(i, readfds));
-//   }
-   if (nfds == 501) {
-      pollfd fds[1];
-      fds[0].fd = 500;
-      fds[0].events = POLLIN;
-      int res = poll(fds, 1, timeout == NULL ? 0 : (int)timeout->tv_sec * 1000);
-      return res;
-   }
+int select(int nfds,
+					 fd_set* readfds,
+					 fd_set* writefds,
+					 fd_set* exceptfds,
+					 struct timeval* timeout) {
+	//   for (int i = 0; i<nfds; ++i) {
+	//      printf("fd=%i: %i\n", i, FD_ISSET(i, readfds));
+	//   }
+	if (nfds == 501) {
+		pollfd fds[1];
+		fds[0].fd = 500;
+		fds[0].events = POLLIN;
+		int res = poll(fds, 1, timeout == NULL ? 0 : (int)timeout->tv_sec * 1000);
+		return res;
+	}
 
 	return real_select(nfds, readfds, writefds, exceptfds, timeout);
 }
@@ -47,17 +56,18 @@ int poll(pollfd fds[], nfds_t nfds, int timeout) {
 	int ready_count = 0;
 
 	// HACK: just translate fds
-//	for (int i = 0; i<nfds; ++i) {
-//		fds[i].fd = bridge_deduce_file_descriptor(&bridge, fds[i].fd);
-//	}
+	//	for (int i = 0; i<nfds; ++i) {
+	//		fds[i].fd = bridge_deduce_file_descriptor(&bridge, fds[i].fd);
+	//	}
 
 	partition(&tssx_fds, &other_fds, fds, nfds);
 
-	if(tssx_fds.size == 0) {
+	if (tssx_fds.size == 0) {
 		// We are only dealing with normal fds -> simply forward
 		ready_count = real_poll(fds, nfds, timeout);
-	} else if(other_fds.size == 0) {
-		// We are only dealing with tssx connections -> check these without spawning threads
+	} else if (other_fds.size == 0) {
+		// We are only dealing with tssx connections -> check these without spawning
+		// threads
 		ready_count = tssx_poll(&tssx_fds, timeout);
 	} else {
 		// TODO: Otherwise: we are dealing with peter's wip code ;p
@@ -96,9 +106,9 @@ void partition(Vector* tssx_fds,
 	vector_setup(tssx_fds, 32, sizeof(PollEntry));
 	vector_setup(other_fds, 32, sizeof(pollfd));
 
-	for (nfds_t index = 0; index<number; ++index) {
-		if (fds[index].fd>=TSSX_KEY_OFFSET) {
-			Session *session = bridge_lookup(&bridge, fds[index].fd);
+	for (nfds_t index = 0; index < number; ++index) {
+		if (fds[index].fd >= TSSX_KEY_OFFSET) {
+			Session* session = bridge_lookup(&bridge, fds[index].fd);
 			assert(session_is_valid(session));
 			if (session->connection != NULL) {
 				PollEntry entry;
@@ -135,7 +145,7 @@ int tssx_poll(Vector* tssx_fds, int timeout) {
 				++ready_count;
 			}
 		}
-		if (ready_count > 0) break; // TODO "condvar is set" ????
+		if (ready_count > 0) break;// TODO "condvar is set" ????
 	}
 
 	return ready_count;

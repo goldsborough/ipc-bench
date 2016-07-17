@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
-#include <sys/eventfd.h>
 #include <stdlib.h>
+#include <sys/eventfd.h>
 #include <unistd.h>
 
 #include "common/common.h"
@@ -31,7 +31,7 @@ void server_communicate(int descriptor, struct Arguments* args) {
 	for (message = 0; message < args->count; ++message) {
 		// A read from an eventfd returns the 8-byte integer
 		// stored in the eventfd object *and* resets the value
-    // to zero. That is, if the value is non-zero. If it
+		// to zero. That is, if the value is non-zero. If it
 		// is zero and the EFD_NONBLOCK flag was not passed,
 		// the call blocks until the value is indeed nonzero.
 		// If the EFD_SEMAPHORE flag was passed at the start,

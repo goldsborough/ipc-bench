@@ -27,7 +27,12 @@ double socket_timeout_seconds(int socket_fd, Direction direction);
 void set_socket_timeout(int socket_fd, timeval* timeout, Direction direction);
 void set_socket_both_timeouts(int socket_fd, int seconds, int microseconds);
 
-void set_socket_non_blocking(int socket_fd);
+int get_socket_flags(int socket_fd);
+void set_socket_flags(int socket_fd, int flags);
+
+int set_socket_non_blocking(int socket_fd);
+int unset_socket_non_blocking(int socket_fd);
+
 bool socket_is_non_blocking(int socket_fd);
 
 int set_io_flag(int socket_fd, int flag);

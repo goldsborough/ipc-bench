@@ -3,8 +3,8 @@
 #include <errno.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include <sys/shm.h>
 #include <sys/ipc.h>
+#include <sys/shm.h>
 
 #include "common/utility.h"
 #include "tssx/buffer.h"

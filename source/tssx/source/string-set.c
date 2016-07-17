@@ -1,7 +1,7 @@
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 #include "tssx/string-set.h"
 
@@ -62,8 +62,6 @@ bool ss_insert(StringSet* set, String key) {
 }
 
 bool ss_contains(StringSet* set, String key) {
-	printf("checking for: '%s'\n", key);
-
 	Node* node;
 	size_t index;
 

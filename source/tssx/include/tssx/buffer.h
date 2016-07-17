@@ -74,7 +74,10 @@ void* _pointer_to(Buffer* buffer, size_t index);
 ptrdiff_t _index_at(Buffer* buffer, void* pointer);
 
 void _wrap_read(Buffer* buffer, void** data, size_t* data_size, size_t delta);
-void _wrap_write(Buffer* buffer, const void** data, size_t* data_size, size_t delta);
+void _wrap_write(Buffer* buffer,
+								 const void** data,
+								 size_t* data_size,
+								 size_t delta);
 void _reduce_data(const void** data, size_t* data_size, size_t delta);
 
 bool _timeout_elapsed(Buffer* buffer, cycle_t elapsed, Operation operation);
@@ -89,7 +92,7 @@ bool _ready_for(Buffer* buffer, Operation operation, size_t requested_size);
 int _block(Buffer* buffer, size_t requested_size, Operation operation);
 
 size_t _determine_available_space(Buffer* buffer, Operation operation);
-size_t _block_for_available_space(Buffer *buffer, Operation operation);
-size_t _get_available_space(Buffer *buffer, Operation operation);
+size_t _block_for_available_space(Buffer* buffer, Operation operation);
+size_t _get_available_space(Buffer* buffer, Operation operation);
 
 #endif /* BUFFER_H */

@@ -43,13 +43,13 @@ pid_t fork(void);
 /******************** INTERFACE ********************/
 
 ssize_t connection_write(int key,
-										 const void* source,
-										 size_t requested_bytes,
-										 int which_buffer);
+												 const void* source,
+												 size_t requested_bytes,
+												 int which_buffer);
 ssize_t connection_read(int key,
-										void* destination,
-										size_t requested_bytes,
-										int which_buffer);
+												void* destination,
+												size_t requested_bytes,
+												int which_buffer);
 
 int socket_is_stream_and_domain(int domain, int type);
 

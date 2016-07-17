@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <sys/ipc.h>
 #include <time.h>
+
 #define __USE_GNU
 #include <pthread.h>
 #include <sched.h>
@@ -19,7 +20,11 @@ void terminate(const char* message) {
 }
 
 void print_error(const char* message) {
-	fputs(message, stderr);
+	fprintf(stderr, "%s\n", message);
+}
+
+void warn(const char* message) {
+	fprintf(stderr, "\033[33mWarning\033[0m: %s\n", message);
 }
 
 int generate_key(const char* path) {
@@ -31,7 +36,7 @@ int generate_key(const char* path) {
 void nsleep(int nanoseconds) {
 	struct timespec time = {0, nanoseconds};
 	if (nanosleep(&time, NULL) == -1) {
-	  throw("Sleep was interrupted");
+		throw("Sleep was interrupted");
 	}
 }
 

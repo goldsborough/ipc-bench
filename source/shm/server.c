@@ -1,10 +1,10 @@
 #include <signal.h>
+#include <stdatomic.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/shm.h>
 #include <unistd.h>
-#include <stdatomic.h>
 
 #include "common/common.h"
 
@@ -38,7 +38,7 @@ void communicate(char* shared_memory, struct Arguments* args) {
 	struct Benchmarks bench;
 	int message;
 	void* buffer = malloc(args->size);
-	atomic_char* guard = (atomic_char*) shared_memory;
+	atomic_char* guard = (atomic_char*)shared_memory;
 
 	// Wait for signal from client
 	shm_wait(guard);

@@ -156,24 +156,41 @@ int receive(int connection, void* buffer, int size, int busy_waiting) {
 	return 0;
 }
 
-void set_socket_non_blocking(int socket_fd) {
+int get_socket_flags(int socket_fd) {
 	int flags;
-
 	if ((flags = fcntl(socket_fd, F_GETFL)) == -1) {
-		throw("Error retrieving flags from socket to unblock");
+		throw("Error retrieving flags");
 	}
 
-	flags |= O_NONBLOCK;
+	return flags;
+}
 
+void set_socket_flags(int socket_fd, int flags) {
 	if ((flags = fcntl(socket_fd, F_SETFL, flags)) == -1) {
-		throw("Error setting flags from socket to unblock");
+		throw("Error setting flags");
 	}
 }
 
-bool socket_is_non_blocking(int socket_fd) {
+int set_socket_non_blocking(int socket_fd) {
 	int flags;
-	if ((flags = fcntl(socket_fd, F_GETFL)) == -1) {
-		throw("Error retrieving non-blocking property from socket");
-	}
-	return flags & O_NONBLOCK;
+
+	flags = get_socket_flags(socket_fd);
+	flags |= O_NONBLOCK;
+	set_socket_flags(socket_fd, flags);
+
+	return flags;
+}
+
+int unset_socket_non_blocking(int socket_fd) {
+	int flags;
+
+	flags = get_socket_flags(socket_fd);
+	// This function is supposed to return the old flags
+	set_socket_flags(socket_fd, flags & ~O_NONBLOCK);
+
+	return flags;
+}
+
+bool socket_is_non_blocking(int socket_fd) {
+	return get_socket_flags(socket_fd) & O_NONBLOCK;
 }

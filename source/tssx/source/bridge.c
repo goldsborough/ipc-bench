@@ -107,7 +107,6 @@ void bridge_insert(Bridge* bridge, key_t key, Session* session) {
 }
 
 void bridge_free(Bridge* bridge, key_t key) {
-	printf("bridge_free\n");
 	Session* session;
 	assert(bridge_is_initialized(bridge));
 

@@ -56,7 +56,6 @@ void communicate(int connection, Arguments* args) {
 		// start = t_now();
 		// printf("Server write done %llu\n", t_now() - start);
 		// start = t_now();
-
 		if (write(connection, buffer, args->size) != args->size) {
 			throw("Error sending on server-side");
 		}

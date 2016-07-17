@@ -1,10 +1,10 @@
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <netinet/in.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/types.h>
 #include <sys/socket.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
+#include <sys/types.h>
 
 void print_address(struct addrinfo *address_info) {
 	char *type;
@@ -26,7 +26,7 @@ void print_address(struct addrinfo *address_info) {
 	printf("%s: %s ... ", type, ip);
 }
 
-int main(int argc, const char* argv[]) {
+int main(int argc, const char *argv[]) {
 	struct addrinfo hints, *result, *iterator;
 	int status;
 

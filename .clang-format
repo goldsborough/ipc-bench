@@ -27,4 +27,4 @@ UseTab: Always
 
 PenaltyExcessCharacter: 1000000
 PenaltyReturnTypeOnItsOwnLine: 10
-PenaltyBreakBeforeFirstCallParameter: 10
+PenaltyBreakBeforeFirstCallParameter: 10000000

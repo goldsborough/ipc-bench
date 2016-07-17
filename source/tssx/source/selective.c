@@ -51,7 +51,7 @@ void initialize_selective_set() {
 
 #ifdef DEBUG
 	if (variable == NULL) {
-		fprintf(stderr, "Enabling TSSX for \033[92mall\033[0m sockets ...\n");
+		fprintf(stderr, "'USE_TSSX' not found, disabling TSSX by default ...\n");
 	}
 #endif
 }
@@ -61,14 +61,17 @@ const char* fetch_tssx_variable() {
 }
 
 void parse_tssx_variable(const char* variable) {
-	char* buffer = (char*)malloc(strlen(variable));
+	char* buffer;
+
+	// Not allowed to change the variable buffer
+	buffer = malloc(strlen(variable));
 	strcpy(buffer, variable);
 
 	const char* path;
 	for (path = strtok(buffer, " "); path; path = strtok(NULL, " ")) {
-		bool b = ss_insert(&selective_set, path);
-		assert(b);
-		(void) b;
+		bool success = ss_insert(&selective_set, path);
+		assert(success);
+		(void)success;
 	}
 
 	free(buffer);
@@ -83,7 +86,8 @@ int in_selective_set(int socket_fd) {
 		return ERROR;
 	}
 
-// address.sun_path[length - sizeof(address.sun_family) - 1] = '\0';
+	// Seems this really is necessary
+	address.sun_path[length - sizeof(address.sun_family) - 1] = '\0';
 
 #ifdef DEBUG
 	if (ss_contains(&selective_set, address.sun_path)) {
