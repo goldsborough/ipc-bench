@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ipc.h>
+#include <sys/time.h>
 #include <time.h>
 
 #define __USE_GNU
@@ -38,6 +39,25 @@ void nsleep(int nanoseconds) {
 	if (nanosleep(&time, NULL) == -1) {
 		throw("Sleep was interrupted");
 	}
+}
+
+int current_milliseconds() {
+	struct timeval current_time;
+
+	if (gettimeofday(&current_time, NULL) == -1) {
+		throw("Error getting time");
+	}
+
+	return timeval_to_milliseconds(current_time);
+}
+
+int timeval_to_milliseconds(struct timeval time) {
+	int milliseconds;
+
+	milliseconds = time.tv_sec * 1000;
+	milliseconds += time.tv_usec / 1000;
+
+	return milliseconds;
 }
 
 void pin_thread(int where) {

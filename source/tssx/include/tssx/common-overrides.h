@@ -18,8 +18,6 @@
 
 /******************** DEFINITIONS ********************/
 
-#define ERROR -1
-#define SUCCESS 0
 #define SERVER_BUFFER 0
 #define CLIENT_BUFFER 1
 

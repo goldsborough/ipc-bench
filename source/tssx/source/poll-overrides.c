@@ -1,55 +1,23 @@
 #define _GNU_SOURCE
 
 #include <assert.h>
-#include <common/common.h>
 #include <dlfcn.h>
 #include <pthread.h>
 #include <stdlib.h>
-#include <sys/time.h>
 
+#include "common/common.h"
 #include "tssx/bridge.h"
 #include "tssx/poll-overrides.h"
 #include "tssx/session.h"
 #include "vector/vector.h"
 
-/******************** REAL FUNCTION ********************/
+/******************** REAL FUNCTIONS ********************/
 
 int real_poll(pollfd fds[], nfds_t nfds, int timeout) {
 	return ((real_poll_t)dlsym(RTLD_NEXT, "poll"))(fds, nfds, timeout);
 }
 
-int real_select(int nfds,
-								fd_set* readfds,
-								fd_set* writefds,
-								fd_set* exceptfds,
-								struct timeval* timeout) {
-	return ((real_select_t)dlsym(RTLD_NEXT, "select"))(nfds,
-																										 readfds,
-																										 writefds,
-																										 exceptfds,
-																										 timeout);
-}
-
-/******************** COMMON OVERRIDES ********************/
-
-int select(int nfds,
-					 fd_set* readfds,
-					 fd_set* writefds,
-					 fd_set* exceptfds,
-					 struct timeval* timeout) {
-	//   for (int i = 0; i<nfds; ++i) {
-	//      printf("fd=%i: %i\n", i, FD_ISSET(i, readfds));
-	//   }
-	if (nfds == 501) {
-		pollfd fds[1];
-		fds[0].fd = 500;
-		fds[0].events = POLLIN;
-		int res = poll(fds, 1, timeout == NULL ? 0 : (int)timeout->tv_sec * 1000);
-		return res;
-	}
-
-	return real_select(nfds, readfds, writefds, exceptfds, timeout);
-}
+/******************** OVERRIDES ********************/
 
 int poll(pollfd fds[], nfds_t nfds, int timeout) {
 	Vector tssx_fds, other_fds;
@@ -60,7 +28,7 @@ int poll(pollfd fds[], nfds_t nfds, int timeout) {
 	//		fds[i].fd = bridge_deduce_file_descriptor(&bridge, fds[i].fd);
 	//	}
 
-	partition(&tssx_fds, &other_fds, fds, nfds);
+	_partition(&tssx_fds, &other_fds, fds, nfds);
 
 	if (tssx_fds.size == 0) {
 		// We are only dealing with normal fds -> simply forward
@@ -68,7 +36,7 @@ int poll(pollfd fds[], nfds_t nfds, int timeout) {
 	} else if (other_fds.size == 0) {
 		// We are only dealing with tssx connections -> check these without spawning
 		// threads
-		ready_count = tssx_poll(&tssx_fds, timeout);
+		ready_count = _tssx_poll(&tssx_fds, timeout);
 	} else {
 		// TODO: Otherwise: we are dealing with peter's wip code ;p
 		throw("not implemented");
@@ -78,8 +46,8 @@ int poll(pollfd fds[], nfds_t nfds, int timeout) {
 		// new threads
 		// should take a struct {vector, timeout, &threaded_ready_count}
 		// then just operate on the atomic ready count
-		threaded_ready_count += tssx_poll(&tssx_fds, timeout);
-		threaded_ready_count += other_poll(&other_fds, timeout);
+		threaded_ready_count += _tssx_poll(&tssx_fds, timeout);
+		threaded_ready_count += _other_poll(&other_fds, timeout);
 
 		// join tssx_poll
 		// join other_poll
@@ -99,10 +67,10 @@ int poll(pollfd fds[], nfds_t nfds, int timeout) {
 
 const short operation_map[2] = {POLLIN, POLLOUT};
 
-void partition(Vector* tssx_fds,
-							 Vector* other_fds,
-							 pollfd fds[],
-							 nfds_t number) {
+void _partition(Vector* tssx_fds,
+								Vector* other_fds,
+								pollfd fds[],
+								nfds_t number) {
 	vector_setup(tssx_fds, 32, sizeof(PollEntry));
 	vector_setup(other_fds, 32, sizeof(pollfd));
 
@@ -123,7 +91,7 @@ void partition(Vector* tssx_fds,
 	// }
 }
 
-int other_poll(Vector* other_fds, int timeout) {
+int _other_poll(Vector* other_fds, int timeout) {
 	int ready_count;
 	pollfd* raw = other_fds->data;
 	size_t size = other_fds->size;
@@ -134,14 +102,14 @@ int other_poll(Vector* other_fds, int timeout) {
 	return ready_count;
 }
 
-int tssx_poll(Vector* tssx_fds, int timeout) {
-	size_t start = now();
+int _tssx_poll(Vector* tssx_fds, int timeout) {
+	size_t start = current_milliseconds();
 	int ready_count = 0;
 
-	while (!timeout_elapsed(start, timeout)) {
+	while (!_timeout_elapsed(start, timeout)) {
 		VECTOR_FOR_EACH(tssx_fds, iterator) {
 			PollEntry* entry = (PollEntry*)iterator_get(&iterator);
-			if (check_ready(entry, READ) || check_ready(entry, WRITE)) {
+			if (_check_ready(entry, READ) || _check_ready(entry, WRITE)) {
 				++ready_count;
 			}
 		}
@@ -151,10 +119,10 @@ int tssx_poll(Vector* tssx_fds, int timeout) {
 	return ready_count;
 }
 
-bool check_ready(PollEntry* entry, Operation operation) {
-	if (waiting_for(entry, operation)) {
-		if (ready_for(entry->connection, operation)) {
-			tell_that_ready_for(entry, operation);
+bool _check_ready(PollEntry* entry, Operation operation) {
+	if (_waiting_for(entry, operation)) {
+		if (_ready_for(entry->connection, operation)) {
+			_tell_that_ready_for(entry, operation);
 			return true;
 		}
 	}
@@ -162,28 +130,14 @@ bool check_ready(PollEntry* entry, Operation operation) {
 	return false;
 }
 
-bool waiting_for(PollEntry* entry, Operation operation) {
+bool _waiting_for(PollEntry* entry, Operation operation) {
 	return entry->poll_pointer->events & operation_map[operation];
 }
 
-bool tell_that_ready_for(PollEntry* entry, Operation operation) {
+bool _tell_that_ready_for(PollEntry* entry, Operation operation) {
 	return entry->poll_pointer->revents |= operation_map[operation];
 }
 
-size_t now() {
-	size_t milliseconds;
-	struct timeval current_time;
-
-	if (gettimeofday(&current_time, NULL) == -1) {
-		throw("Error getting time");
-	}
-
-	milliseconds = current_time.tv_sec * 1000;
-	milliseconds += current_time.tv_usec / 1000;
-
-	return milliseconds;
-}
-
-bool timeout_elapsed(size_t start, size_t timeout) {
+bool _timeout_elapsed(size_t start, size_t timeout) {
 	return (now() - start) > timeout;
 }

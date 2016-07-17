@@ -15,8 +15,6 @@
 
 /******************** STRUCTURES ********************/
 
-typedef enum { READ, WRITE } Operation;
-
 typedef struct Buffer {
 	// The current size of the buffer (number of bytes used)
 	atomic_int size;
@@ -51,6 +49,7 @@ void buffer_clear(Buffer* buffer);
 
 bool buffer_is_full(Buffer* buffer);
 bool buffer_is_empty(Buffer* buffer);
+bool buffer_ready_for(Buffer* buffer, Operation operation);
 
 #ifdef TSSX_SUPPORT_BUFFER_TIMEOUTS
 void buffer_set_timeout(Buffer* buffer,
@@ -88,7 +87,9 @@ cycle_t _now();
 
 int _escalation_level(Buffer* buffer, cycle_t start_time, Operation operation);
 
-bool _ready_for(Buffer* buffer, Operation operation, size_t requested_size);
+bool _ready_for_size(Buffer* buffer,
+										 Operation operation,
+										 size_t requested_size);
 int _block(Buffer* buffer, size_t requested_size, Operation operation);
 
 size_t _determine_available_space(Buffer* buffer, Operation operation);

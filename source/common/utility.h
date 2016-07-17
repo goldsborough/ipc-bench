@@ -7,6 +7,12 @@
 
 #include <stdbool.h>
 
+/******************** DEFINITIONS ********************/
+
+struct timeval;
+
+/******************** INTERFACE ********************/
+
 /**
  * Calls perror() and exits the program.
  *
@@ -49,6 +55,9 @@ void warn(const char* message);
 int generate_key(const char* path);
 
 void nsleep(int nanoseconds);
+
+int current_milliseconds();
+int timeval_to_milliseconds(struct timeval time);
 
 void pin_thread(int where);
 

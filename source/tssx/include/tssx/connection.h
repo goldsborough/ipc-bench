@@ -34,8 +34,8 @@ typedef struct Connection {
 /******************** INTERFACE ********************/
 
 Connection* create_connection(const struct ConnectionOptions* options);
-Connection*
-setup_connection(int segment_id, const struct ConnectionOptions* options);
+Connection* setup_connection(int segment_id,
+														 const struct ConnectionOptions* options);
 
 void disconnect(Connection* connection);
 void connection_add_user(Connection* connection);

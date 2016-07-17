@@ -140,6 +140,14 @@ bool buffer_is_empty(Buffer *buffer) {
 	return atomic_load(&buffer->size) == 0;
 }
 
+bool buffer_ready_for(Buffer *buffer, Operation operation) {
+	if (operation == READ) {
+		return !buffer_is_empty(buffer);
+	} else {
+		return !buffer_is_full(buffer);
+	}
+}
+
 #ifdef TSSX_SUPPORT_BUFFER_TIMEOUTS
 void buffer_set_timeout(Buffer *buffer,
 												Operation operation,
@@ -280,7 +288,7 @@ size_t _block_for_available_space(Buffer *buffer, Operation operation) {
 			case LEVEL_ONE: sched_yield(); break;
 			case LEVEL_TWO: usleep(1); break;
 #ifdef TSSX_SUPPORT_BUFFER_TIMEOUTS
-			case TIMEOUT: throw("not impl"); return TIMEOUT;
+			case TIMEOUT: print_error("not impl"); return TIMEOUT;
 #endif
 		}
 		space = _get_available_space(buffer, operation);

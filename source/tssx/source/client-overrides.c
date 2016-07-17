@@ -116,10 +116,10 @@ bool is_non_blocking(Connection* connection) {
 	return connection->client_buffer->timeouts.non_blocking[WRITE];
 }
 
-bool ready_for(Connection* connection, Operation operation) {
+bool _ready_for(Connection* connection, Operation operation) {
 	if (operation == READ) {
-		return !buffer_is_empty(connection->server_buffer);
+		return buffer_ready_for(connection->server_buffer, READ);
 	} else {
-		return !buffer_is_full(connection->client_buffer);
+		return buffer_ready_for(connection->client_buffer, WRITE);
 	}
 }
