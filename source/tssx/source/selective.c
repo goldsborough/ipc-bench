@@ -12,41 +12,30 @@
 
 StringSet selective_set = SS_INITIALIZER;
 
-int server_check_use_tssx(int socket_fd) {
+int check_tssx_usage(int fd, Side side) {
+	struct sockaddr_storage address;
+	size_t length;
 	int return_code;
 
-	// Haven't checked this yet for the server's sockets
-	if ((return_code = is_domain_and_stream_socket(socket_fd)) != 1) {
-		// Either error or false (the socket is not a domain socket)
+	length = _get_socket_address(fd, &address, side);
+
+	if ((return_code = _is_domain_and_stream_socket(fd, &address)) != true) {
+		// Either error (-1) or false (0) (the socket is not a domain socket)
 		return return_code;
 	}
 
 	if (!ss_is_initialized(&selective_set)) {
-		initialize_selective_set();
+		_initialize_selective_set();
 	}
 
 	// Empty means all sockets should use TSSX
-	return in_selective_set(socket_fd);
+	return _in_selective_set(&address, length);
 }
 
-int client_check_use_tssx(int socket_fd, const struct sockaddr* address) {
-	struct sockaddr_un* domain_address;
-
-	if (!ss_is_initialized(&selective_set)) {
-		initialize_selective_set();
-	}
-
-	domain_address = (struct sockaddr_un*)address;
-
-	if (ss_contains(&selective_set, domain_address->sun_path)) return true;
-
-	return false;
-}
-
-void initialize_selective_set() {
+void _initialize_selective_set() {
 	const char* variable;
-	if ((variable = fetch_tssx_variable()) != NULL) {
-		parse_tssx_variable(variable);
+	if ((variable = _fetch_tssx_variable()) != NULL) {
+		_parse_tssx_variable(variable);
 	}
 
 #ifdef DEBUG
@@ -56,11 +45,11 @@ void initialize_selective_set() {
 #endif
 }
 
-const char* fetch_tssx_variable() {
+const char* _fetch_tssx_variable() {
 	return getenv("USE_TSSX");
 }
 
-void parse_tssx_variable(const char* variable) {
+void _parse_tssx_variable(const char* variable) {
 	char* buffer;
 
 	// Not allowed to change the variable buffer
@@ -69,69 +58,59 @@ void parse_tssx_variable(const char* variable) {
 
 	const char* path;
 	for (path = strtok(buffer, " "); path; path = strtok(NULL, " ")) {
-		bool success = ss_insert(&selective_set, path);
-		assert(success);
-		(void)success;
+#ifdef DEBUG
+		assert(ss_insert(&selective_set, path));
+#else
+		ss_insert(&selective_set, path);
+#endif
 	}
 
 	free(buffer);
 }
 
-int in_selective_set(int socket_fd) {
-	struct sockaddr_un address;
-	socklen_t length = sizeof address;
+int _in_selective_set(struct sockaddr_storage* address, size_t length) {
+	struct sockaddr_un* domain_address = (struct sockaddr_un*)address;
 
-	if (getsockname(socket_fd, (struct sockaddr*)&address, &length) == -1) {
-		fprintf(stderr, "Error getting socket path");
-		return ERROR;
-	}
+	printf("Path 1: %s\n", domain_address->sun_path);
 
 	// Seems this really is necessary
-	address.sun_path[length - sizeof(address.sun_family) - 1] = '\0';
+	_insert_null_terminator(domain_address, length);
+
+	printf("Path 2: %s\n", domain_address->sun_path);
 
 #ifdef DEBUG
-	if (ss_contains(&selective_set, address.sun_path)) {
-		fprintf(stderr, "Enabling TSSX for '%s' ...\n", address.sun_path);
+	if (ss_contains(&selective_set, domain_address->sun_path)) {
+		fprintf(stderr, "Enabling TSSX for '%s' ...\n", domain_address->sun_path);
 	} else {
-		fprintf(stderr, "Disabling TSSX for '%s' ...\n", address.sun_path);
+		fprintf(stderr, "Disabling TSSX for '%s' ...\n", domain_address->sun_path);
 	}
 #endif
 
-	return ss_contains(&selective_set, address.sun_path);
+	return ss_contains(&selective_set, domain_address->sun_path);
 }
 
-int is_domain_and_stream_socket(int socket_fd) {
-	return is_domain_socket(socket_fd) && is_stream_socket(socket_fd);
+int _is_domain_and_stream_socket(int fd, struct sockaddr_storage* address) {
+	return _is_domain_socket(address) && _is_stream_socket(fd);
 }
 
-int is_domain_socket(int socket_fd) {
-	// Doesn't work on OS X (no SO_DOMAIN in sys/socket.h)
-	// return get_socket_option(socket_fd, SO_DOMAIN) == AF_LOCAL;
-	struct sockaddr address;
-	socklen_t length = sizeof address;
-
-	if (getsockname(socket_fd, &address, &length) == -1) {
-		fprintf(stderr, "Error getting socket family");
-		return ERROR;
-	}
-
+int _is_domain_socket(struct sockaddr_storage* address) {
 	// AF_LOCAL is an alias for AF_UNIX (i.e. they have the same value)
-	return address.sa_family == AF_LOCAL;
+	return address->ss_family == AF_LOCAL;
 }
 
-int is_stream_socket(int socket_fd) {
-	int option = get_socket_option(socket_fd, SO_TYPE);
+int _is_stream_socket(int fd) {
+	int option = _get_socket_option(fd, SO_TYPE);
 	return option == ERROR ? ERROR : (option == SOCK_STREAM);
 }
 
-int get_socket_option(int socket_fd, int option_name) {
+int _get_socket_option(int fd, int option_name) {
 	int return_code;
 	socklen_t option;
 	socklen_t option_length = sizeof option;
 
 	// clang-format off
 	return_code = getsockopt(
-    socket_fd,
+    fd,
     SOL_SOCKET,
     option_name,
     &option,
@@ -140,9 +119,32 @@ int get_socket_option(int socket_fd, int option_name) {
 	// clang-format on
 
 	if (return_code == -1) {
-		fprintf(stderr, "Error getting socket option");
+		print_error("Error getting socket option");
 		return ERROR;
 	}
 
 	return option;
+}
+
+int _get_socket_address(int fd, struct sockaddr_storage* address, Side side) {
+	socklen_t length = sizeof *address;
+	int return_code;
+
+	if (side == SERVER) {
+		return_code = getsockname(fd, (struct sockaddr*)address, &length);
+	} else {
+		return_code = getpeername(fd, (struct sockaddr*)address, &length);
+	}
+
+	if (return_code == ERROR) {
+		fprintf(stderr, "Error getting socket address");
+		return ERROR;
+	}
+
+	return length;
+}
+
+void _insert_null_terminator(struct sockaddr_un* address, size_t length) {
+	length -= offsetof(struct sockaddr_un, sun_path);
+	address->sun_path[length] = '\0';
 }
