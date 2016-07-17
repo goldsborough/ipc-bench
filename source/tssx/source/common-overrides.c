@@ -45,10 +45,7 @@ int fcntl(int fd, int command, ...) {
 }
 
 pid_t fork() {
-	if (bridge_is_initialized(&bridge)) {
-		// Increments all reference counts
-		bridge_add_user(&bridge);
-	}
+	bridge_add_user(&bridge);
 	return real_fork();
 }
 
@@ -60,25 +57,17 @@ ssize_t connection_write(int key,
 												 int which_buffer) {
 	Session* session;
 
-	if (key < TSSX_KEY_OFFSET) {
-		return real_write(key, source, requested_bytes);
+	session = bridge_lookup(&bridge, key);
+	if (session_has_connection(session)) {
+		// clang-format off
+    return buffer_write(
+        get_buffer(session->connection, which_buffer),
+        source,
+        requested_bytes
+    );
+		// clang-format on
 	} else {
-		session = bridge_lookup(&bridge, key);
-		assert(session_is_valid(session));
-
-		// Check if the session is actually a TSSX session or a standard domain
-		// socket that we just had to put in here on client side
-		if (session->connection == NULL) {
-			return real_write(session->socket, source, requested_bytes);
-		} else {
-			// clang-format off
-			return buffer_write(
-					get_buffer(session->connection, which_buffer),
-					source,
-					requested_bytes
-			);
-			// clang-format on
-		}
+		return real_write(key, source, requested_bytes);
 	}
 }
 
@@ -88,22 +77,17 @@ ssize_t connection_read(int key,
 												int which_buffer) {
 	Session* session;
 
-	if (key < TSSX_KEY_OFFSET) {
-		return real_read(key, destination, requested_bytes);
+	session = bridge_lookup(&bridge, key);
+	if (session_has_connection(session)) {
+		// clang-format off
+    return buffer_read(
+        get_buffer(session->connection, which_buffer),
+        destination,
+        requested_bytes
+    );
+		// clang-format on
 	} else {
-		session = bridge_lookup(&bridge, key);
-		assert(session_is_valid(session));
-		if (session->connection == NULL) {
-			return real_read(session->socket, destination, requested_bytes);
-		} else {
-			// clang-format off
-			return buffer_read(
-					get_buffer(session->connection, which_buffer),
-					destination,
-					requested_bytes
-			);
-			// clang-format on
-		}
+		return real_read(key, destination, requested_bytes);
 	}
 }
 
@@ -130,46 +114,39 @@ Buffer* get_buffer(Connection* connection, int which_buffer) {
 }
 
 int fcntl_set(int fd, int command, int flags) {
-	if (fd < TSSX_KEY_OFFSET) {
-		return real_fcntl_set_flags(fd, command, flags);
-	} else {
-		Session* session = bridge_lookup(&bridge, fd);
-		// Seems the user passed an invalid socket FD
-		if (!session_is_valid(session)) {
-			errno = EINVAL;
-			return ERROR;
-		}
+	Session* session;
+	int return_code;
 
-		// We always forward "set operations" to the underlying socket
-		// This way we can just read them back, when the tssx connection is created
-		return real_fcntl_set_flags(session->socket, command, flags);
+	// Always set it on the socket (we can try to keep the flags in sync)
+	if ((return_code = real_fcntl_set_flags(fd, command, flags)) == ERROR) {
+		return ERROR;
+	}
 
-		// If we have already created a valid tssx connection, we set the options
-		// there
-		if (session->connection == NULL) {
-			bool non_blocking = flags & O_NONBLOCK;
-			set_non_blocking(session->connection, non_blocking);
-		}
+	session = bridge_lookup(&bridge, fd);
+	if (session_has_connection(session)) {
+		// Polymorphic call (implemented by server/client in their overrides)
+		set_non_blocking(session->connection, flags & O_NONBLOCK);
 	}
 
 	return SUCCESS;
 }
 
 int fcntl_get(int fd, int command) {
-	if (fd < TSSX_KEY_OFFSET) {
-		return real_fcntl_get_flags(fd, command);
-	} else {
-		Session* session = bridge_lookup(&bridge, fd);
+	Session* session;
+	int flags;
 
-		// Seems the user passed an invalid socket FD
-		if (!session_is_valid(session)) {
-			errno = EINVAL;
-			return ERROR;
+	flags = real_fcntl_get_flags(fd, command);
+
+	// Theoretically the flags should be in sync
+	// But we will get the non-blocking property, just in case
+	session = bridge_lookup(&bridge, fd);
+	if (session_has_connection(session)) {
+		// First unset the flag, then check if we have it set
+		flags &= ~O_NONBLOCK;
+		if (is_non_blocking(session->connection)) {
+			flags |= O_NONBLOCK;
 		}
-
-		// All get operations can simply be forwarded to the
-		// underlying socket, because all set operations were
-		// forwarded as well.
-		return real_fcntl_get_flags(session->socket, command);
 	}
+
+	return flags;
 }

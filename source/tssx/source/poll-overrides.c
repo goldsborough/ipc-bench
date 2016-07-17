@@ -106,21 +106,21 @@ void partition(Vector* tssx_fds,
 	vector_setup(tssx_fds, 32, sizeof(PollEntry));
 	vector_setup(other_fds, 32, sizeof(pollfd));
 
-	for (nfds_t index = 0; index < number; ++index) {
-		if (fds[index].fd >= TSSX_KEY_OFFSET) {
-			Session* session = bridge_lookup(&bridge, fds[index].fd);
-			assert(session_is_valid(session));
-			if (session->connection != NULL) {
-				PollEntry entry;
-				entry.connection = session->connection;
-				entry.poll_pointer = &fds[index];
-				vector_push_back(tssx_fds, &entry);
-				continue;
-			}
-		}
-
-		vector_push_back(other_fds, &fds[index]);
-	}
+	// for (nfds_t index = 0; index < number; ++index) {
+	// 	if (fds[index].fd >= TSSX_KEY_OFFSET) {
+	// 		Session* session = bridge_lookup(&bridge, fds[index].fd);
+	// 		assert(session_is_valid(session));
+	// 		if (session->connection != NULL) {
+	// 			PollEntry entry;
+	// 			entry.connection = session->connection;
+	// 			entry.poll_pointer = &fds[index];
+	// 			vector_push_back(tssx_fds, &entry);
+	// 			continue;
+	// 		}
+	// 	}
+	//
+	// 	vector_push_back(other_fds, &fds[index]);
+	// }
 }
 
 int other_poll(Vector* other_fds, int timeout) {

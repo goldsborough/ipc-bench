@@ -7,22 +7,23 @@
 /******************** DEFINITIONS ********************/
 
 #define INVALID_SESSION \
-	{ -1, NULL }
+	{ NULL }
 
 struct Connection;
 
 /******************** STRUCTURES ********************/
 
+// clang-format off
 typedef struct Session {
-	int socket;
 	struct Connection* connection;
 } Session;
+// clang-format on
 
 /******************** INTERFACE ********************/
 
+void session_setup(Session* session);
+
+bool session_has_connection(const Session* session);
 void session_invalidate(Session* session);
-bool session_is_invalid(Session* session);
-bool session_is_valid(Session* session);
-bool session_has_connection(Session* session);
 
 #endif /* SESSION_H */

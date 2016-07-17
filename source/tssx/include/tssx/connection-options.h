@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "tssx/definitions.h"
 #include "tssx/timeouts.h"
 
 /******************** DEFINITIONS ********************/
@@ -20,8 +21,6 @@
    true \
 }
 // clang-format on
-
-typedef enum { SERVER, CLIENT } Side;
 
 /******************** STRUCTURES ********************/
 

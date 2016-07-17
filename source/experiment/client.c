@@ -55,14 +55,16 @@ void communicate(int connection, Arguments* args) {
 }
 
 void setup_socket_address(struct sockaddr_un* address) {
-	address->sun_family = AF_UNIX;
+	address->sun_family = AF_LOCAL;
 	strcpy(address->sun_path, SOCKET_PATH);
 }
 
 int create_socket() {
 	int connection;
 
-	connection = socket(AF_UNIX, SOCK_STREAM, 0);
+	connection = socket(PF_LOCAL, SOCK_STREAM, 0);
+
+	printf("%d\n", connection);
 
 	if (connection == -1) {
 		throw("Error creating socket on client-side");

@@ -14,7 +14,7 @@ struct X {
 
 
 int main() {
-	key_t key = ftok(__FILE__, 'x');
+	int fd = ftok(__FILE__, 'x');
 
 	int mq = msgget(key, IPC_CREAT | 0666);
 

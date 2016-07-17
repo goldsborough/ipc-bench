@@ -35,7 +35,7 @@ key_t reverse_map_lookup(ReverseMap* reverse, int socket_fd);
 int reverse_map_has_entry_for(ReverseMap* reverse, int socket_fd);
 
 int reverse_map_erase(ReverseMap* reverse, int socket_fd);
-int reverse_map_insert(ReverseMap* reverse, int socket_fd, key_t key);
+int reverse_map_insert(ReverseMap* reverse, int socket_fd, int fd);
 
 ssize_t reverse_map_size(const ReverseMap* map);
 int reverse_map_is_empty(const ReverseMap* map);

@@ -9,4 +9,6 @@
 typedef int key_t;
 typedef uint_fast64_t cycle_t;
 
+typedef enum { SERVER, CLIENT } Side;
+
 #endif /* DEFINITIONS_H */

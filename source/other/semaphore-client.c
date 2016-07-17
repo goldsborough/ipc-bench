@@ -12,13 +12,13 @@ union semaphore_union {
 	struct seminfo* __buf;
 };
 
-int semaphore_allocate(key_t key) {
+int semaphore_allocate(int fd) {
 	// Allocate a set of semaphores, containing
 	// only one semaphore (1), with permissions 0666
 	return semget(key, 1, 0666);
 }
 
-int semaphore_deallocate(key_t key) {
+int semaphore_deallocate(int fd) {
 	// Dummy argument
 	union semaphore_union _;
 	return semctl(key, 1, IPC_RMID, _);

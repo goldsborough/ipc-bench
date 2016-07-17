@@ -16,12 +16,7 @@
 
 /******************** REAL FUNCTIONS ********************/
 
-// Socket API
 // RTDL_NEXT = look in the symbol table of the *next* object file after this one
-int real_socket(int domain, int type, int protocol) {
-	return ((real_socket_t)dlsym(RTLD_NEXT, "socket"))(domain, type, protocol);
-}
-
 ssize_t real_write(int fd, const void* data, size_t size) {
 	return ((real_write_t)dlsym(RTLD_NEXT, "write"))(fd, data, size);
 }
@@ -123,25 +118,17 @@ int getsockopt(int key,
 							 socklen_t* restrict option_len) {
 	// clang-format off
 	return real_getsockopt(
-			bridge_deduce_file_descriptor(&bridge, key),
+			key,
       level,
       option_name,
       option_value,
       option_len
   );
-  // clang-fomat pm
+	// clang-format on
 }
 
-int getsockname(int fd,
-					struct sockaddr *addr,
-					socklen_t *addrlen) {
-	// clang-format off
-	return real_getsockname(
-			bridge_deduce_file_descriptor(&bridge, fd),
-			addr,
-			addrlen
-	);
-	// clang-fomat pm
+int getsockname(int key, struct sockaddr* addr, socklen_t* addrlen) {
+	return real_getsockname(key, addr, addrlen);
 }
 
 int setsockopt(int key,
@@ -149,9 +136,9 @@ int setsockopt(int key,
 							 int option_name,
 							 const void* option_value,
 							 socklen_t option_len) {
-  // clang-format off
+	// clang-format off
   return real_setsockopt(
-     bridge_deduce_file_descriptor(&bridge, key),
+     key,
      level,
      option_name,
      option_value,
@@ -161,16 +148,8 @@ int setsockopt(int key,
 }
 
 int close(int key) {
-  // We need to do this before bridge_free, because bridge_free
-  // invalidates the fields in the bridge entry.
-  // I.e: It sets fd to -1 and we would call close(-1).
-	int fd = bridge_deduce_file_descriptor(&bridge, key);
-
-	if (key >= TSSX_KEY_OFFSET) {
-		bridge_free(&bridge, key);
-	}
-
-	return real_close(fd);
+	bridge_free(&bridge, key);
+	return real_close(key);
 }
 
 ssize_t send(int fd, const void* buffer, size_t length, int flags) {

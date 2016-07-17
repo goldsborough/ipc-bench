@@ -4,29 +4,20 @@
 #include "tssx/connection.h"
 #include "tssx/session.h"
 
-bool session_is_valid(Session* session) {
+void session_setup(Session* session) {
 	assert(session != NULL);
-	return session->socket != -1;
+	session->connection = NULL;
 }
 
-bool session_is_invalid(Session* session) {
-	return !session_is_valid(session) && session->connection == NULL;
-}
-
-bool session_has_connection(Session* session) {
+bool session_has_connection(const Session* session) {
 	assert(session != NULL);
 	return session->connection != NULL;
 }
 
 void session_invalidate(Session* session) {
-	assert(session_is_valid(session));
+	if (!session_has_connection(session)) return;
 
-	// Invalidate socket descriptor
-	session->socket = -1;
-
-	if (session->connection) {
-		disconnect(session->connection);
-		free(session->connection);
-		session->connection = NULL;
-	}
+	disconnect(session->connection);
+	free(session->connection);
+	session->connection = NULL;
 }

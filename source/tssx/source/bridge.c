@@ -12,11 +12,11 @@
 
 /******************** GLOBAL DATA ********************/
 
-Bridge bridge = BRIDGE_INITIALIZER;
+Bridge bridge;
 
-static signal_handler_t old_sigint_handler = NULL;
-static signal_handler_t old_sigterm_handler = NULL;
-static signal_handler_t old_sigabrt_handler = NULL;
+signal_handler_t old_sigint_handler = NULL;
+signal_handler_t old_sigterm_handler = NULL;
+signal_handler_t old_sigabrt_handler = NULL;
 
 /******************** INTERFACE ********************/
 
@@ -25,114 +25,61 @@ void bridge_setup(Bridge* bridge) {
 	assert(!bridge_is_initialized(bridge));
 
 	session_table_setup(&bridge->session_table);
-	free_list_setup(&bridge->free_list);
-	reverse_map_setup(&bridge->reverse);
-
 	_setup_exit_handling();
 }
 
 void bridge_destroy(Bridge* bridge) {
 	assert(bridge != NULL);
 
-	if (!bridge_is_initialized(bridge)) return;
-
-	assert(vector_is_initialized(&bridge->session_table));
-
 	// Invalidate (disconnect) all sessions
-	VECTOR_FOR_EACH(&bridge->session_table, iterator) {
-		Session* session = (Session*)iterator_get(&iterator);
-		if (session_is_valid(session)) {
-			session_invalidate(session);
-		}
+	for (size_t index = 0; index < SESSION_TABLE_SIZE; ++index) {
+		Session* session = session_table_get(&bridge->session_table, index);
+		session_invalidate(session);
 	}
 
 	session_table_destroy(&bridge->session_table);
-	free_list_destroy(&bridge->free_list);
-	reverse_map_destroy(&bridge->reverse);
 }
 
 bool bridge_is_initialized(const Bridge* bridge) {
-	return vector_is_initialized(&bridge->session_table);
-}
-
-bool bridge_is_empty(const Bridge* bridge) {
-	return vector_is_empty(&bridge->session_table);
-}
-
-int bridge_deduce_file_descriptor(Bridge* bridge, int key) {
-	if (key < TSSX_KEY_OFFSET) {
-		return key;
-	} else {
-		return bridge_lookup(bridge, key)->socket;
-	}
+	return bridge != NULL;
 }
 
 void bridge_add_user(Bridge* bridge) {
 	assert(bridge_is_initialized(bridge));
-	VECTOR_FOR_EACH(&bridge->session_table, iterator) {
-		Session* session = (Session*)iterator_get(&iterator);
-		if (session->connection) {
+	for (size_t index = 0; index < SESSION_TABLE_SIZE; ++index) {
+		Session* session = session_table_get(&bridge->session_table, index);
+		if (session_has_connection(session)) {
 			connection_add_user(session->connection);
 		}
 	}
 }
 
-key_t bridge_generate_key(Bridge* bridge) {
-	key_t key;
-
-	if (!bridge_is_initialized(bridge)) {
-		bridge_setup(bridge);
-	}
-
-	if (free_list_is_empty(&bridge->free_list)) {
-		key = bridge->session_table.size + TSSX_KEY_OFFSET;
-		session_table_reserve_back(&bridge->session_table);
-	} else {
-		key = free_list_pop(&bridge->free_list);
-	}
-
-	return key;
-}
-
-void bridge_insert(Bridge* bridge, key_t key, Session* session) {
-	Session* current_session;
-	assert(bridge_is_initialized(bridge));
-
+void bridge_insert(Bridge* bridge, int fd, Session* session) {
 	// First some sanity checks that this session we're assigning at is not valid
-	current_session = session_table_get(&bridge->session_table, index_for(key));
-	assert(session_is_invalid(current_session));
-
-	session_table_assign(&bridge->session_table, index_for(key), session);
-	reverse_map_insert(&bridge->reverse, session->socket, key);
+	assert(!bridge_has_connection(bridge, fd));
+	session_table_assign(&bridge->session_table, fd, session);
 }
 
-void bridge_free(Bridge* bridge, key_t key) {
+void bridge_free(Bridge* bridge, int fd) {
 	Session* session;
 	assert(bridge_is_initialized(bridge));
 
-	session = session_table_get(&bridge->session_table, index_for(key));
-	assert(session_is_valid(session));
-
-	reverse_map_erase(&bridge->reverse, session->socket);
-	free_list_push(&bridge->free_list, key);
-
+	session = session_table_get(&bridge->session_table, fd);
 	session_invalidate(session);
 }
 
-Session* bridge_lookup(Bridge* bridge, key_t key) {
+Session* bridge_lookup(Bridge* bridge, int fd) {
 	assert(bridge_is_initialized(bridge));
-	return session_table_get(&bridge->session_table, index_for(key));
+	return session_table_get(&bridge->session_table, fd);
 }
 
-key_t bridge_reverse_lookup(Bridge* bridge, int socket_fd) {
-	assert(bridge != NULL);
-	return reverse_map_lookup(&bridge->reverse, socket_fd);
-}
+bool bridge_has_connection(Bridge* bridge, int fd) {
+	Session* session;
 
-size_t index_for(key_t key) {
-	assert(key >= TSSX_KEY_OFFSET);
-	assert(key - TSSX_KEY_OFFSET < bridge.session_table.size);
-	return key - TSSX_KEY_OFFSET;
+	assert(bridge_is_initialized(bridge));
+	session = session_table_get(&bridge->session_table, fd);
+
+	return session_has_connection(session);
 }
 
 /******************** PRIVATE ********************/

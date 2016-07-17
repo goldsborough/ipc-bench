@@ -10,8 +10,6 @@ typedef struct msghdr msghdr;
 
 typedef unsigned int socklen_t;
 
-typedef int (*real_socket_t)(int, int, int);
-
 typedef int (*real_accept_t)(int, sockaddr*, socklen_t*);
 typedef int (*real_connect_t)(int, const sockaddr*, socklen_t);
 
@@ -49,8 +47,6 @@ typedef int (*real_setsockopt_t)(int, int, int, const void*, socklen_t);
 typedef int (*real_getsockname_t)(int, struct sockaddr*, socklen_t*);
 
 /******************** REAL FUNCTIONS ********************/
-
-int real_socket(int domain, int type, int protocol);
 
 ssize_t real_write(int fd, const void* data, size_t size);
 ssize_t real_read(int fd, void* data, size_t size);

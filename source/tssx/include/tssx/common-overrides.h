@@ -57,7 +57,7 @@ int socket_is_stream_and_domain(int domain, int type);
 
 // Declarations only (defintions in server/client overrides)
 void set_non_blocking(Connection* connection, bool non_blocking);
-bool get_non_blocking(Connection* connection);
+bool is_non_blocking(Connection* connection);
 
 int fcntl_set(int fd, int command, int flags);
 int fcntl_get(int fd, int command);

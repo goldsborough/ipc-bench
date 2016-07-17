@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "tssx/definitions.h"
+
 #define FREE_LIST_INITIALIZER VECTOR_INITIALIZER
 
 struct Vector;
@@ -12,7 +14,7 @@ typedef struct Vector FreeList;
 void free_list_setup(FreeList* list);
 void free_list_destroy(FreeList* list);
 
-void free_list_push(FreeList* list, int key);
+void free_list_push(FreeList* list, key_t key);
 int free_list_pop(FreeList* list);
 
 bool free_list_is_empty(FreeList* list);
