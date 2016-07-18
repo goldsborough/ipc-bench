@@ -12,6 +12,7 @@
 /******************** DEFINITIONS ********************/
 
 #define POLL_SIGNAL SIGUSR1
+#define BLOCK_FOREVER 0
 
 typedef int (*real_poll_t)(struct pollfd[], nfds_t, int);
 typedef void *(*thread_function_t)(void *);

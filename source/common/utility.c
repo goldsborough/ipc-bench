@@ -3,6 +3,7 @@
 #include <sys/ipc.h>
 #include <sys/time.h>
 #include <time.h>
+#include <assert.h>
 
 #define __USE_GNU
 #include <pthread.h>
@@ -53,6 +54,8 @@ int current_milliseconds() {
 
 int timeval_to_milliseconds(const struct timeval* time) {
 	int milliseconds;
+
+	assert(time != NULL);
 
 	milliseconds = time->tv_sec * 1000;
 	milliseconds += time->tv_usec / 1000;

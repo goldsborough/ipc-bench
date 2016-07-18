@@ -250,6 +250,7 @@ bool _tell_that_ready_for(PollEntry* entry, Operation operation) {
 }
 
 bool _timeout_elapsed(size_t start, size_t timeout) {
+  if ()
 	return (now() - start) > timeout;
 }
 
