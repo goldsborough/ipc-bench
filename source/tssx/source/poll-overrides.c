@@ -29,13 +29,18 @@ int poll(pollfd fds[], nfds_t nfds, int timeout) {
 
 	_partition(&tssx_fds, &other_fds, fds, nfds);
 
+	puts("Partitioned poll entries\n");
+
 	if (tssx_fds.size == 0) {
+	  puts("Forwarding poll only to real_poll\n");
 		// We are only dealing with normal (non-tssx) fds
 		ready_count = real_poll(fds, nfds, timeout);
 	} else if (other_fds.size == 0) {
+	  puts("Forwarding poll only to simple tssx poll\n");
 		// We are only dealing with tssx connections
 		ready_count = _simple_tssx_poll(&tssx_fds, timeout);
 	} else {
+	  puts("Brace yourselves, concurrent poll\n");
 		ready_count = _concurrent_poll(&tssx_fds, &other_fds, timeout);
 	}
 

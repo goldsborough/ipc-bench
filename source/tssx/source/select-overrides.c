@@ -30,9 +30,13 @@ int select(int nfds,
 	size_t population_count;
 	DescriptorSets sets = {readfds, writefds, errorfds};
 
+	puts("Inside select\n");
+	
 	if (_at_least_one_socket_uses_tssx(nfds, sets, &population_count)) {
+	  puts("Forwarding select to poll\n");
 		return _forward_to_poll(nfds, &sets, population_count, timeout);
 	} else {
+	  puts("Calling real_select with only non-tssx sockets\n");
 		return real_select(nfds, readfds, writefds, exceptfds, timeout);
 	}
 }
@@ -132,12 +136,15 @@ void _fill_poll_entries(pollfd* poll_entries, const DescriptorSets* sets) {
 			poll_entries[poll_index].fd = fd;
 
 			if (FD_ISSET(fd, sets.readfds)) {
+			  printf("Polling read event for %d\n", fd);
 				poll_entries[poll_index].events |= POLLIN;
 			}
 			if (FD_ISSET(fd, sets.writefds)) {
+			  printf("Polling write event for %d\n", fd);
 				poll_entries[poll_index].events |= POLLOUT;
 			}
 			if (FD_ISSET(fd, sets.errorfds)) {
+			  printf("Polling error event for %d\n", fd);
 				poll_entries[poll_index].events |= POLLERR;
 			}
 
