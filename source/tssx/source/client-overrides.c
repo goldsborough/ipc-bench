@@ -18,6 +18,7 @@ int connect(int fd, const sockaddr* address, socklen_t length) {
 }
 
 ssize_t read(int fd, void* destination, size_t requested_bytes) {
+  puts("Reading\n");
 	// clang-format off
 	return connection_read(
 		fd,
@@ -29,6 +30,7 @@ ssize_t read(int fd, void* destination, size_t requested_bytes) {
 }
 
 ssize_t write(int fd, const void* source, size_t requested_bytes) {
+  puts("Writing\n");
 	// clang-format off
 	return connection_write(
 		fd,

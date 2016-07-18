@@ -1,11 +1,11 @@
 #define _GNU_SOURCE
 
 #include <assert.h>
-#include <dlfcn.h>
 #include <errno.h>
-#include <pthread.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <dlfcn.h>
+#include <pthread.h>
 
 #include "common/common.h"
 #include "tssx/bridge.h"
@@ -15,13 +15,13 @@
 
 /******************** REAL FUNCTIONS ********************/
 
-int real_poll(pollfd fds[], nfds_t nfds, int timeout) {
+int real_poll(struct pollfd fds[], nfds_t nfds, int timeout) {
 	return ((real_poll_t)dlsym(RTLD_NEXT, "poll"))(fds, nfds, timeout);
 }
 
 /******************** OVERRIDES ********************/
 
-int poll(pollfd fds[], nfds_t nfds, int timeout) {
+int poll(struct pollfd fds[], nfds_t nfds, int timeout) {
 	Vector tssx_fds, other_fds;
 	int ready_count;
 
@@ -44,7 +44,11 @@ int poll(pollfd fds[], nfds_t nfds, int timeout) {
 		ready_count = _concurrent_poll(&tssx_fds, &other_fds, timeout);
 	}
 
+	puts("Done polling\n");
+	
 	_cleanup(&tssx_fds, &other_fds);
+
+	printf("Found %d events\n", ready_count);
 
 	return ready_count;
 }
@@ -55,11 +59,11 @@ const short _operation_map[2] = {POLLIN, POLLOUT};
 
 void _partition(Vector* tssx_fds,
 								Vector* other_fds,
-								pollfd fds[],
+								struct pollfd fds[],
 								nfds_t number) {
-	// Minimum capacity of 32 each
-	vector_setup(tssx_fds, 32, sizeof(PollEntry));
-	vector_setup(other_fds, 32, sizeof(pollfd));
+	// Minimum capacity of 15 each
+	vector_setup(tssx_fds, 16, sizeof(PollEntry));
+	vector_setup(other_fds, 16, sizeof(struct pollfd));
 
 	for (nfds_t index = 0; index < number; ++index) {
 		Session* session = bridge_lookup(&bridge, fds[index].fd);
@@ -144,7 +148,7 @@ void _setup_tasks(PollTask* other_task,
 
 void _other_poll(PollTask* task) {
 	int local_ready_count;
-	pollfd* raw = task->fds->data;
+	struct pollfd* raw = task->fds->data;
 	size_t size = task->fds->size;
 
 	local_ready_count = real_poll(raw, size, task->timeout);
@@ -173,6 +177,8 @@ int _simple_tssx_poll(Vector* tssx_fds, int timeout) {
 
 	// Do-while for the case of non-blocking (timeout == -1)
 	// so that we do at least one iteration
+
+	printf("timeout is %d\n", timeout);
 
 	do {
 		// Do a full loop over all FDs
@@ -303,6 +309,9 @@ void _poll_signal_handler(int signal_number) {
 }
 
 void _cleanup(Vector* tssx_fds, Vector* other_fds) {
+  puts("Destroying tssx_fds\n");
 	vector_destroy(tssx_fds);
+puts("Destroying other_fds\n");	
 	vector_destroy(other_fds);
+	puts("Destroyed both\n");
 }

@@ -28,4 +28,4 @@ target_link_libraries(vector-example vector)
 ## COMPILER FLAGS
 ###########################################################
 
-target_compile_options(vector PUBLIC -O3 -Os -std=c99 -g)
+target_compile_options(vector PUBLIC -O3 -Os -g)

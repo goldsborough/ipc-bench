@@ -4,6 +4,8 @@
 
 set(CMAKE_MACOSX_RPATH 1)
 
+add_compile_options(-pthread)
+
 ###########################################################
 ## INCLUDES
 ###########################################################
@@ -22,7 +24,7 @@ set(TSSX_COMMON_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/source/common-overrides.c
   ${CMAKE_CURRENT_SOURCE_DIR}/source/socket-overrides.c
   ${CMAKE_CURRENT_SOURCE_DIR}/source/poll-overrides.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/select-overrides.c
+  #${CMAKE_CURRENT_SOURCE_DIR}/source/select-overrides.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/shared-memory.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/timeouts.c
 	${CMAKE_CURRENT_SOURCE_DIR}/source/string-set.c
@@ -69,7 +71,6 @@ set(TSSX_DEPENDENCIES
   dl
 )
 
-# target_link_libraries(tssx-server-ex ${TSSX_DEPENDENCIES})
 target_link_libraries(tssx-server ${TSSX_DEPENDENCIES})
 target_link_libraries(tssx-client ${TSSX_DEPENDENCIES})
 

@@ -12,13 +12,12 @@
 /******************** DEFINITIONS ********************/
 
 #define POLL_SIGNAL SIGUSR1
-#define BLOCK_FOREVER 0
-#define DONT_BLOCK -1
+#define BLOCK_FOREVER -1
+#define DONT_BLOCK 0
 
 typedef int (*real_poll_t)(struct pollfd[], nfds_t, int);
 typedef void *(*thread_function_t)(void *);
 
-typedef struct pollfd pollfd;
 typedef atomic_int_fast16_t ready_count_t;
 
 struct Connection;
@@ -27,7 +26,7 @@ struct sigaction;
 
 typedef struct PollEntry {
 	struct Connection *connection;
-	pollfd *poll_pointer;
+	struct pollfd *poll_pointer;
 } PollEntry;
 
 typedef struct PollTask {
@@ -38,11 +37,11 @@ typedef struct PollTask {
 
 /******************** REAL FUNCTIONS ********************/
 
-int real_poll(pollfd fds[], nfds_t nfds, int timeout);
+int real_poll(struct pollfd fds[], nfds_t nfds, int timeout);
 
 /******************** OVERRIDES ********************/
 
-int poll(pollfd fds[], nfds_t number, int timeout);
+int poll(struct pollfd fds[], nfds_t number, int timeout);
 
 /******************** HELPERS ********************/
 
@@ -50,10 +49,10 @@ extern const short _operation_map[2];
 
 void _partition(struct Vector *tssx_fds,
 								struct Vector *other_fds,
-								pollfd fds[],
+								struct pollfd fds[],
 								nfds_t number);
 
-PollEntry _create_entry(pollfd *poll_pointer);
+PollEntry _create_entry(struct pollfd *poll_pointer);
 
 int _start_other_poll_thread(pthread_t *poll_thread, PollTask *task);
 

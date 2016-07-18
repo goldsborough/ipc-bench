@@ -102,11 +102,17 @@ int vector_swap(Vector* destination, Vector* source) {
 	return VECTOR_SUCCESS;
 }
 
+#include <stdio.h>
+
 int vector_destroy(Vector* vector) {
 	assert(vector != NULL);
 
+	puts("VEctor was not null!!\n");
+	
 	if (vector == NULL) return VECTOR_ERROR;
 
+	puts("Freeing the vector data!!!\n");
+	
 	free(vector->data);
 	vector->data = NULL;
 
