@@ -1,5 +1,5 @@
-#ifndef SOCKET_OVERRIDES_H
-#define SOCKET_OVERRIDES_H
+#ifndef POLL_OVERRIDES_H
+#define POLL_OVERRIDES_H
 
 #include <poll.h>
 #include <stdatomic.h>
@@ -13,6 +13,7 @@
 
 #define POLL_SIGNAL SIGUSR1
 #define BLOCK_FOREVER 0
+#define DONT_BLOCK -1
 
 typedef int (*real_poll_t)(struct pollfd[], nfds_t, int);
 typedef void *(*thread_function_t)(void *);
@@ -22,6 +23,7 @@ typedef atomic_int_fast16_t ready_count_t;
 
 struct Connection;
 struct Vector;
+struct sigaction;
 
 typedef struct PollEntry {
 	struct Connection *connection;
@@ -75,7 +77,7 @@ bool _waiting_for(PollEntry *entry, Operation operation);
 bool _tell_that_ready_for(PollEntry *entry, Operation operation);
 
 bool _there_was_an_error(ready_count_t *ready_count);
-bool _timeout_elapsed(size_t start, size_t timeout);
+bool _poll_timeout_elapsed(size_t start, int timeout);
 
 int _install_poll_signal_handler(struct sigaction *old_action);
 int _restore_old_signal_action(struct sigaction *old_action);
@@ -87,4 +89,4 @@ void _cleanup(struct Vector *tssx_fds, struct Vector *other_fds);
 
 bool _ready_for(struct Connection *entry, Operation operation);
 
-#endif /* SOCKET_OVERRIDES_H */
+#endif /* POLL_OVERRIDES_H */

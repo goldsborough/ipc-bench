@@ -171,7 +171,10 @@ int _simple_tssx_poll(Vector* tssx_fds, int timeout) {
 	size_t start = current_milliseconds();
 	int ready_count = 0;
 
-	while (!_timeout_elapsed(start, timeout)) {
+	// Do-while for the case of non-blocking (timeout == -1)
+	// so that we do at least one iteration
+
+	do {
 		// Do a full loop over all FDs
 		VECTOR_FOR_EACH(tssx_fds, iterator) {
 			PollEntry* entry = (PollEntry*)iterator_get(&iterator);
@@ -181,7 +184,7 @@ int _simple_tssx_poll(Vector* tssx_fds, int timeout) {
 		}
 
 		if (ready_count > 0) break;
-	}
+	} while (!_poll_timeout_elapsed(start, timeout));
 
 	return ready_count;
 }
@@ -190,7 +193,10 @@ void _concurrent_tssx_poll(PollTask* task, pthread_t other_thread) {
 	size_t start = current_milliseconds();
 	size_t local_ready_count = 0;
 
-	while (!_timeout_elapsed(start, task->timeout)) {
+	// Do-while for the case of non-blocking (timeout == -1)
+	// so that we do at least one iteration
+
+	do {
 		// Do a full loop over all FDs
 		VECTOR_FOR_EACH(task->fds, iterator) {
 			PollEntry* entry = (PollEntry*)iterator_get(&iterator);
@@ -219,7 +225,7 @@ void _concurrent_tssx_poll(PollTask* task, pthread_t other_thread) {
 			pthread_kill(other_thread, POLL_SIGNAL);
 			break;
 		}
-	}
+	} while (!_poll_timeout_elapsed(start, task->timeout));
 
 	// Add whatever we have (zero if the timeout elapsed)
 	atomic_fetch_add(task->ready_count, local_ready_count);
@@ -249,9 +255,11 @@ bool _tell_that_ready_for(PollEntry* entry, Operation operation) {
 	return entry->poll_pointer->revents |= _operation_map[operation];
 }
 
-bool _timeout_elapsed(size_t start, size_t timeout) {
-  if ()
-	return (now() - start) > timeout;
+bool _poll_timeout_elapsed(size_t start, int timeout) {
+	if (timeout == BLOCK_FOREVER) return false;
+	if (timeout == DONT_BLOCK) return true;
+
+	return (current_milliseconds() - start) > timeout;
 }
 
 int _install_poll_signal_handler(struct sigaction* old_action) {

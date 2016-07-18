@@ -1,5 +1,5 @@
-#ifndef SOCKET_OVERRIDES_H
-#define SOCKET_OVERRIDES_H
+#ifndef SELECT_OVERRIDES_H
+#define SELECT_OVERRIDES_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -65,4 +65,4 @@ bool _is_in_any_set(int fd, const DescriptorSets *sets);
 void _clear_all_sets(DescriptorSets *sets);
 bool _fd_is_set(int fd, const fd_set *set);
 
-#endif /* SOCKET_OVERRIDES_H */
+#endif /* SELECT_OVERRIDES_H */

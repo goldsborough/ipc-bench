@@ -5,9 +5,11 @@
 #include <poll.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/signal.h>
 
 #include "common/utility.h"
 #include "tssx/bridge.h"
+#include "tssx/poll-overrides.h"
 #include "tssx/select-overrides.h"
 
 /******************** REAL FUNCTION ********************/
@@ -59,6 +61,10 @@ int _forward_to_poll(size_t highest_fd,
 
 	milliseconds = timeout ? timeval_to_milliseconds(timeout) : BLOCK_FOREVER;
 
+	printf("Blocking for %d milliseconds\n", milliseconds);
+
+	puts("Calling poll now\n");
+
 	// The actual forwarding call
 	number_of_events = poll(poll_entries, population_count, milliseconds);
 
@@ -67,9 +73,13 @@ int _forward_to_poll(size_t highest_fd,
 		return ERROR;
 	}
 
+	puts("Reading poll entries\n");
+
 	if (_read_poll_entries(sets, poll_entries, population_count) == ERROR) {
 		return ERROR;
 	}
+
+	printf("There were %lu\n events\n", number_of_events);
 
 	return number_of_events;
 }
@@ -103,10 +113,14 @@ int _read_poll_entries(DescriptorSets* sets,
 			return ERROR;
 		}
 
+		printf("Reading events for %d\n", fd);
+
 		if (poll_entries[index].revents & POLLIN) {
+			printf("Detected POLLIN event for %d\n", fd);
 			FD_SET(fd, sets->readfds);
 		}
 		if (poll_entries[index].revents & POLLOUT) {
+			printf("Detected POLLOUT event for %d\n", fd);
 			FD_SET(fd, sets->writefds);
 		}
 		if (poll_entries[index].revents & POLLERR) {
