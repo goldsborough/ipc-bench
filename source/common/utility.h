@@ -57,7 +57,7 @@ int generate_key(const char* path);
 void nsleep(int nanoseconds);
 
 int current_milliseconds();
-int timeval_to_milliseconds(struct timeval time);
+int timeval_to_milliseconds(const struct timeval* time);
 
 void pin_thread(int where);
 

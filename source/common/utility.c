@@ -48,14 +48,14 @@ int current_milliseconds() {
 		throw("Error getting time");
 	}
 
-	return timeval_to_milliseconds(current_time);
+	return timeval_to_milliseconds(&current_time);
 }
 
-int timeval_to_milliseconds(struct timeval time) {
+int timeval_to_milliseconds(const struct timeval* time) {
 	int milliseconds;
 
-	milliseconds = time.tv_sec * 1000;
-	milliseconds += time.tv_usec / 1000;
+	milliseconds = time->tv_sec * 1000;
+	milliseconds += time->tv_usec / 1000;
 
 	return milliseconds;
 }
