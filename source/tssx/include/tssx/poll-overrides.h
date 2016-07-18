@@ -5,19 +5,19 @@
 #include <stdatomic.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <sys/types.h>
 
 #include "tssx/definitions.h"
 
 /******************** DEFINITIONS ********************/
 
-typedef int (*real_poll_t)(struct pollfd[], nfds_t, int);
+#define POLL_SIGNAL SIGUSR1
 
-typedef int (*real_select_t)(
-		int, fd_set *, fd_set *, fd_set *, struct timeval *);
+typedef int (*real_poll_t)(struct pollfd[], nfds_t, int);
+typedef void *(*thread_function_t)(void *);
 
 typedef struct pollfd pollfd;
-
-typedef atomic_uint_fast32_t ready_count_t;
+typedef atomic_int_fast16_t ready_count_t;
 
 struct Connection;
 struct Vector;
@@ -26,6 +26,12 @@ typedef struct PollEntry {
 	struct Connection *connection;
 	pollfd *poll_pointer;
 } PollEntry;
+
+typedef struct PollTask {
+	struct Vector *fds;
+	int timeout;
+	ready_count_t *ready_count;
+} PollTask;
 
 /******************** REAL FUNCTIONS ********************/
 
@@ -37,7 +43,7 @@ int poll(pollfd fds[], nfds_t number, int timeout);
 
 /******************** HELPERS ********************/
 
-extern const short operation_map[2];
+extern const short _operation_map[2];
 
 void _partition(struct Vector *tssx_fds,
 								struct Vector *other_fds,
@@ -46,14 +52,35 @@ void _partition(struct Vector *tssx_fds,
 
 PollEntry _create_entry(pollfd *poll_pointer);
 
-int _other_poll(struct Vector *other_fds, int timeout);
-int _tssx_poll(struct Vector *tssx_fds, int timeout);
+int _start_other_poll_thread(pthread_t *poll_thread, PollTask *task);
+
+int _simple_tssx_poll(struct Vector *tssx_fds, int timeout);
+
+int _concurrent_poll(struct Vector *tssx_fds,
+										 struct Vector *other_fds,
+										 int timeout);
+void _other_poll(PollTask *task);
+void _concurrent_tssx_poll(PollTask *task, pthread_t other_thread);
+
+void _setup_tasks(PollTask *other_task,
+									PollTask *tssx_task,
+									struct Vector *other_fds,
+									struct Vector *tssx_fds,
+									int timeout,
+									ready_count_t *ready_count);
 
 bool _check_ready(PollEntry *entry, Operation operation);
 bool _waiting_for(PollEntry *entry, Operation operation);
 bool _tell_that_ready_for(PollEntry *entry, Operation operation);
 
+bool _there_was_an_error(ready_count_t *ready_count);
 bool _timeout_elapsed(size_t start, size_t timeout);
+
+int _install_poll_signal_handler(struct sigaction *old_action);
+int _restore_old_signal_action(struct sigaction *old_action);
+void _poll_signal_handler(int signal_number);
+
+void _cleanup(struct Vector *tssx_fds, struct Vector *other_fds);
 
 /******************** "POLYMORPHIC" FUNCTIONS ********************/
 

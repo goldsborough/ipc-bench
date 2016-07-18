@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 
+#include "tssx/definitions.h"
 #include "tssx/session-table.h"
 
 /******************** DEFINITIONS ********************/
@@ -38,8 +39,6 @@ struct Session* bridge_lookup(Bridge* bridge, int fd);
 bool bridge_has_connection(Bridge* bridge, int fd);
 
 /******************** PRIVATE ********************/
-
-typedef void (*signal_handler_t)(int);
 
 extern signal_handler_t old_sigint_handler;
 extern signal_handler_t old_sigterm_handler;

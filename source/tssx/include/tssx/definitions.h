@@ -9,6 +9,8 @@
 #define ERROR -1
 #define SUCCESS 0
 
+typedef void (*signal_handler_t)(int);
+
 typedef int key_t;
 typedef uint_fast64_t cycle_t;
 
