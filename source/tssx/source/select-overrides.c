@@ -210,9 +210,12 @@ bool _at_least_one_socket_uses_tssx(size_t highest_fd,
 }
 
 void _clear_all_sets(DescriptorSets* sets) {
-	FD_ZERO(sets->readfds);
-	FD_ZERO(sets->writefds);
-	FD_ZERO(sets->errorfds);
+	if(sets->readfds)
+		FD_ZERO(sets->readfds);
+	if(sets->writefds)
+		FD_ZERO(sets->writefds);
+	if(sets->errorfds)
+		FD_ZERO(sets->errorfds);
 }
 
 bool _is_in_any_set(int fd, const DescriptorSets* sets) {
