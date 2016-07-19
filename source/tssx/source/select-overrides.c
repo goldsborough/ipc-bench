@@ -35,13 +35,9 @@ int select(int nfds,
 	size_t population_count;
 	DescriptorSets sets = {readfds, writefds, errorfds};
 
-	puts("Inside select\n");
-
 	if (_at_least_one_socket_uses_tssx(nfds, &sets, &population_count)) {
-		puts("Forwarding select to poll\n");
 		return _forward_to_poll(nfds, &sets, population_count, timeout);
 	} else {
-		puts("Calling real_select with only non-tssx sockets\n");
 		return real_select(nfds, readfds, writefds, errorfds, timeout);
 	}
 }
@@ -61,10 +57,6 @@ int _forward_to_poll(size_t highest_fd,
 
 	milliseconds = timeout ? timeval_to_milliseconds(timeout) : BLOCK_FOREVER;
 
-	printf("Blocking for %d milliseconds\n", milliseconds);
-
-	puts("Calling poll now\n");
-
 	// The actual forwarding call
 	number_of_events = poll(poll_entries, population_count, milliseconds);
 
@@ -73,13 +65,9 @@ int _forward_to_poll(size_t highest_fd,
 		return ERROR;
 	}
 
-	puts("Reading poll entries\n");
-
 	if (_read_poll_entries(sets, poll_entries, population_count) == ERROR) {
 		return ERROR;
 	}
-
-	printf("There were %lu\n events\n", number_of_events);
 
 	return number_of_events;
 }
@@ -113,14 +101,10 @@ int _read_poll_entries(DescriptorSets* sets,
 			return ERROR;
 		}
 
-		printf("Reading events for %d\n", fd);
-
 		if (poll_entries[index].revents & POLLIN) {
-			printf("Detected POLLIN event for %d\n", fd);
 			FD_SET(fd, sets->readfds);
 		}
 		if (poll_entries[index].revents & POLLOUT) {
-			printf("Detected POLLOUT event for %d\n", fd);
 			FD_SET(fd, sets->writefds);
 		}
 		if (poll_entries[index].revents & POLLERR) {
@@ -140,10 +124,6 @@ struct pollfd* _allocate_poll_entries(size_t population_count) {
 	poll_entries_length = sizeof *poll_entries * population_count;
 	poll_entries = malloc(poll_entries_length);
 
-	printf("Allocated %lu bytes for %lu poll entries\n",
-				 poll_entries_length,
-				 population_count);
-
 	if (poll_entries == NULL) {
 		perror("Error allocating memory for poll entries");
 		return NULL;
@@ -159,29 +139,17 @@ void _fill_poll_entries(struct pollfd* poll_entries,
 												size_t highest_fd) {
 	size_t poll_index = 0;
 
-	printf("The highest fd is %lu\n", highest_fd);
-
 	for (size_t fd = 0; fd < highest_fd; ++fd) {
-		printf("Checking fd %lu\n", fd);
 		if (_is_in_any_set(fd, sets)) {
 			poll_entries[poll_index].fd = fd;
 
-			printf("About to check read events for %lu\n", fd);
 			if (_fd_is_set(fd, sets->readfds)) {
-				printf("Polling read event for %lu\n", fd);
-				printf("Previous flags %d\n", poll_entries[poll_index].events);
-				printf("Poll index is %lu\n", poll_index);
 				poll_entries[poll_index].events |= POLLIN;
-				printf("New flags %d\n", poll_entries[poll_index].events);
 			}
-			printf("About to check write events for %lu\n", fd);
 			if (_fd_is_set(fd, sets->writefds)) {
-				printf("Polling write event for %lu\n", fd);
 				poll_entries[poll_index].events |= POLLOUT;
 			}
-			printf("About to check error events for %lu\n", fd);
 			if (_fd_is_set(fd, sets->errorfds)) {
-				printf("Polling error event for %lu\n", fd);
 				poll_entries[poll_index].events |= POLLERR;
 			}
 
@@ -189,7 +157,6 @@ void _fill_poll_entries(struct pollfd* poll_entries,
 		}
 	}
 
-	puts("Done filling poll entries\n");
 }
 
 bool _at_least_one_socket_uses_tssx(size_t highest_fd,

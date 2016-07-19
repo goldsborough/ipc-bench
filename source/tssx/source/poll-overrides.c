@@ -29,26 +29,17 @@ int poll(struct pollfd fds[], nfds_t nfds, int timeout) {
 
 	_partition(&tssx_fds, &other_fds, fds, nfds);
 
-	puts("Partitioned poll entries\n");
-
 	if (tssx_fds.size == 0) {
-		puts("Forwarding poll only to real_poll\n");
 		// We are only dealing with normal (non-tssx) fds
 		ready_count = real_poll(fds, nfds, timeout);
 	} else if (other_fds.size == 0) {
-		puts("Forwarding poll only to simple tssx poll\n");
 		// We are only dealing with tssx connections
 		ready_count = _simple_tssx_poll(&tssx_fds, timeout);
 	} else {
-		puts("Brace yourselves, concurrent poll\n");
 		ready_count = _concurrent_poll(&tssx_fds, &other_fds, timeout);
 	}
 
-	puts("Done polling\n");
-	
 	_cleanup(&tssx_fds, &other_fds);
-
-	printf("Found %d events\n", ready_count);
 
 	return ready_count;
 }
@@ -177,8 +168,6 @@ int _simple_tssx_poll(Vector* tssx_fds, int timeout) {
 
 	// Do-while for the case of non-blocking (timeout == -1)
 	// so that we do at least one iteration
-
-	printf("timeout is %d\n", timeout);
 
 	do {
 		// Do a full loop over all FDs
@@ -309,9 +298,6 @@ void _poll_signal_handler(int signal_number) {
 }
 
 void _cleanup(Vector* tssx_fds, Vector* other_fds) {
-  puts("Destroying tssx_fds\n");
 	vector_destroy(tssx_fds);
-puts("Destroying other_fds\n");	
 	vector_destroy(other_fds);
-	puts("Destroyed both\n");
 }

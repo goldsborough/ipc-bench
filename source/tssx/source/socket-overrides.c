@@ -116,7 +116,6 @@ int getsockopt(int key,
 							 int option_name,
 							 void* restrict option_value,
 							 socklen_t* restrict option_len) {
-  puts("getsockopt\n");
 	// clang-format off
 	return real_getsockopt(
 			key,
@@ -129,7 +128,6 @@ int getsockopt(int key,
 }
 
 int getsockname(int key, struct sockaddr* addr, socklen_t* addrlen) {
-  puts("getsockname\n");
 	return real_getsockname(key, addr, addrlen);
 }
 
