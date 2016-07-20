@@ -50,19 +50,33 @@ struct pollfd *_setup_poll_entries(size_t population_count,
 																	 size_t highest_fd);
 void _fill_poll_entries(struct pollfd *poll_entries,
 												const DescriptorSets *sets,
-												size_t hightest_fd);
+												size_t highest_fd);
 
 int _read_poll_entries(DescriptorSets *sets,
 											 struct pollfd *poll_entries,
 											 size_t population_count);
 
-bool _at_least_one_socket_uses_tssx(size_t highest_fd,
-																		const DescriptorSets *sets,
-																		size_t *population_count);
+int _select_on_tssx_only(DescriptorSets *sets,
+								 size_t tssx_count,
+								 size_t lowest_fd,
+								 size_t highest_fd,
+								 struct timeval* timeout);
+
+int _select_on_tssx_only_fast_path(DescriptorSets *sets,
+											  size_t fd,
+											  struct timeval* timeout);
+
+void _count_tssx_sockets(size_t highest_fd,
+								 const DescriptorSets *sets,
+								 size_t* lowest_fd,
+								 size_t* normal_count,
+								 size_t* tssx_count);
 
 bool _is_in_any_set(int fd, const DescriptorSets *sets);
 
 void _clear_all_sets(DescriptorSets *sets);
 bool _fd_is_set(int fd, const fd_set *set);
+
+bool _select_timeout_elapsed(size_t start, int timeout);
 
 #endif /* SELECT_OVERRIDES_H */

@@ -64,8 +64,6 @@ void bridge_free(Bridge* bridge, int fd) {
 	Session* session;
 	assert(bridge_is_initialized(bridge));
 
-	printf("Freeing %d in bridge\n", fd);
-
 	session = session_table_get(&bridge->session_table, fd);
 	session_invalidate(session);
 }
