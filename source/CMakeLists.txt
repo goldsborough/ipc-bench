@@ -4,7 +4,7 @@
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_compile_options(-g -O3 -Os -Wall -Werror -DDEBUG)
+add_compile_options(-g -O3 -Wall -Werror -DNDEBUG)
 # add_compile_options(-DNDEBUG)
 
 # Apple's C standard library already contains the math functions
