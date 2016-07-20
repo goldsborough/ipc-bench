@@ -1,12 +1,12 @@
 #include <assert.h>
 #include <stdio.h>
-#include <common/common.h>
 
 #include "vector.h"
 
 void test_assert(bool b) {
 	if(!b) {
-		throw("assertion failed");
+		perror("assertion failed in test\n");
+		exit(-1);
 	}
 }
 
