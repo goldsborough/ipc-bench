@@ -95,8 +95,8 @@ size_t buffer_read(Buffer *buffer, void *data, size_t bytes_to_read) {
 	buffer->read += bytes_to_read;
 	atomic_fetch_sub(&buffer->size, bytes_to_read);
 
-	// How many bytes we wrote
-	return bytes_to_read + right_space;
+	// How many bytes we read (Needs to be -1 if nothing was read)
+	return (bytes_to_read + right_space) == 0 ? (size_t)-1 : (bytes_to_read + right_space);
 }
 
 size_t buffer_peek(Buffer *buffer, void *data, size_t data_size) {

@@ -167,7 +167,7 @@ int _select_on_tssx_only(DescriptorSets *sets, size_t tssx_count, size_t lowest_
 {
 	if(tssx_count == 1) {
 		assert(lowest_fd + 1 == highest_fd);
-		_select_on_tssx_only_fast_path(sets, lowest_fd, timeout);
+		return _select_on_tssx_only_fast_path(sets, lowest_fd, timeout);
 	}
 
    size_t start = current_milliseconds();
@@ -189,15 +189,16 @@ int _select_on_tssx_only(DescriptorSets *sets, size_t tssx_count, size_t lowest_
          bool ready_for_reading = false;
          bool ready_for_writing = false;
 
-         if(_fd_is_set(fd, orginal.readfds))
-            ready_for_reading = _ready_for(session->connection, READ);
-         if(_fd_is_set(fd, orginal.writefds))
-            ready_for_writing = _ready_for(session->connection, WRITE);
-
-         if(ready_for_reading)
-            FD_SET(fd, sets->readfds);
-         if(ready_for_writing)
-            FD_SET(fd, sets->writefds);
+         if(_fd_is_set(fd, orginal.readfds)) {
+				ready_for_reading = _ready_for(session->connection, READ);
+				if(ready_for_reading)
+					FD_SET(fd, sets->readfds);
+			}
+         if(_fd_is_set(fd, orginal.writefds)) {
+				ready_for_writing = _ready_for(session->connection, WRITE);
+				if(ready_for_writing)
+					FD_SET(fd, sets->writefds);
+			}
 
          if (ready_for_reading || ready_for_writing)
             ready_count++;
