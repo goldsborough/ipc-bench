@@ -1,5 +1,6 @@
 #include <fcntl.h>
 #include <signal.h>
+#include <stdatomic.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,31 +32,33 @@ int get_file_descriptor(int bytes) {
 	return file_descriptor;
 }
 
+void mmap_wait(atomic_char *guard) {
+	while (atomic_load(guard) != 's')
+		;
+}
+
+void mmap_notify(atomic_char *guard) {
+	atomic_store(guard, 'c');
+}
+
 void communicate(char *file_memory, struct Arguments *args) {
-	struct sigaction signal_action;
 	struct Benchmarks bench;
 	int message;
 	void *buffer = malloc(args->size);
+	atomic_char *guard = (atomic_char *)file_memory;
 
-	setup_server_signals(&signal_action);
+	mmap_wait(guard);
 	setup_benchmarks(&bench);
-
-	// Dummy data
-	memset(file_memory, '*', args->size);
-
-	wait_for_signal(&signal_action);
 
 	for (message = 0; message < args->count; ++message) {
 		bench.single_start = now();
 
-		// Dummy operation
 		memset(file_memory, '*', args->size);
 
-		notify_client();
-		wait_for_signal(&signal_action);
+		mmap_notify(guard);
+		mmap_wait(guard);
 
-		// Read
-		memmove(buffer, file_memory, args->size);
+		memcpy(buffer, file_memory, args->size);
 
 		benchmark(&bench);
 	}
@@ -97,7 +100,7 @@ int main(int argc, char *argv[]) {
 	// clang-format off
   file_memory = mmap(
 		NULL,
-		args.size,
+		1 + args.size,
 		PROT_READ | PROT_WRITE,
 		MAP_SHARED,
 		file_descriptor,

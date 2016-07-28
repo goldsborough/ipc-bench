@@ -1,5 +1,6 @@
 #include <fcntl.h>
 #include <signal.h>
+#include <stdatomic.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,26 +21,29 @@ int get_file_descriptor() {
 	return file_descriptor;
 }
 
+void mmap_wait(atomic_char* guard) {
+	while (atomic_load(guard) != 'c')
+		;
+}
+
+void mmap_notify(atomic_char* guard) {
+	atomic_store(guard, 's');
+}
+
 void communicate(char* file_memory, struct Arguments* args) {
-	struct sigaction signal_action;
 	// Buffer into which to read data
 	void* buffer = malloc(args->size);
+	atomic_char* guard = (atomic_char*)file_memory;
 
-	setup_client_signals(&signal_action);
-
-	// First signal to set things going
-	notify_server();
+	mmap_notify(guard);
 
 	for (; args->count > 0; --args->count) {
-		wait_for_signal(&signal_action);
+		mmap_wait(guard);
 
-		// Read data
-		memmove(buffer, file_memory, args->size);
-
-		// Write back
+		memcpy(buffer, file_memory, args->size);
 		memset(file_memory, '*', args->size);
 
-		notify_server();
+		mmap_notify(guard);
 	}
 
 	free(buffer);
