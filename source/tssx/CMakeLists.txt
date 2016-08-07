@@ -67,16 +67,8 @@ add_library(tssx-client SHARED ${TSSX_CLIENT_SOURCES})
 
 set(TSSX_DEPENDENCIES
   ipc-bench-common
-  vector
   dl
 )
 
 target_link_libraries(tssx-server ${TSSX_DEPENDENCIES})
 target_link_libraries(tssx-client ${TSSX_DEPENDENCIES})
-
-###########################################################
-## CONFIGURATION FOR TRY
-###########################################################
-
-add_executable(try source/try.c)
-target_link_libraries(try tssx-server ipc-bench-common)

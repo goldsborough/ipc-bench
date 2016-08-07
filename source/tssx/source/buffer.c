@@ -96,7 +96,8 @@ size_t buffer_read(Buffer *buffer, void *data, size_t bytes_to_read) {
 	atomic_fetch_sub(&buffer->size, bytes_to_read);
 
 	// How many bytes we read (Needs to be -1 if nothing was read)
-	return (bytes_to_read + right_space) == 0 ? (size_t)-1 : (bytes_to_read + right_space);
+	return (bytes_to_read + right_space) == 0 ? (size_t)-1
+																						: (bytes_to_read + right_space);
 }
 
 size_t buffer_peek(Buffer *buffer, void *data, size_t data_size) {
@@ -132,15 +133,15 @@ void buffer_clear(Buffer *buffer) {
 	atomic_store(&buffer->size, 0);
 }
 
-bool buffer_is_full(Buffer *buffer) {
+bool buffer_is_full(const Buffer *buffer) {
 	return atomic_load(&buffer->size) == buffer->capacity;
 }
 
-bool buffer_is_empty(Buffer *buffer) {
+bool buffer_is_empty(const Buffer *buffer) {
 	return atomic_load(&buffer->size) == 0;
 }
 
-bool buffer_ready_for(Buffer *buffer, Operation operation) {
+bool buffer_ready_for(const Buffer *buffer, Operation operation) {
 	if (operation == READ) {
 		return !buffer_is_empty(buffer);
 	} else {

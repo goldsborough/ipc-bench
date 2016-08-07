@@ -57,26 +57,36 @@ int _read_poll_entries(DescriptorSets *sets,
 											 size_t population_count);
 
 int _select_on_tssx_only(DescriptorSets *sets,
-								 size_t tssx_count,
-								 size_t lowest_fd,
-								 size_t highest_fd,
-								 struct timeval* timeout);
+												 size_t tssx_count,
+												 size_t lowest_fd,
+												 size_t highest_fd,
+												 struct timeval *timeout);
 
 int _select_on_tssx_only_fast_path(DescriptorSets *sets,
-											  size_t fd,
-											  struct timeval* timeout);
+																	 size_t fd,
+																	 struct timeval *timeout);
 
 void _count_tssx_sockets(size_t highest_fd,
-								 const DescriptorSets *sets,
-								 size_t* lowest_fd,
-								 size_t* normal_count,
-								 size_t* tssx_count);
+												 const DescriptorSets *sets,
+												 size_t *lowest_fd,
+												 size_t *normal_count,
+												 size_t *tssx_count);
 
 bool _is_in_any_set(int fd, const DescriptorSets *sets);
+
+void _select_operation(const Session *session,
+											 Operation operation,
+											 fd_set *set,
+											 int fd);
+
+void _copy_all_sets(DescriptorSets *destination, const DescriptorSets *source);
+void _copy_set(fd_set *destination, const fd_set *source);
 
 void _clear_all_sets(DescriptorSets *sets);
 bool _fd_is_set(int fd, const fd_set *set);
 
 bool _select_timeout_elapsed(size_t start, int timeout);
+
+void _clear_set(fd_set *set);
 
 #endif /* SELECT_OVERRIDES_H */

@@ -25,7 +25,7 @@ find_package(PkgConfig REQUIRED)
 
 ## ZMQ
 
-pkg_check_modules(ZMQ libzmq libzeromq)
+pkg_check_modules(ZMQ libzmq)
 
 ###########################################################
 ## SUBDIRECTORIES

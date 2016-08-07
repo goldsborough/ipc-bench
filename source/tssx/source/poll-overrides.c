@@ -1,11 +1,11 @@
 #define _GNU_SOURCE
 
 #include <assert.h>
+#include <dlfcn.h>
 #include <errno.h>
+#include <pthread.h>
 #include <signal.h>
 #include <stdlib.h>
-#include <dlfcn.h>
-#include <pthread.h>
 
 #include "common/common.h"
 #include "tssx/bridge.h"
@@ -52,7 +52,7 @@ void _partition(Vector* tssx_fds,
 								Vector* other_fds,
 								struct pollfd fds[],
 								nfds_t number) {
-	// Minimum capacity of 15 each
+	// Minimum capacity of 16 each
 	vector_setup(tssx_fds, 16, sizeof(PollEntry));
 	vector_setup(other_fds, 16, sizeof(struct pollfd));
 
@@ -178,8 +178,7 @@ int _simple_tssx_poll(Vector* tssx_fds, int timeout) {
 			}
 		}
 
-		if (ready_count > 0) break;
-	} while (!_poll_timeout_elapsed(start, timeout));
+	} while (ready_count == 0 && !_poll_timeout_elapsed(start, timeout));
 
 	return ready_count;
 }

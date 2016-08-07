@@ -74,7 +74,7 @@ Session* bridge_lookup(Bridge* bridge, int fd) {
 }
 
 bool bridge_has_connection(Bridge* bridge, int fd) {
-	Session* session;
+	const Session* session;
 
 	assert(bridge_is_initialized(bridge));
 	session = session_table_get(&bridge->session_table, fd);
@@ -162,7 +162,7 @@ void _bridge_signal_handler_for(int signal_number,
 	if (old_handler != NULL) {
 		old_handler(signal_number);
 	} else {
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 
 	if (signal_number == SIGABRT) {

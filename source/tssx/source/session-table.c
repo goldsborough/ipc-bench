@@ -31,5 +31,5 @@ void session_table_assign(SessionTable* table, size_t index, Session* session) {
 Session* session_table_get(SessionTable* table, size_t index) {
 	assert(table != NULL);
 	assert(index < SESSION_TABLE_SIZE);
-	return &(*table)[index];
+	return &((*table)[index]);
 }

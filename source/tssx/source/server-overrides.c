@@ -107,7 +107,7 @@ bool is_non_blocking(Connection *connection) {
 	return connection->server_buffer->timeouts.non_blocking[WRITE];
 }
 
-bool _ready_for(Connection *connection, Operation operation) {
+bool _ready_for(const Connection *connection, Operation operation) {
 	if (operation == READ) {
 		return buffer_ready_for(connection->client_buffer, READ);
 	} else {
