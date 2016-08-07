@@ -14,6 +14,7 @@
 
 #include "common/utility.h"
 #include "tssx/buffer.h"
+#include "tssx/definitions.h"
 #include "tssx/timeouts.h"
 
 Buffer *create_buffer(void *shared_memory,
@@ -31,8 +32,8 @@ Buffer *create_buffer(void *shared_memory,
 size_t buffer_write(Buffer *buffer, const void *data, size_t bytes_to_write) {
 	size_t right_space = 0;
 
-	if (buffer == NULL) return BUFFER_ERROR;
-	if (data == NULL) return BUFFER_ERROR;
+	if (buffer == NULL) return ERROR;
+	if (data == NULL) return ERROR;
 	if (bytes_to_write == 0) return 0;
 
 	// Block or return, depending on blocking configuration for the socket
@@ -67,8 +68,8 @@ size_t buffer_write(Buffer *buffer, const void *data, size_t bytes_to_write) {
 size_t buffer_read(Buffer *buffer, void *data, size_t bytes_to_read) {
 	size_t right_space = 0;
 
-	if (buffer == NULL) return BUFFER_ERROR;
-	if (data == NULL) return BUFFER_ERROR;
+	if (buffer == NULL) return ERROR;
+	if (data == NULL) return ERROR;
 	if (bytes_to_read == 0) return 0;
 
 	// Block or return, depending on blocking configuration for the socket
@@ -120,7 +121,7 @@ size_t buffer_peek(Buffer *buffer, void *data, size_t data_size) {
 size_t buffer_skip(Buffer *buffer, size_t number_of_bytes) {
 	assert(buffer != NULL);
 
-	if (number_of_bytes > atomic_load(&buffer->size)) return BUFFER_ERROR;
+	if (number_of_bytes > atomic_load(&buffer->size)) return ERROR;
 
 	buffer->read = (buffer->read + number_of_bytes) % buffer->capacity;
 
@@ -133,15 +134,15 @@ void buffer_clear(Buffer *buffer) {
 	atomic_store(&buffer->size, 0);
 }
 
-bool buffer_is_full(const Buffer *buffer) {
+bool buffer_is_full(Buffer *buffer) {
 	return atomic_load(&buffer->size) == buffer->capacity;
 }
 
-bool buffer_is_empty(const Buffer *buffer) {
+bool buffer_is_empty(Buffer *buffer) {
 	return atomic_load(&buffer->size) == 0;
 }
 
-bool buffer_ready_for(const Buffer *buffer, Operation operation) {
+bool buffer_ready_for(Buffer *buffer, Operation operation) {
 	if (operation == READ) {
 		return !buffer_is_empty(buffer);
 	} else {

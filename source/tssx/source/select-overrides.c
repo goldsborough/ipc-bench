@@ -178,7 +178,7 @@ int _select_on_tssx_only(DescriptorSets* sets,
 
 	fd_set readfds, writefds, errorfds;
 	DescriptorSets original = {&readfds, &writefds, &errorfds};
-	_copy_all_sets(original, sets);
+	_copy_all_sets(&original, sets);
 	_clear_all_sets(sets);
 
 	// Do-while for the case of non-blocking
@@ -224,8 +224,8 @@ int _select_on_tssx_only_fast_path(DescriptorSets* sets,
 	bool ready = false;
 	if (select_read && select_write) {
 		do {
-			if (_select_operation(session, WRITE, sets->writefds)) ready = true;
-			if (_select_operation(session, READ, sets->readfds)) ready = true;
+			if (_select_operation(session, WRITE, sets->writefds, fd)) ready = true;
+			if (_select_operation(session, READ, sets->readfds, fd)) ready = true;
 		} while (!ready && !_select_timeout_elapsed(start, milliseconds));
 	} else if (select_read) {
 		do {
@@ -240,13 +240,15 @@ int _select_on_tssx_only_fast_path(DescriptorSets* sets,
 	return ready;
 }
 
-void _select_operation(const Session* session,
+bool _select_operation(const Session* session,
 											 Operation operation,
 											 fd_set* set,
 											 int fd) {
 	if (_ready_for(session->connection, operation)) {
 		FD_SET(fd, set);
+		return true;
 	}
+	return false;
 }
 
 void _count_tssx_sockets(size_t highest_fd,
@@ -273,7 +275,7 @@ void _count_tssx_sockets(size_t highest_fd,
 }
 
 void _copy_all_sets(DescriptorSets* destination, const DescriptorSets* source) {
-	_copy_set(destination->readfs, source->readfds);
+	_copy_set(destination->readfds, source->readfds);
 	_copy_set(destination->writefds, source->writefds);
 	_copy_set(destination->errorfds, source->errorfds);
 }
@@ -287,8 +289,8 @@ void _copy_set(fd_set* destination, const fd_set* source) {
 }
 
 void _clear_all_sets(DescriptorSets* sets) {
-	_clear_set(sets->readfs);
-	_clear_set(sets->write);
+	_clear_set(sets->readfds);
+	_clear_set(sets->writefds);
 	_clear_set(sets->errorfds);
 }
 

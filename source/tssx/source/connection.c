@@ -66,9 +66,6 @@ void disconnect(Connection* connection) {
 
 	atomic_fetch_sub(connection->open_count, 1);
 
-	// Do not refactor the detach step above this!
-	// If we detach the segment first, we won't be able
-	// to access the open count any more ;)
 	if (atomic_load(connection->open_count) == 0) {
 		_destroy_connection(connection);
 	} else {

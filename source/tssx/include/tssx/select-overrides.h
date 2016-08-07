@@ -74,7 +74,7 @@ void _count_tssx_sockets(size_t highest_fd,
 
 bool _is_in_any_set(int fd, const DescriptorSets *sets);
 
-void _select_operation(const Session *session,
+bool _select_operation(const Session *session,
 											 Operation operation,
 											 fd_set *set,
 											 int fd);

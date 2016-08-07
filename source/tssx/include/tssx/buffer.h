@@ -8,11 +8,6 @@
 
 #include "tssx/timeouts.h"
 
-/******************** DEFINITIONS ********************/
-
-#define BUFFER_ERROR -1
-#define BUFFER_SUCCESS 0
-
 /******************** STRUCTURES ********************/
 
 typedef struct Buffer {

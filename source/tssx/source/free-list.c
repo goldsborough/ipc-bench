@@ -1,7 +1,7 @@
 #include "tssx/free-list.h"
 #include "common/utility.h"
 #include "tssx/bridge.h"
-#include "vector/vector.h"
+#include "tssx/vector.h"
 
 void free_list_setup(FreeList* list) {
 	if (vector_setup(list, 0, sizeof(key_t)) == VECTOR_ERROR) {

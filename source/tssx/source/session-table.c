@@ -3,7 +3,7 @@
 #include "common/utility.h"
 #include "tssx/session-table.h"
 #include "tssx/session.h"
-#include "vector/vector.h"
+#include "tssx/vector.h"
 
 void session_table_setup(SessionTable* table) {
 	assert(table != NULL);

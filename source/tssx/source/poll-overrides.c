@@ -11,7 +11,7 @@
 #include "tssx/bridge.h"
 #include "tssx/poll-overrides.h"
 #include "tssx/session.h"
-#include "vector/vector.h"
+#include "tssx/vector.h"
 
 /******************** REAL FUNCTIONS ********************/
 
