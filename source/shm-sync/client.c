@@ -6,65 +6,51 @@
 #include "common/common.h"
 #include "shm-sync-common.h"
 
-void cleanup(void* shared_memory) {
-	// Detach the shared memory from this process' address space.
-	// If this is the last process using this shared memory, it is removed.
-	shmdt(shared_memory);
-}
+void communicate(struct Sync* sync,
+                 struct Arguments* args
+                 ) {
+    // Buffer into which to read data
+    void* buffer = malloc(args->size);
 
-void communicate(void* shared_memory,
-								 struct Arguments* args,
-								 struct Sync* sync) {
-	// Buffer into which to read data
-	void* buffer = malloc(args->size);
+    sync_notify(sync->mutex);
 
-	sync_notify(sync);
+    //printf("4\n");
 
-	printf("4\n");
+    for (; args->count > 0; --args->count) {
+        sync_wait(sync->mutex);
 
-	for (; args->count > 0; --args->count) {
-		sync_wait(sync);
+        //printf("5\n");
 
-		printf("5\n");
+        // Read from memory
+        memcpy(buffer, sync->shared_memory, args->size);
+        // Write back
+        memset(sync->shared_memory, '2', args->size);
 
-		// Read from memory
-		memcpy(buffer, shared_memory, args->size);
-		// Write back
-		memset(shared_memory, '2', args->size);
+        //printf("6\n");
 
-		printf("6\n");
+        sync_notify(sync->mutex);
 
-		sync_notify(sync);
+        //printf("7\n");
+    }
 
-		printf("7\n");
-	}
-
-	free(buffer);
+    free(buffer);
 }
 
 int main(int argc, char* argv[]) {
-	// The identifier for the shared memory segment
-	int segment_id;
+    // The synchronization object
+    struct Sync sync;
 
-	// The *actual* shared memory, that this and other
-	// processes can read and write to as if it were
-	// any other plain old memory
-	void* shared_memory;
+    // Fetch command-line arguments
+    struct Arguments args;
+    parse_arguments(&args, argc, argv);
+    // need some locking between client and server, server must create shm segment and init mutex before client startup!!!
+    // any type of IPC - signals for example SIGUSR1
+    sleep(1);
+    create_sync(&sync, &args);
 
-	// The synchronization object
-	struct Sync* sync;
+    communicate(&sync, &args);
 
-	// Fetch command-line arguments
-	struct Arguments args;
-	parse_arguments(&args, argc, argv);
+    cleanup(&sync);
 
-	segment_id = create_segment(&args);
-	shared_memory = attach_segment(segment_id, &args);
-	sync = create_sync(shared_memory, &args);
-
-	communicate(shared_memory, &args, sync);
-
-	cleanup(shared_memory);
-
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
