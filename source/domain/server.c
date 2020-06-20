@@ -23,7 +23,7 @@ void communicate(int connection, struct Arguments* args, int busy_waiting) {
 	int message;
 	void* buffer;
 
-	buffer = malloc(args->count);
+	buffer = malloc(args->size);
 	setup_benchmarks(&bench);
 
 	for (message = 0; message < args->count; ++message) {
