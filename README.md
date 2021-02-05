@@ -22,6 +22,11 @@ Our benchmarks measure the latency of sending a single message between two proce
 
 ## Usage
 
+Some required packages on Ubuntu:
+```shell
+sudo apt-get install pkg-config
+```
+
 You can build the project and all necessary executables using CMake. The following commands (executed from the root folder) should do the trick:
 
 ```shell
