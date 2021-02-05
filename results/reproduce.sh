@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -i
 
 ./build/source/domain/domain -c 500000 -s 100
 ./build/source/fifo/fifo -c 500000 -s 100
