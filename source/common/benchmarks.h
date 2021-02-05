@@ -3,7 +3,7 @@
 
 struct Arguments;
 
-typedef unsigned long bench_t;
+typedef unsigned long long bench_t;
 
 typedef struct Benchmarks {
 	// Start of the total benchmarking
