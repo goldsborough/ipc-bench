@@ -4,6 +4,8 @@
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #include "common/utility.h"
 
@@ -36,7 +38,7 @@ char *find_build_path() {
 }
 
 
-void start_process(char *argv[]) {
+pid_t start_process(char *argv[]) {
 	// Will need to set the group id
 	const pid_t parent_pid = getpid();
 	const pid_t pid = fork();
@@ -57,6 +59,8 @@ void start_process(char *argv[]) {
 			throw("Error opening child process");
 		}
 	}
+
+	return pid;
 }
 
 void copy_arguments(char *arguments[], int argc, char *argv[]) {
@@ -69,10 +73,10 @@ void copy_arguments(char *arguments[], int argc, char *argv[]) {
 	arguments[argc] = NULL;
 }
 
-void start_child(char *name, int argc, char *argv[]) {
+pid_t start_child(char *name, int argc, char *argv[]) {
 	char *arguments[8] = {name};
 	copy_arguments(arguments, argc, argv);
-	start_process(arguments);
+	return start_process(arguments);
 }
 
 void start_children(char *prefix, int argc, char *argv[]) {
@@ -101,8 +105,11 @@ void start_children(char *prefix, int argc, char *argv[]) {
 	);
 	// clang-format on
 
-	start_child(server_name, argc, argv);
-	start_child(client_name, argc, argv);
+	pid_t c1_id = start_child(server_name, argc, argv);
+	pid_t c2_id = start_child(client_name, argc, argv);
+
+	waitpid(c1_id, NULL, WUNTRACED);
+	waitpid(c2_id, NULL, WUNTRACED);
 
 	free(build_path);
 }
