@@ -54,8 +54,10 @@ int get_address(struct addrinfo *server_info) {
 		);
 		// clang-format on
 
-		if (return_code == 1) {
+		// Could not connect to the server
+		if (return_code == -1) {
 			close(socket_descriptor);
+			continue;
 		}
 
 		break;
