@@ -12,9 +12,15 @@
 #include "common/common.h"
 
 void communicate(void* socket, struct Arguments* args) {
+	struct Benchmarks bench;
+	int message;
+
+	setup_benchmarks(&bench);
 	void* buffer = malloc(args->size);
 
-	for (; args->count > 0; --args->count) {
+	for (message = 0; message < args->count; ++message) {
+		bench.single_start = now();
+
 		// Send data to the server (flags = 0)
 		if (zmq_send(socket, buffer, args->size, 0) < args->size) {
 			throw("Error sending on client-side");
@@ -24,8 +30,11 @@ void communicate(void* socket, struct Arguments* args) {
 		if (zmq_recv(socket, buffer, args->size, 0) < args->size) {
 			throw("Error receiving on client-side");
 		}
+
+		benchmark(&bench);
 	}
 
+	evaluate(&bench, args);
 	free(buffer);
 }
 
