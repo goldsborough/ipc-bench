@@ -7,15 +7,11 @@
 #include "common/common.h"
 
 void communicate(void* socket, struct Arguments* args) {
-	struct Benchmarks bench;
-	int message;
 	void* buffer;
 
 	buffer = malloc(args->size);
-	setup_benchmarks(&bench);
 
-	for (message = 0; message < args->count; ++message) {
-		bench.single_start = now();
+	for (; args->count > 0; --args->count) {
 
 		// Receive data from the client (flags = 0)
 		if (zmq_recv(socket, buffer, args->size, 0) < args->size) {
@@ -28,11 +24,7 @@ void communicate(void* socket, struct Arguments* args) {
 		if (zmq_send(socket, buffer, args->size, 0) < args->size) {
 			throw("Error sending on server-side");
 		}
-
-		benchmark(&bench);
 	}
-
-	evaluate(&bench, args);
 
 	free(buffer);
 }
