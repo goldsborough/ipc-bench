@@ -12,7 +12,7 @@ To measure their sequential throughput we send a single message forth _and_ back
 | Method                  |         100 Byte Messages |       1 Kilo Byte Messages |
 | ----------------------- | -------------------------:| --------------------------:|
 | Unix Signals            |                --broken-- |                 --broken-- |
-| zeromq                  |              24,901 msg/s |               22,679 msg/s |
+| ZeroMQ (TCP)            |              24,901 msg/s |               22,679 msg/s |
 | Internet sockets (TCP)  |              70,221 msg/s |               67,901 msg/s |
 | Domain sockets          |             130,372 msg/s |              127,582 msg/s |
 | Pipes                   |             162,441 msg/s |              155,404 msg/s |
@@ -23,9 +23,10 @@ To measure their sequential throughput we send a single message forth _and_ back
 
 ###### Benchmarked on ``Intel(R) Core(TM) i5-4590S CPU @ 3.00GHz`` running ``Ubuntu 20.04.1 LTS``.
 
-**NOTE**: The code is rather old and probably not all configurations are ideal!
+**NOTE**: The code is rather old and there might be sub-optimal configurations!
 We are happy to update the configuration with concrete suggestions (see contributions below).
-In particular, ``zeromq`` is a great library and should probable be performing better.
+In particular, ``zeromq`` is a great library and should probably be performing better, especially because we are only using the TCP implementation.
+There is one dedicated for IPC (-> TODO).
 In addition, there is little technical reason for shared memory to perform differently than memory-mapped files (could be due to a lack of warmup).
 Non-the-less, hopefully, this benchmark can serve as a solid starting point by providing ball-park numbers and a reference implementation.
 
