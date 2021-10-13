@@ -2,7 +2,7 @@
 
 [![GitHub license](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square)](http://goldsborough.mit-license.org)
 
-A sample implementations and benchmarks for various inter-process-communication (IPC) methods on Linux and OS X.
+Implementations and benchmarks for various inter-process-communication (IPC) methods on Linux and OS X.
 
 ## Spectrum
 
