@@ -125,7 +125,6 @@ int main(int argc, char* argv[]) {
 	}
 
 	remove("/tmp/mmap");
-	close(file_descriptor);
 
 	return EXIT_SUCCESS;
 }
