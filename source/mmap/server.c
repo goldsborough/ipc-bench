@@ -141,7 +141,5 @@ int main(int argc, char *argv[]) {
 		throw("Error unmapping file!");
 	}
 
-	close(file_descriptor);
-
 	return EXIT_SUCCESS;
 }
