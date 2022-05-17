@@ -23,10 +23,7 @@ void communicate(int connection, struct Arguments* args, int busy_waiting) {
 			throw("Error receiving on client-side");
 		}
 
-		// Dummy operation
-		memset(buffer, '*', args->size);
-
-		if (send(connection, buffer, args->size, 0) == -1) {
+		if (send(connection, buffer, 1, 0) == -1) {
 			throw("Error sending on client-side");
 		}
 	}
